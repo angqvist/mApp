@@ -40,6 +40,7 @@
 void printData(int configStart, int configStop,int configStep, int nbrOfConfigs, std::string posFile, std::string energyFile, double paramLimit, std::string nrgyFiles,std::string paramDataFile,bool doNrgNorm,int nbrFitParams,bool doTriplet,bool doParams,double doubleCO,double tripletCO,bool doBandGap,bool doVolume,bool doLattice,bool printTrainingAndValidationEnergy,std::string energyTrainFile,std::string energyValidFile,std::string confFileName,std::string confDirectory,std::string ECIParamOutFile,std::vector<std::string> subElements,bool printECIParams,bool doATAT,int printParamAtIndex,bool doCV)
 {
   //initial stuff
+  std::cout<<"start print data"<<std::endl;
   std::vector<LatticeList> dftPos = readConfig(confDirectory,nbrOfConfigs);
   std::vector<double> energies;
   for(int i=0; i<nbrOfConfigs; i++)
@@ -63,6 +64,7 @@ void printData(int configStart, int configStop,int configStep, int nbrOfConfigs,
 	  energies.push_back(dftPos[i].getEnergy());
 	}
     }
+  std::cout<<"read data: "<< energies.size()<< " entries"<<std::endl;
 
 
   shuffleLists(energies,dftPos);
@@ -195,6 +197,8 @@ void printData(int configStart, int configStop,int configStep, int nbrOfConfigs,
   cutOffVector.push_back(10.0);
   if(doNrgNorm)
     {
+
+      std::cout<<"start doing energy norm"<<std::endl;
   //     for( int CO=0;CO<cutOffVector.size();CO++)
   // 	{ 
   if(doTriplet)
@@ -436,6 +440,8 @@ void printData(int configStart, int configStop,int configStep, int nbrOfConfigs,
 
   if(doParams)
     {
+      std::cout<<"Starting doing parameters"<<std::endl;
+
       std::string paramFile="dataFiles/" + paramDataFile;
       std::ofstream parFile;
       parFile.open(paramFile.c_str());
@@ -1687,9 +1693,17 @@ void getFileNames(int option, std::string &energyTrainFile, std::string &energyV
        subElements.push_back("Al");
        subElements.push_back("Ga");
        subElements.push_back("Ge");
-
-
      }
+   else if(option==12)
+     {
+       energyTrainFile="dataFiles/energyTrainBaGaGepwr.data";
+       energyValidFile="dataFiles/energyValidBaGaGepwr.data";
+       confFileName="../configs/confpowerBGG/config_0";
+       confDirectory="../configs/confpowerBGG/config_";
+       subElements.push_back("Ga");
+       subElements.push_back("Ge");
+     }
+
 
 
  else

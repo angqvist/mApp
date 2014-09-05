@@ -28,6 +28,7 @@ Triplet::Triplet(double dr1 ,double dr2,double dr3, std::string s1, std::string 
   site2=s2;
   site3=s3;
   count=0;
+  sortTriplet();
 }
 
 
@@ -139,68 +140,23 @@ int operator==(Triplet t1 ,Triplet t2)
     {
       return false;
     }
-  // if(fabs(t1.getDistance1()-t1.getDistance3())<t1.getLimit())
-  //   {
-  //     std::cout<<"=================================================="<<std::endl;
 
-  //     t1.printTriplet();
-  //     t2.printTriplet();
-  //   }
+  //this is for and alphabetically ordered triplet
 
-    //   std::cout<<"=================================================="<<std::endl;
-
-   //    t1.printTriplet();
-    //  t2.printTriplet();
-
-  if( (t1.getSite1() != t2.getSite1() || t1.getSite2() != t2.getSite2() || t1.getSite3() != t2.getSite3()) && 
-      (fabs(t1.getDistance1()-t2.getDistance2())>t1.getLimit() || (t1.getSite1() != t2.getSite3() || t1.getSite3() != t2.getSite1() || t1.getSite2() != t2.getSite2() ))&&
-((fabs(t1.getDistance2()-t2.getDistance3())>t1.getLimit() || (t1.getSite1() != t2.getSite2() || t1.getSite2() != t2.getSite1() || t1.getSite3() != t2.getSite3() ))) &&
-      (fabs(t1.getDistance1()-t2.getDistance3())>t1.getLimit() ||!(
-  								  ((t1.getSite1() == t2.getSite1()) && ((t1.getSite2() == t2.getSite2() && t1.getSite3() == t2.getSite3() ) || (t1.getSite3() == t2.getSite2() && t1.getSite2() == t2.getSite3() ))) ||
-  								  ((t1.getSite3() == t2.getSite1()) && ((t1.getSite1() == t2.getSite2() && t1.getSite2() == t2.getSite3() ) || (t1.getSite2() == t2.getSite2() && t1.getSite1() == t2.getSite3() ))) ||
-  								  ((t1.getSite2() == t2.getSite1()) && ((t1.getSite3() == t2.getSite2() && t1.getSite1() == t2.getSite3() ) || (t1.getSite1() == t2.getSite2() && t1.getSite3() == t2.getSite3() ))))))
-
-
-
-
-//  if( (t1.getSite1() != t2.getSite1() || t1.getSite2() != t2.getSite2() || t1.getSite3() != t2.getSite3()) && 
-//       ((fabs(t1.getDistance1()-t2.getDistance2())>t1.getLimit() || (t1.getSite2() != t2.getSite3() || t1.getSite3() != t2.getSite2() || t1.getSite1() != t2.getSite1() )))&&
-// ((fabs(t1.getDistance2()-t2.getDistance3())>t1.getLimit() || (t1.getSite1() != t2.getSite2() || t1.getSite2() != t2.getSite1() || t1.getSite3() != t2.getSite3() ))) &&
-//       (fabs(t1.getDistance1()-t2.getDistance3())>t1.getLimit() ||(
-//   								  ((t1.getSite1() != t2.getSite1()) || ((t1.getSite2() != t2.getSite2() || t1.getSite3() != t2.getSite3() ) || (t1.getSite3() != t2.getSite2() || t1.getSite2() != t2.getSite3() ))) ||
-//   								  ((t1.getSite3() != t2.getSite1()) || ((t1.getSite1() != t2.getSite2() || t1.getSite2() != t2.getSite3() ) || (t1.getSite2() != t2.getSite2() || t1.getSite1() != t2.getSite3() ))) ||
-//   								  ((t1.getSite2() != t2.getSite1()) || ((t1.getSite3() != t2.getSite2() || t1.getSite1() != t2.getSite3() ) || (t1.getSite1() != t2.getSite2() || t1.getSite3() != t2.getSite3() ))))))
-
-
-
-
-
-  // if( (t1.getSite1() != t2.getSite1() || t1.getSite2() != t2.getSite2() || t1.getSite3() != t2.getSite3()) || 
-  //     ((fabs(t1.getDistance1()-t2.getDistance2())>t1.getLimit() || (t1.getSite2() != t2.getSite3() || t1.getSite3() != t2.getSite2() || t1.getSite1() != t2.getSite1() )))||
-  //     (fabs(t1.getDistance1()-t2.getDistance3())>t1.getLimit()))
-
+  if(t1.getSite1() !=t2.getSite1())
     {
-      // if(fabs(t1.getDistance1()-t1.getDistance3())<t1.getLimit())
-      //  	{
-      //  	  std::cout<<"False"<<std::endl;
-      // 	}
       return false;
     }
-  // if( !((fabs(t1.getDistance2()-t2.getDistance3())>t1.getLimit())))
-  //   {
-  // std::cout<<"==============================="<<std::endl;
-  // t1.printTriplet();
-  // t2.printTriplet();
-  // std::cout<<(t1.getSite1() != t2.getSite1() || t1.getSite2() != t2.getSite2() || t1.getSite3() != t2.getSite3())<< " "<<((fabs(t1.getDistance1()-t2.getDistance2())>t1.getLimit() || (t1.getSite2() != t2.getSite3() || t1.getSite3() != t2.getSite2() || t1.getSite1() != t2.getSite1() )))<<" "<<((fabs(t1.getDistance2()-t2.getDistance3())>t1.getLimit() || (t1.getSite1() != t2.getSite2() || t1.getSite2() != t2.getSite1() || t1.getSite3() != t2.getSite3() ))) << " "<< (fabs(t1.getDistance1()-t2.getDistance3())>t1.getLimit() ||(
-  // 								  ((t1.getSite1() != t2.getSite1()) || ((t1.getSite2() != t2.getSite2() || t1.getSite3() != t2.getSite3() ) || (t1.getSite3() != t2.getSite2() || t1.getSite2() != t2.getSite3() ))) ||
-  // 								  ((t1.getSite3() != t2.getSite1()) || ((t1.getSite1() != t2.getSite2() || t1.getSite2() != t2.getSite3() ) || (t1.getSite2() != t2.getSite2() || t1.getSite1() != t2.getSite3() ))) ||
-  // 								  ((t1.getSite2() != t2.getSite1()) || ((t1.getSite3() != t2.getSite2() || t1.getSite1() != t2.getSite3() ) || (t1.getSite1() != t2.getSite2() || t1.getSite3() != t2.getSite3() )))))<<std::endl;
-  //   }  
-      // if(fabs(t1.getDistance1()-t1.getDistance3())<t1.getLimit())
-      // 	{
-      // 	  std::cout<<"True"<<std::endl;
-      // 	}
-      
+  if(t1.getSite2() !=t2.getSite2())
+    {
+      return false;
+    }
+  if(t1.getSite3() !=t2.getSite3())
+    {
+      return false;
+    }
+
+
 
       return true;
 }
@@ -213,4 +169,86 @@ int operator!=(Triplet t1, Triplet t2)
 void Triplet::printTriplet()
 {
   std::cout<<getDistance1()<< " "<<getDistance2()<< " "<<getDistance3()<<" "<<getSite1()<<" "<< getSite2()<< " "<<getSite3()<< " "<<getEnergy()<< " "<<getCount()<<std::endl;
+}
+
+
+void Triplet::sortTriplet()
+{
+  double diff1;
+  double diff2;
+  
+  if(this->distance1>this->distance2 || this->distance1>this->distance3 || this->distance2 > this->distance3)
+    {
+      std::cout<<"Error distances not in order in sort triplet"<<std::endl;
+      std::cout<<diff1<< " "<<diff2<<std::endl;
+    }
+
+
+  diff1= fabs(distance1-distance2);
+  diff2= fabs(distance2-distance3);
+  std::vector< std::string > types;
+  if(diff1<this->LIMIT && diff2<this->LIMIT)
+    {
+      //alphabetically sort site1, site2, site3
+      types.push_back(site1);
+      types.push_back(site2);
+      types.push_back(site3);
+      sortStrings(types);
+      site1=types[0];
+      site2=types[1];
+      site3=types[2];
+           
+    }
+
+
+  //if d2==d3, site1 kan vara på site2
+  else if(diff2<this->LIMIT) 
+    {
+      types.push_back(site1);
+      types.push_back(site2);
+      sortStrings(types);
+      site1=types[0];
+      site2=types[1];
+      //alphabetically sort site1, site 2
+    }
+  //if d1==d2, site2 kan vara på site3
+  else if(diff1<this->LIMIT)
+    {
+
+      //alphatetically sort site2, site3
+
+      types.push_back(site2);
+      types.push_back(site3);
+      sortStrings(types);
+      site2=types[0];
+      site3=types[1];
+
+    }
+
+
+}
+
+
+
+
+
+void Triplet::sortStrings(std::vector< std::string> &type)
+{
+  bool swapped = true;
+  std::string tempString;
+  
+  while(swapped)
+    {
+      swapped= false;
+      for(int i=0; i<type.size()-1; i++)
+	{
+	  if(type[i].compare(type[i+1])>0)
+	    {
+	      tempString = type[i];
+	      type[i]=type[i+1];
+	      type[i+1]=tempString;
+	      swapped=true;
+	    }
+	}
+    }
 }

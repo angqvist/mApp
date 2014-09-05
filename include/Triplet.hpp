@@ -1,4 +1,5 @@
 #include <string>
+#include <vector>
 
 
 class Triplet
@@ -35,6 +36,7 @@ public:
   friend int operator==(Triplet,Triplet);
   friend int operator!=(Triplet,Triplet);
   double LIMIT;
+  void sortTriplet();
 
 private:
   double getLimit();
@@ -47,4 +49,8 @@ private:
   std::string site3;
   int count;
   double energy;
+  
+  
+  void sortStrings(std::vector< std::string >&);
+  
 };

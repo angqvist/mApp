@@ -36,6 +36,13 @@ using namespace std;
 int main()
 {
 
+
+
+
+
+
+
+
   // LatticeList madList = LatticeList(1,1,1);
   // int nbrMadness=300;
   // vector<LatticeList> llMadness;
@@ -78,25 +85,24 @@ int main()
 
   // return 0;
 
-	LatticeList l3 = LatticeList(1, 1, 1, 9, "configs/confSimple/config_0");
+	// LatticeList l3 = LatticeList(1, 1, 1, 9, "../configs/confSimple/config_0");
 
-	l3.printList();
+	// l3.printList();
 
-	TripletList t3 = TripletList();
-	std::vector<string> subE;
-	subE.push_back("Al");
-	subE.push_back("Ga");
-	subE.push_back("Ge");
+	// TripletList t3 = TripletList();
+	// std::vector<string> subE;
+	// subE.push_back("Al");
+	// subE.push_back("Ga");
+	// subE.push_back("Ge");
 
-	t3.initializeTriplets(l3, subE, 40);
+	// t3.initializeTriplets(l3, subE, 40);
 	
-	//t3.resetCounts();
-	t3= countTriplets(l3, t3);
-	t3.printList();
-	int b;
-	cin >> b;
+	// //t3.resetCounts();
+	// t3= countTriplets(l3, t3);
+	// t3.printList();
+	// int b;
 
-	return 0;
+	// return 0;
 
 
 
@@ -111,25 +117,25 @@ int main()
   // PairList pl2 = countPairs(l2,pl);
   // pl2.printList();
 
-  int configStart=95;
-  int configMax=101;
+  int configStart=1;
+  int configMax=100;
   int configStep=1;
-  int nbrOfConfigs=101;
-  int printParamAtIndex=100;
+  int nbrOfConfigs=100;
+  int printParamAtIndex=60;
   std::string posFile="testPosT";
   std::string energyFile="torsdag2";
-  double paramCutOff=0.02;
+  double paramCutOff=0.0002;
   double doubleCO=10;
   double tripletCO=2.6;
   std::string energyOutFile;//="EnergyBaAlGaSiAll.data";
   std::string paramOutFile;//="paramdataBG300.data";
   int nbrOfConfigsInParams=99;
-  bool doNrgNorms=false;
+  bool doNrgNorms=true;
   bool doParams=false;
   
   bool doBandGap=false;
-  bool doVolume=false;
-  bool doLattice=true; 
+  bool doVolume=true;
+  bool doLattice=false; 
   bool printTrainingAndValidationEnergy=true;
   bool doATAT=true;
   bool doCV=false;
@@ -151,16 +157,16 @@ int main()
   //option 9 BaAlGaSi -{4,8,12}
   //option 10 QUATERNARY 1098 max
   // option 11 BaAlGaGe* 299
+  // option 12 power BGG 100
 
 
-
-  getFileNames(4,energyTrainFile,energyValidFile,confFileName,confDirectory,subElements);
-  std::string ECIParamOutFile ="ECIParams/basd.param";
+  getFileNames(12,energyTrainFile,energyValidFile,confFileName,confDirectory,subElements);
+  std::string ECIParamOutFile ="ECIParams/pBGG_rp.param";
   //  confFileName = "configs/confSimple/config_0";
   // confDirectory = "configs/confSimple/config_";
 
-energyTrainFile="dataFiles/ET_55.data";
-  energyValidFile="dataFiles/EV_55.data";
+  energyTrainFile="dataFiles/ET_55p.data";
+  energyValidFile="dataFiles/EV_55p.data";
 
 
   bool printECIParams=false;
@@ -199,8 +205,8 @@ energyTrainFile="dataFiles/ET_55.data";
   //getAwithATAT(dftP,1,subElements,14.0,dists);
   
   // return 0;
-       printData(configStart,configMax,configStep,nbrOfConfigs,posFile,energyFile,paramCutOff,energyOutFile,paramOutFile,doNrgNorms,nbrOfConfigsInParams,doTriplet,doParams,doubleCO,tripletCO,doBandGap,doVolume,doLattice,printTrainingAndValidationEnergy,energyTrainFile,energyValidFile,confFileName,confDirectory,ECIParamOutFile,subElements,printECIParams,doATAT,printParamAtIndex,doCV);
-     return 0;
+     printData(configStart,configMax,configStep,nbrOfConfigs,posFile,energyFile,paramCutOff,energyOutFile,paramOutFile,doNrgNorms,nbrOfConfigsInParams,doTriplet,doParams,doubleCO,tripletCO,doBandGap,doVolume,doLattice,printTrainingAndValidationEnergy,energyTrainFile,energyValidFile,confFileName,confDirectory,ECIParamOutFile,subElements,printECIParams,doATAT,printParamAtIndex,doCV);
+   return 0;
   //===================================================================
 
 
@@ -312,10 +318,10 @@ energyTrainFile="dataFiles/ET_55.data";
 
 
 
-   ParameterList paraE = ParameterList("ECIParams/binParam/BGG_E.param",0.0,subElements);
-   ParameterList paraBG = ParameterList("ECIParams/binParam/BGG_BG.param",0.0,subElements);
-   ParameterList paraVOL = ParameterList("ECIParams/binParam/BGG_VOL.param",0.0,subElements);
-   ParameterList paraLAT = ParameterList("ECIParams/binParam/BGG_LAT.param",0.0,subElements);
+   ParameterList paraE = ParameterList("ECIParams/pBGG_E.param",0.0,subElements);
+   ParameterList paraBG = ParameterList("ECIParams/pBGG_P.param",0.0,subElements);
+   ParameterList paraVOL = ParameterList("ECIParams/pBGG_P.param",0.0,subElements);
+   ParameterList paraLAT = ParameterList("ECIParams/pBGG_rp.param",0.0,subElements);
 
 
 

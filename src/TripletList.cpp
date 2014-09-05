@@ -124,6 +124,7 @@ void TripletList::initializeTriplets(LatticeList ll, std::vector<std::string> su
 			  tempTriplet.setSite1(subelements[k]);
 			  tempTriplet.setSite2(subelements[l]);
 			  tempTriplet.setSite3(subelements[p]);
+			  tempTriplet.sortTriplet();
 			  updateTriplet(tempTriplet,true);		  
 			}//end p loop
 		    }//end l loop	  
