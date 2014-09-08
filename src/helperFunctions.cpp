@@ -613,9 +613,7 @@ TripletList countTriplets(LatticeList ll, TripletList tl)
   std::vector<int> orderIndex;
   orderDr.resize(3);
   orderIndex.resize(3);
-  tl.printList();
   tl.resetCounts(); 
-  std::cout<<"=============";
 
   Triplet tempTriplet;
   //#pragma omp parallel for private(dr1,dr2,dr3,orderDr,orderIndex,tempTriplet,tl) shared(ll)
@@ -645,8 +643,6 @@ TripletList countTriplets(LatticeList ll, TripletList tl)
 	    }
 	}
     }
-  tl.printList();
-  std::cout << "=======";
   return tl;
 }
 
@@ -1363,10 +1359,14 @@ const double PI = 3.1415926535897932384626;
   int Mi=subElements.size(); //same notation as Wal09 
 	
   PairList pl = PairList();
+  TripletList tl = TripletList();
+  tl.initializeTriplets(dftPos[0],subElements,cutOff);
   //std::vector<LatticeList> dftPos = readConfig(confDirectory,numberOfConfigs);
   //LatticeList lista = LatticeList(1,1,1);
   pl.initializePairs(dftPos[0],subElements,cutOff); 
   // pl.printList();
+  tl = countTriplets(dftPos[0],tl);
+  tl.printList();
 
   ParameterList paramList = ParameterList(pl);
   std::vector<NeighbourList> allNbrList; // this really should be a class    
@@ -1403,7 +1403,7 @@ const double PI = 3.1415926535897932384626;
   uniq_dist.push_back(0);
   for(int m=2; m<= subElements.size(); m++)
     {
-      distances.push_back(0);		
+       distances.push_back(0);		
     }
 
   
