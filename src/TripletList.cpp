@@ -301,3 +301,131 @@ void TripletList::sortTripletList()
 	}
     }
 }
+
+
+std::vector<double> TripletList::getClusterVector(std::vector<std::string > subElements,double cutoff)
+{
+
+  const double PI = 3.1415926535897932384626;
+
+  sortTripletList(); //importante
+  std::vector<std::vector<double> > uniq_dists =getUniqueDistances();
+  std::vector<double> clusterVector;
+
+  int  Mi=subElements.size();
+  // if(Mi=2)
+  //   {
+  //     clusterVector.resize(4*uniq_dists.size());
+  //   }
+  // else if(Mi=3)
+  //   {
+  //     clusterVector.resize(10*uniq_dists.size());
+  //   }
+  // else if(Mi=4)
+  //   {
+  //     clusterVector.resize(20*uniq_dists.size());
+  //   }
+  // else
+  //   {
+  //     std::cout<<"Error, size of subelements is bad. Size is: "<<Mi<< " expects value between [2,4] "<<std::endl;
+  //   }
+  int tripletCount;
+  double average;
+  double tempAverage;
+  int tempT=0;
+  double tempVal=0;
+
+  int s1;
+  int s2;
+  int s3;
+
+  for(int i=0; i<uniq_dists.size(); i++)
+    {
+      if(uniq_dists[i][2]>cutoff)
+	{
+	  continue;
+	}
+      for(int m=2; m<=Mi; m++)
+	{
+	  for(int t=0; t<m-1; t++)
+	    {
+	      for(int l=0; l<=t; l++)
+		{
+		  tempVal=0;
+		  tempAverage=0;
+
+
+		  for(int j=0; j<tripletList.size(); j++)
+		    {
+		      if(tripletList[j].getDistance1()<uniq_dists[i][0])
+			{
+			  continue;
+			}
+		      if(tripletList[j].getDistance1()>uniq_dists[i][0])
+			{
+			  break; //speeds things up
+			}
+
+		      
+		      if( fabs(tripletList[j].getDistance1()-uniq_dists[i][0])<1e-4
+			  && fabs(tripletList[j].getDistance2()-uniq_dists[i][1])<1e-4
+			  && fabs(tripletList[j].getDistance3()-uniq_dists[i][2])<1e-4)
+			{
+			  tempVal=0;
+			  for(int ii=0; ii<subElements.size(); ii++)
+			    {
+			      if(subElements[ii]==tripletList[j].getSite1())
+				{
+				  s1=ii;
+				}
+			      if(subElements[ii]==tripletList[j].getSite2())
+				{
+				  s2=ii;
+				}
+			      if(subElements[ii]==tripletList[j].getSite3())
+				{
+				  s3=ii;
+				}
+			    }
+
+			  tempT=(m/2);
+			  if(((m-2)%2==0))
+			    {
+			      tempVal=-cos(2*PI*s1*tempT/(Mi));
+			    }
+			  else
+			    {
+			      tempVal=-sin(2*PI*s1*tempT/(Mi));
+			    }
+			  tempT=((t+2)/2); //round down aye
+				  
+			  if((t%2==0))
+			    {
+			      tempVal*=-cos(2*PI*s2*tempT/(Mi));
+			    }
+			  else
+			    {
+			      tempVal*=-sin(2*PI*s2*tempT/(Mi));
+			    }	
+			  tempT=((l+2)/2);
+			  if((l%2==0))
+			    {
+			      tempVal*=-cos(2*PI*s3*tempT/(Mi));
+			    }
+			  else
+			    {
+			      tempVal*=-sin(2*PI*s3*tempT/(Mi));
+			    }	
+
+			  tempAverage +=tempVal;
+			}
+		    }//end tripletlist loop
+		  clusterVector.push_back(tempAverage);
+		}//end l loop
+	    }//en t loop
+	}//end m loop
+    }//end uniq dist loop
+}		  
+		      
+		  
+      

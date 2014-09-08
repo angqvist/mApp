@@ -21,5 +21,5 @@ private:
   int isAtomInSubElements(std::string,std::vector<std::string>);
   void sortOrder(std::vector<double> &,std::vector<int> &);
   bool isTripletUnique(class Triplet, std::vector<std::vector<double > > &,bool);
-  
+  std::vector<double> getClusterVector(std::vector<std::string >,double);
 };
