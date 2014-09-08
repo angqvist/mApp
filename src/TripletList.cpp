@@ -190,7 +190,6 @@ std::vector<std::vector<double> > TripletList::getUniqueDistances()
     {
       // tripletList[i].printTriplet();
       isTripletUnique(tripletList[i],distances,true);
-
     }
   
 
@@ -240,3 +239,65 @@ bool TripletList::isTripletUnique(Triplet t1, std::vector<std::vector<double> > 
 
   
   
+void TripletList::sortTripletList()
+{
+  bool swapped=true;
+  Triplet tempTriplet;
+  
+  while(swapped)
+    {
+      swapped=false;
+      for(int i=0; i<tripletList.size()-1; i++)
+	{
+	  if(tripletList[i].getDistance1()>tripletList[i+1].getDistance1())
+	    {
+	      tempTriplet=tripletList[i];
+	      tripletList[i]=tripletList[i+1];
+	      tripletList[i+1]=tempTriplet;
+	      swapped=true;
+	    }
+
+
+
+	}
+    }
+  swapped=true;
+
+  while(swapped)
+    {
+      swapped=false;
+      for(int i=0; i<tripletList.size()-1; i++)
+	{
+
+	   if(fabs(tripletList[i].getDistance1()-tripletList[i+1].getDistance1())<1e-4
+	  	  && tripletList[i].getDistance2()>tripletList[i+1].getDistance2())
+	    {
+	      tempTriplet=tripletList[i];
+	      tripletList[i]=tripletList[i+1];
+	      tripletList[i+1]=tempTriplet;
+	      swapped=true;
+	    }
+
+	}
+
+    }
+  swapped=true;
+  while(swapped)
+    {
+      swapped=false;
+      for(int i=0; i<tripletList.size()-1; i++)
+	{
+
+	  if(fabs(tripletList[i].getDistance1()-tripletList[i+1].getDistance1())<1e-4
+	  	  && fabs(tripletList[i].getDistance2()-tripletList[i+1].getDistance2())<1e-4
+	  	  && tripletList[i].getDistance3()>tripletList[i+1].getDistance3())
+	    {
+	      tempTriplet=tripletList[i];
+	      tripletList[i]=tripletList[i+1];
+	      tripletList[i+1]=tempTriplet;
+	      swapped=true;
+	    }
+
+	}
+    }
+}

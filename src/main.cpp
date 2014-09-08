@@ -96,9 +96,16 @@ int main()
 	 subE.push_back("Ge");
 
 	 t3.initializeTriplets(l3, subE, 40);
-	 t3.printList();
+	 t3.sortTripletList();
+	 // t3.printList();
 	 cout<<"======================================================"<<std::endl;
-	 t3.getUniqueDistances();
+	 
+	 std::vector<std::vector<double > > dists =t3.getUniqueDistances();
+
+	 for(int i=0; i<dists.size(); i++)
+	   {
+	     cout<<dists[i][0]<< " "<<dists[i][1]<< " "<<dists[i][2]<< " "<<endl;
+	   }
 	// //t3.resetCounts();
 	 //t3= countTriplets(l3, t3);
 	// t3.printList();

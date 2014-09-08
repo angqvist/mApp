@@ -1354,19 +1354,26 @@ void printCVCorr2(std::string confDirectory,std::string parameterFile,int number
 
 std::vector<double> getAwithATAT(std::vector<LatticeList> dftPos,int numberOfConfigs,std::vector<std::string> subElements,double cutOff,std::vector<double> & dist,bool doAverage)
 {
-const double PI = 3.1415926535897932384626;
+  const double PI = 3.1415926535897932384626;
+  bool doTriplet=false;
+
+ 
 
   int Mi=subElements.size(); //same notation as Wal09 
 	
   PairList pl = PairList();
-  TripletList tl = TripletList();
-  tl.initializeTriplets(dftPos[0],subElements,cutOff);
+  if(doTriplet)
+    {
+      TripletList tl = TripletList();
+      tl.initializeTriplets(dftPos[0],subElements,cutOff);
+      tl = countTriplets(dftPos[0],tl);
+      tl.printList();
+
+    }
   //std::vector<LatticeList> dftPos = readConfig(confDirectory,numberOfConfigs);
   //LatticeList lista = LatticeList(1,1,1);
   pl.initializePairs(dftPos[0],subElements,cutOff); 
   // pl.printList();
-  tl = countTriplets(dftPos[0],tl);
-  tl.printList();
 
   ParameterList paramList = ParameterList(pl);
   std::vector<NeighbourList> allNbrList; // this really should be a class    
@@ -1725,3 +1732,4 @@ std::vector<NeighbourList> getNLVector(LatticeList ll, ParameterList pl)
   //std::cout<<"returning with size "<<ret.size()<<std::endl;
   return ret;
 }
+

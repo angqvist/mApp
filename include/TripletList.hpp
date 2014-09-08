@@ -13,7 +13,8 @@ public:
   void printList();
   void resetCounts();
   std::vector<std::vector<double> > getUniqueDistances();
-  
+  void sortTripletList();
+
 private:
   int nbrOfTriplets;
   std::vector<Triplet> tripletList;
