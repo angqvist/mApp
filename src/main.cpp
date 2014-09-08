@@ -85,24 +85,26 @@ int main()
 
   // return 0;
 
-	// LatticeList l3 = LatticeList(1, 1, 1, 9, "../configs/confSimple/config_0");
+  LatticeList l3 = LatticeList(1, 1, 1, 46, "configs/confBaGaGe/config_0");
 
 	// l3.printList();
 
-	// TripletList t3 = TripletList();
-	// std::vector<string> subE;
+	 TripletList t3 = TripletList();
+	 std::vector<string> subE;
 	// subE.push_back("Al");
-	// subE.push_back("Ga");
-	// subE.push_back("Ge");
+	 subE.push_back("Ga");
+	 subE.push_back("Ge");
 
-	// t3.initializeTriplets(l3, subE, 40);
-	
+	 t3.initializeTriplets(l3, subE, 40);
+	 t3.printList();
+	 cout<<"======================================================"<<std::endl;
+	 t3.getUniqueDistances();
 	// //t3.resetCounts();
-	// t3= countTriplets(l3, t3);
+	 //t3= countTriplets(l3, t3);
 	// t3.printList();
 	// int b;
 
-	// return 0;
+	 return 0;
 
 
 

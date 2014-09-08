@@ -4,6 +4,7 @@
 #include <string>
 #include "Triplet.hpp"
 #include "LatticeList.hpp"
+#include <cmath>
 
 TripletList::TripletList()
 {
@@ -178,3 +179,64 @@ void TripletList::sortOrder(std::vector<double>  &orderDr, std::vector<int>  &or
 	}
     }
 }
+
+
+std::vector<std::vector<double> > TripletList::getUniqueDistances()
+{
+  
+  std::vector<std::vector<double> > distances;
+  
+  for(int i=0; i<tripletList.size(); i++)
+    {
+      // tripletList[i].printTriplet();
+      isTripletUnique(tripletList[i],distances,true);
+
+    }
+  
+
+
+  return distances;
+}
+
+bool TripletList::isTripletUnique(Triplet t1, std::vector<std::vector<double> > &distances, bool add)
+{
+  
+  if(distances.size()==0)
+    {
+      if(add)
+	{
+	  std::vector<double> addThisToDistances;
+	  addThisToDistances.push_back(t1.getDistance1());
+	  addThisToDistances.push_back(t1.getDistance2());
+	  addThisToDistances.push_back(t1.getDistance3());
+	  distances.push_back(addThisToDistances);
+	}
+      return true;
+    }
+
+  for(int i=0; i<distances.size(); i++)
+    {
+      if((fabs(distances[i][0]-t1.getDistance1())<1e-3)
+	 && (fabs(distances[i][1]-t1.getDistance2())<1e-3)
+	 && (fabs(distances[i][2]-t1.getDistance3())<1e-3))
+	{
+	  return false;
+	} 
+  
+    }
+
+    if(add)
+	{
+	  std::vector<double> addThisToDistances;
+	  addThisToDistances.push_back(t1.getDistance1());
+	  addThisToDistances.push_back(t1.getDistance2());
+	  addThisToDistances.push_back(t1.getDistance3());
+	  distances.push_back(addThisToDistances);
+	}
+      return true;
+
+}
+
+
+  
+  
