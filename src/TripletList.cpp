@@ -11,6 +11,16 @@ TripletList::TripletList()
   nbrOfTriplets=0;
 }
 
+TripletList::TripletList(LatticeList ll, std::vector<std::string> subelements, double cutOff)
+{
+  nbrOfTriplets=0;
+
+  initializeTriplets(ll, subelements,  cutOff);
+
+}
+
+
+
 int TripletList::getNbrOfTriplets()
 {
   return nbrOfTriplets;
@@ -33,6 +43,8 @@ int TripletList::updateTriplet(Triplet newTriplet,bool add)
     }
   return true;
 }
+
+
 
 int TripletList::isAtomInSubElements(std::string atom, std::vector<std::string> subelements)
 {
@@ -94,10 +106,10 @@ void TripletList::initializeTriplets(LatticeList ll, std::vector<std::string> su
 		}
 	      
 	      dr1=ll.getDistance(i,j);
-	      dr2=ll.getDistance(j,j2);
-	      dr3=ll.getDistance(i,j2);
+	      dr2=ll.getDistance(i,j2);
+	      dr3=ll.getDistance(j,j2);
 	 
-	      if(dr1>cutOff || dr2>cutOff)
+	      if(dr1>cutOff || dr2>cutOff || dr3>cutOff)
 		{
 		  continue;
 		}
@@ -181,16 +193,21 @@ void TripletList::sortOrder(std::vector<double>  &orderDr, std::vector<int>  &or
 }
 
 
-std::vector<std::vector<double> > TripletList::getUniqueDistances()
+std::vector<std::vector<double> > TripletList::getUniqueDistances(double cutoff)
 {
   
   std::vector<std::vector<double> > distances;
   
   for(int i=0; i<tripletList.size(); i++)
     {
+      if(tripletList[i].getDistance3()>cutoff)
+	{
+	  continue;
+	}
       // tripletList[i].printTriplet();
       isTripletUnique(tripletList[i],distances,true);
     }
+  
   
 
 
@@ -215,9 +232,9 @@ bool TripletList::isTripletUnique(Triplet t1, std::vector<std::vector<double> > 
 
   for(int i=0; i<distances.size(); i++)
     {
-      if((fabs(distances[i][0]-t1.getDistance1())<1e-3)
-	 && (fabs(distances[i][1]-t1.getDistance2())<1e-3)
-	 && (fabs(distances[i][2]-t1.getDistance3())<1e-3))
+      if((fabs(distances[i][0]-t1.getDistance1())<1e-4)
+	 && (fabs(distances[i][1]-t1.getDistance2())<1e-4)
+	 && (fabs(distances[i][2]-t1.getDistance3())<1e-4))
 	{
 	  return false;
 	} 
@@ -309,7 +326,7 @@ std::vector<double> TripletList::getClusterVector(std::vector<std::string > subE
   const double PI = 3.1415926535897932384626;
 
   sortTripletList(); //importante
-  std::vector<std::vector<double> > uniq_dists =getUniqueDistances();
+  std::vector<std::vector<double> > uniq_dists =getUniqueDistances(cutoff);
   std::vector<double> clusterVector;
 
   int  Mi=subElements.size();
@@ -339,39 +356,48 @@ std::vector<double> TripletList::getClusterVector(std::vector<std::string > subE
   int s2;
   int s3;
 
+  // for(int i=0; i<uniq_dists.size(); i++)
+  //   {
+  //     std::cout<<uniq_dists[i][0]<<" "<<uniq_dists[i][1]<< " "<<uniq_dists[i][2]<<std::endl;
+  //   }
+
   for(int i=0; i<uniq_dists.size(); i++)
     {
-      if(uniq_dists[i][2]>cutoff)
-	{
-	  continue;
-	}
+      // std::cout<<"========="<<std::endl;
+      //    std::cout<<uniq_dists[i][0]<<" "<<uniq_dists[i][1]<< " "<<uniq_dists[i][2]<<std::endl;
+      if((uniq_dists[i][2]+1e-4)>cutoff)
+      	{
+	  // continue;
+      	}
       for(int m=2; m<=Mi; m++)
 	{
 	  for(int t=0; t<m-1; t++)
 	    {
 	      for(int l=0; l<=t; l++)
 		{
-		  tempVal=0;
-		  tempAverage=0;
+		  tempVal=0.0;
+		  tempAverage=0.0;
 
 
 		  for(int j=0; j<tripletList.size(); j++)
 		    {
-		      if(tripletList[j].getDistance1()<uniq_dists[i][0])
-			{
-			  continue;
-			}
-		      if(tripletList[j].getDistance1()>uniq_dists[i][0])
-			{
-			  break; //speeds things up
-			}
+		      if(tripletList[j].getDistance1()<(uniq_dists[i][0]-1e-4))
+		      	{
+		      	  //continue;
+		      	}
+		      // if(tripletList[j].getDistance1()>uniq_dists[i][0])
+		      // 	{
+		      // 	  break; //speeds things up
+		      // 	}
 
+		      //      std::cout<<fabs(tripletList[j].getDistance1()-uniq_dists[i][0])<< " "<<fabs(tripletList[j].getDistance2()-uniq_dists[i][1])<< " "<< fabs(tripletList[j].getDistance3()-uniq_dists[i][2])<<std::endl;
 		      
 		      if( fabs(tripletList[j].getDistance1()-uniq_dists[i][0])<1e-4
 			  && fabs(tripletList[j].getDistance2()-uniq_dists[i][1])<1e-4
 			  && fabs(tripletList[j].getDistance3()-uniq_dists[i][2])<1e-4)
 			{
-			  tempVal=0;
+			  //  tripletList[j].printTriplet();
+			  tempVal=0.0;
 			  for(int ii=0; ii<subElements.size(); ii++)
 			    {
 			      if(subElements[ii]==tripletList[j].getSite1())
@@ -416,8 +442,9 @@ std::vector<double> TripletList::getClusterVector(std::vector<std::string > subE
 			    {
 			      tempVal*=-sin(2*PI*s3*tempT/(Mi));
 			    }	
-
-			  tempAverage +=tempVal;
+			  //	  std::cout<<tempVal<<" "<<tripletList[i].std::endl;
+			  
+			  tempAverage +=tripletList[j].getCount()*tempVal;
 			}
 		    }//end tripletlist loop
 		  clusterVector.push_back(tempAverage);
@@ -425,6 +452,8 @@ std::vector<double> TripletList::getClusterVector(std::vector<std::string > subE
 	    }//en t loop
 	}//end m loop
     }//end uniq dist loop
+
+  return clusterVector;
 }		  
 		      
 		  

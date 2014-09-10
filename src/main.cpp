@@ -85,33 +85,47 @@ int main()
 
   // return 0;
 
-  LatticeList l3 = LatticeList(1, 1, 1, 46, "configs/confBaGaGe/config_0");
+  //  LatticeList l3 = LatticeList(1, 1, 1, 9, "configs/confSimple/config_0");
+  //  l3 = LatticeList(1,1,1,46,"configs/confBaGaGe/config_0");
+  //  l3.setRandomSites(46,"Ga","Ge");
+  // // 	// l3.printList();
 
-	// l3.printList();
+  //  	 TripletList t3 = TripletList();
+  // 	 std::vector<string> subE;
+  // 	 //subE.push_back("Al");
+  // 	 subE.push_back("Ga");
+  // 	 subE.push_back("Ge");
 
-	 TripletList t3 = TripletList();
-	 std::vector<string> subE;
-	// subE.push_back("Al");
-	 subE.push_back("Ga");
-	 subE.push_back("Ge");
-
-	 t3.initializeTriplets(l3, subE, 40);
-	 t3.sortTripletList();
-	 // t3.printList();
-	 cout<<"======================================================"<<std::endl;
+  // 	 t3.initializeTriplets(l3, subE, 5);
+  //  	 t3.sortTripletList();
+  // 	 t3.printList();
+  //  	 cout<<"======================================================"<<std::endl;
 	 
-	 std::vector<std::vector<double > > dists =t3.getUniqueDistances();
+  // // 	 std::vector<std::vector<double > > dists =t3.getUniqueDistances();
 
-	 for(int i=0; i<dists.size(); i++)
-	   {
-	     cout<<dists[i][0]<< " "<<dists[i][1]<< " "<<dists[i][2]<< " "<<endl;
-	   }
-	// //t3.resetCounts();
-	 //t3= countTriplets(l3, t3);
-	// t3.printList();
-	// int b;
+  // // 	 for(int i=0; i<dists.size(); i++)
+  // // 	   {
+  // // 	     cout<<dists[i][0]<< " "<<dists[i][1]<< " "<<dists[i][2]<< " "<<endl;
+  // // 	   }
+  // // 	// //t3.resetCounts();
+  // 	 t3= countTriplets(l3, t3);
+  // 	 t3.printList();
+  // // 	// int b;
 
-	 return 0;
+  // 	 std::vector<double> clVector = t3.getClusterVector(subE,5);
+  // 	 for(int i=0; i<clVector.size(); i++)
+  // 	   {
+  // 	     cout<<clVector[i]<<" ";
+  // 	   }
+  // 	 cout<<endl;
+  // 	 std::vector<std::vector<double> > uniq_dist= t3.getUniqueDistances(5);
+
+  // 	 for(int i=0; i<uniq_dist.size(); i++)
+  // 	   {
+  // 	     std::cout<<uniq_dist[i][0]<< " "<<uniq_dist[i][1]<< " "<<uniq_dist[i][2]<<std::endl;
+  // 	   }
+
+  //  	 return 0;
 
 
 
@@ -126,14 +140,14 @@ int main()
   // PairList pl2 = countPairs(l2,pl);
   // pl2.printList();
 
-  int configStart=1;
-  int configMax=100;
+  int configStart=120;
+  int configMax=176;
   int configStep=1;
-  int nbrOfConfigs=100;
-  int printParamAtIndex=60;
+  int nbrOfConfigs=200;
+  int printParamAtIndex=175;
   std::string posFile="testPosT";
   std::string energyFile="torsdag2";
-  double paramCutOff=0.0002;
+  double paramCutOff=0;
   double doubleCO=10;
   double tripletCO=2.6;
   std::string energyOutFile;//="EnergyBaAlGaSiAll.data";
@@ -142,8 +156,8 @@ int main()
   bool doNrgNorms=true;
   bool doParams=false;
   
-  bool doBandGap=false;
-  bool doVolume=true;
+  bool doBandGap=true;
+  bool doVolume=false;
   bool doLattice=false; 
   bool printTrainingAndValidationEnergy=true;
   bool doATAT=true;
@@ -169,8 +183,10 @@ int main()
   // option 12 power BGG 100
 
 
-  getFileNames(12,energyTrainFile,energyValidFile,confFileName,confDirectory,subElements);
-  std::string ECIParamOutFile ="ECIParams/pBGG_rp.param";
+  getFileNames(1,energyTrainFile,energyValidFile,confFileName,confDirectory,subElements);
+  //std::string ECIParamOutFile ="ECIParams/pBGG_rp.param";
+  std::string ECIParamOutFile ="dataFiles/params.data";
+
   //  confFileName = "configs/confSimple/config_0";
   // confDirectory = "configs/confSimple/config_";
 
@@ -178,7 +194,7 @@ int main()
   energyValidFile="dataFiles/EV_55p.data";
 
 
-  bool printECIParams=false;
+  bool printECIParams=true;
    bool doTriplet=false;
    std::vector<LatticeList> dftP;
    //LatticeList llP = LatticeList(1,1,1,9,confFileName);

@@ -126,7 +126,7 @@ void printData(int configStart, int configStop,int configStep, int nbrOfConfigs,
   // ===================== del me
   // X2=getAwithATAT(dftPos,nbrOfConfigs,subElements,doubleCO,distances,false);
 
-  // int numbConfs=30;
+  // int numbConfs=70;
   // X = getAMatrixFromExistingOne(X2,numbConfs,distances.size());
 
   // //  X=getAwithATAT(dftPos,numbConfs,subElements,doubleCO,distances,false);
@@ -135,14 +135,14 @@ void printData(int configStart, int configStop,int configStep, int nbrOfConfigs,
   // double tempErrorV=0;
   // double nonZero=0;
 
-  // for(double mu2=0; mu2<1; mu2 +=0.05)
+  // for(double mu2=0.000001; mu2<1e14; mu2 *=1.05)
   //   {
   //     nonZero=0;
   //     const double mu3=mu2;
   //     tempPNorm=0;
   //     tempErrorT=0;
   //     tempErrorV=0;
-  //     params = doMinimize(X,distances.size(),energies,alpha,lambda,mu3,doSB,sbIters,sbTol,bfgsIters,verbal,bfgsTol);
+  //     params = doMinimize(X,distances.size(),energies,alpha,lambda,mu,doSB,sbIters,sbTol,bfgsIters,verbal,bfgsTol);
   //     std::vector<double> tempEnergyAll = energyFromParams(params,X2);
   //     for(int jj2=0; jj2<numbConfs; jj2++)
   // 	{
@@ -619,17 +619,17 @@ TripletList countTriplets(LatticeList ll, TripletList tl)
   //#pragma omp parallel for private(dr1,dr2,dr3,orderDr,orderIndex,tempTriplet,tl) shared(ll)
   for(size_t i=0; i<ll.getNbrOfSites(); i++)
     {
-      for(size_t j=i; j<ll.getNbrOfSites(); j++)
+      for(size_t j=i+1; j<ll.getNbrOfSites(); j++)
 	{
-	  for(size_t k=j; k<ll.getNbrOfSites(); k++)
+	  for(size_t k=j+1; k<ll.getNbrOfSites(); k++)
 	    {
 	      if(i==k || j == k || i==j)
 		{
 		  continue;
 		}
 	      dr1=ll.getDistance(i,j);
-	      dr2=ll.getDistance(j,k);
-	      dr3=ll.getDistance(i,k);
+	      dr2=ll.getDistance(i,k);
+	      dr3=ll.getDistance(j,k);
 	      orderDr[0]=dr1;
 	      orderDr[1]=dr2;
 	      orderDr[2]=dr3;
@@ -640,7 +640,8 @@ TripletList countTriplets(LatticeList ll, TripletList tl)
 	      
 	      tempTriplet=Triplet(orderDr[0],orderDr[1],orderDr[2],ll.getSite(orderIndex[0]),ll.getSite(orderIndex[1]),ll.getSite(orderIndex[2]));
 	      tl.updateTriplet(tempTriplet,false);
-	    }
+		}		
+	    
 	}
     }
   return tl;
@@ -1355,21 +1356,12 @@ void printCVCorr2(std::string confDirectory,std::string parameterFile,int number
 std::vector<double> getAwithATAT(std::vector<LatticeList> dftPos,int numberOfConfigs,std::vector<std::string> subElements,double cutOff,std::vector<double> & dist,bool doAverage)
 {
   const double PI = 3.1415926535897932384626;
-  bool doTriplet=false;
+  bool doTriplet=true;
 
- 
-
+  double tripCO=4.6;
   int Mi=subElements.size(); //same notation as Wal09 
 	
   PairList pl = PairList();
-  if(doTriplet)
-    {
-      TripletList tl = TripletList();
-      tl.initializeTriplets(dftPos[0],subElements,cutOff);
-      tl = countTriplets(dftPos[0],tl);
-      tl.printList();
-
-    }
   //std::vector<LatticeList> dftPos = readConfig(confDirectory,numberOfConfigs);
   //LatticeList lista = LatticeList(1,1,1);
   pl.initializePairs(dftPos[0],subElements,cutOff); 
@@ -1423,6 +1415,12 @@ std::vector<double> getAwithATAT(std::vector<LatticeList> dftPos,int numberOfCon
   double singletCount;
   for(int confIter=0; confIter<numberOfConfigs; confIter++)
     {   
+      std::cout<<confIter/(double)numberOfConfigs<<std::endl;
+ 
+      TripletList t3 = TripletList();
+      t3.initializeTriplets(dftPos[confIter],subElements,tripCO);
+
+
       singletCount=0;	
       for(int i=0; i<uniq_dist.size(); i++)
 	{
@@ -1537,8 +1535,22 @@ std::vector<double> getAwithATAT(std::vector<LatticeList> dftPos,int numberOfCon
 	    }
 	       
 	}
+      if(doTriplet)
+	{
 
+	  t3=countTriplets(dftPos[confIter],t3);      
+	  //t3.printList();
+	  std::vector<double> tripletCluster = t3.getClusterVector(subElements,tripCO);
+       
+	  for(int kl=0; kl<tripletCluster.size(); kl++)
+	    {
+	      //	  std::cout<<tripletCluster[kl]<< " ";
+	      X.push_back(tripletCluster[kl]);
+	    }
+       
 	}
+
+    }
 
   
 //    std::cout<<"sizeX "<<X.size()<< " distances*nbrofConfigs= "<<numberOfConfigs*distances.size()<<std::endl;
@@ -1551,8 +1563,14 @@ std::vector<double> getAwithATAT(std::vector<LatticeList> dftPos,int numberOfCon
 //        }
 //     std::cout<< std::endl;
 //   }
-dist=distances;
 
+  if(doTriplet)
+    {
+      TripletList t3 = TripletList(dftPos[0],subElements,tripCO);
+      std::vector<double> tripletCluster = t3.getClusterVector(subElements,tripCO);
+      distances.resize(distances.size()+tripletCluster.size());
+    }
+dist=distances;
 //std::cout<<X.size()/(double)distances.size()<<std::endl;
 
 
@@ -1705,8 +1723,8 @@ void getFileNames(int option, std::string &energyTrainFile, std::string &energyV
      {
        energyTrainFile="dataFiles/energyTrainBaGaGepwr.data";
        energyValidFile="dataFiles/energyValidBaGaGepwr.data";
-       confFileName="../configs/confpowerBGG/config_0";
-       confDirectory="../configs/confpowerBGG/config_";
+       confFileName="configs/confpowerBGG/config_0";
+       confDirectory="configs/confpowerBGG/config_";
        subElements.push_back("Ga");
        subElements.push_back("Ge");
      }

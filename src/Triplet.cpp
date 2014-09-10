@@ -176,6 +176,7 @@ void Triplet::sortTriplet()
 {
   double diff1;
   double diff2;
+  double diff3;
   
   if(this->distance1>this->distance2 || this->distance1>this->distance3 || this->distance2 > this->distance3)
     {
