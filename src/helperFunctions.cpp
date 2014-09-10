@@ -564,6 +564,36 @@ void shuffleLists(std::vector<double> &energies,std::vector<LatticeList> &dftPos
     }
 }
 
+void shuffleLists(std::vector<double> &energies,std::vector<double> &energies2, std::vector<LatticeList> &dftPos)
+{
+  //shuffle list
+  std::vector<int> ordering;
+  for(int i=0; i<energies.size(); i++)
+    ordering.push_back(i);
+
+  for(int i=0; i<50*energies.size(); i++)
+    {
+      int temp =rand()%(energies.size());
+      int temp2 = rand()%(energies.size());
+      LatticeList templl;
+      double tempE;
+      double tempE2;
+      while(temp == temp2)
+	temp2=rand()%(energies.size());
+      int temp3;
+      templl=dftPos[temp];
+      dftPos[temp]=dftPos[temp2];
+      dftPos[temp2]=templl;
+      tempE=energies[temp];
+      tempE2=energies2[temp];
+      energies[temp]=energies[temp2];
+      energies[temp2]=tempE;
+      energies2[temp]=energies2[temp2];
+      energies2[temp2]=tempE2;
+    }
+}
+
+
 
 
 std::vector<LatticeList> readConfig(std::string posFileName,int configs,int nbrOfAtoms,int nbrOfProperties)
@@ -1774,3 +1804,88 @@ void doClusterStuff(std::string configFolder,int numberOfConfigs, int numberOfPr
 }
 
 
+void printCVdata(std::vector<LatticeList> dftPos,double cutoff,int numberOfConfigs)
+{
+
+
+  std::vector<double> X2=getAwithATAT(dftPos,nbrOfConfigs,subElements,doubleCO,distances,false);
+  int columns=X2.size()/nbrOfConfigs;
+  std::vector<double> cvCorr = getAwithATAT(dftPos,nbrOfConfigs,subElements,doubleCO,distances,true);
+
+  std::vector<double> property;
+  property.resize(nbrOfConfigs);
+
+  std::cout<<" Printing CV score for different properties "<<std::endl;
+  std::cout<<" Number of configs in training, 50 times averaged "<<std::endl;
+  std::cout<<"================================================================="<<std::endl;
+  for(int j=0; j<dftPos[0].getNumberOfProperties(); j++)
+    {
+      for(int jj=0; jj<nbrOfConfigs; jj++)
+	{
+	  property[jj]=(dftPos[jj].getProperty[j]);
+	}
+
+      
+
+      std::cout<<"#Property "<<j<< " %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"<<std::endl;
+      
+      for(int i=columns+1; i<nbrOfConfigs; i++)
+	{
+	  double tempCV=0;
+	  for(int ii =0 ii<100; ii++) //some averaging
+	    {
+	      
+	      
+	      
+
+	    }
+
+	  
+      
+	}
+    }
+
+}
+
+
+void shuffleXMatrix(std::vector<double> &X, std::vector<double> &X2, std::vector<double> &property) //
+{
+  //X=[property.size()==numberOfConfigs][columns == X.size/property.size()]
+  
+  int columns=X.size()/property.size();
+  
+  double tempRow;
+  tempRow.resize(columns);
+  double tempProperty;
+  for(int i=0; i< columns*2; i++)
+    {
+      int temp =rand()%(property.size());
+      int temp2 = rand()%(property.size());
+      while(temp == temp2)
+	temp2=rand()%(property.size());
+      
+      tempProperty=property[temp2];
+      property[temp2]=property[temp];
+      property[temp]=tempProperty;
+
+      
+      for(int j=0; j<columns; j++)
+	{
+	  tempRow=X[temp2*columns+j];
+	  X[temp2*columns+j]=X[temp*columns+j];
+	  X[temp*columns+j]=tempRow;
+	  
+      	  tempRow=X2[temp2*columns+j];
+	  X2[temp2*columns+j]=X2[temp*columns+j];
+	  X2[temp*columns+j]=tempRow;
+	}
+
+
+ 
+      
+    }
+
+
+
+
+}

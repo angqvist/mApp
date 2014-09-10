@@ -657,6 +657,11 @@ double LatticeList::getLz()
   return Lz;
 }
 
+int LatticeList::getNumberOfProperties()
+{
+  return properties.size();
+}
+
 
 double LatticeList::getProperty(int index)
 {

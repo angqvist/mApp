@@ -59,5 +59,5 @@ private:
   double volume;
   double averageLatticeConstant;
   std::vector<double> properties;
-  
+  int getNumberOfProperties();
 };
