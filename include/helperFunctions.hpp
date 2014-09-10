@@ -18,7 +18,7 @@ void printData(int,int,int,int,std::string,std::string,double,std::string,std::s
 
 std::vector<double> readEnergies(std::string,int);
 void shuffleLists(std::vector<double> &,std::vector<class LatticeList> &);
-std::vector<class LatticeList> readConfig(std::string,int);
+std::vector<class LatticeList> readConfig(std::string,int,int,int);
 class PairList countPairs(class LatticeList,class PairList);
 class TripletList countTriplets(class LatticeList,class TripletList);
 
@@ -55,3 +55,5 @@ std::vector<double> getAwithATAT(std::vector<class LatticeList>,int ,std::vector
 void getFileNames(int , std::string &, std::string &,std::string &,std::string &,std::vector<std::string> &);
 
 std::vector<class NeighbourList> getNLVector(class LatticeList,class ParameterList);
+
+void doClusterStuff(std::string,int,int,int,std::string,double,int);

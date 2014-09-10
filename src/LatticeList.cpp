@@ -7,9 +7,9 @@
 #include <string>
 using namespace std;
 
-// A bit inelegant, nbrOfAtoms isnt really nbr of atoms but the number of atoms in the unit cell times 3
+// (A bit inelegant, nbrOfAtoms isnt really nbr of atoms but the number of atoms in the unit cell times 3)-- I think not
 // i.e the number of numbers required to get the positions of all the atoms
-// Number of sites, is the number of total sites in the lattice times three
+// (Number of sites, is the number of total sites in the lattice times three) -- I think not
 
 // default constructor just makes a unit cell lattice
 LatticeList::LatticeList() 
@@ -63,6 +63,26 @@ LatticeList::LatticeList(int sizeX, int sizeY, int sizeZ, int newNbrOfAtoms, str
   fileName=newFileName;
   readIdealPos2();
 }
+LatticeList::LatticeList(int sizeX, int sizeY, int sizeZ, int newNbrOfAtoms, int nbrOfProperties, string newFileName) 
+{
+  cellSizeX=sizeX;
+  cellSizeY=sizeY;
+  cellSizeZ=sizeZ;
+  nbrOfAtoms=newNbrOfAtoms;
+  nbrOfSites=nbrOfAtoms*cellSizeX*cellSizeY*cellSizeZ;
+  posList2.resize((nbrOfSites*3));
+  atomTypeList.resize(nbrOfSites);
+  latticeConstant=10.9868239608;  
+  Lx=cellSizeX*latticeConstant;
+  Ly=cellSizeY*latticeConstant;
+  Lz=cellSizeZ*latticeConstant;
+  properties.resize(nbrOfProperties);
+  fileName=newFileName;
+  readIdealPos3();
+
+}
+
+
 
 
 void LatticeList::readIdealPos()
@@ -213,6 +233,109 @@ void LatticeList::readIdealPos2()
 
 
 
+void LatticeList::readIdealPos3()
+{
+  ifstream in(fileName.c_str());  
+  if (!in)
+    {
+      cout<< "Cannot open file.\n";
+      return;
+    }
+  double tempLatticeConstant;
+  for(int i=0; i<3; i++)
+    {
+      for( int j=0; j<3; j++)
+	{
+	  in >> tempLatticeConstant;
+	  if( j != i)
+	    {
+	      continue;
+	    }
+	  if(i==0)
+	    {
+	      latticeConstant=tempLatticeConstant; // only got one latticeconstant
+	    }
+	}
+    }
+  Lx=cellSizeX*latticeConstant;
+  Ly=cellSizeY*latticeConstant;
+  Lz=cellSizeZ*latticeConstant;
+  
+  
+  for(int i=0; i<properties.size(); i++)
+    {
+      in >> properties[i];
+    }
+
+  std::string tempSite;
+  double tempPos1;
+  double tempPos2;
+  double tempPos3;
+  int loopIndex=0;
+  while(!(in.eof()))
+    {
+      if(loopIndex+1>nbrOfAtoms)
+	{
+	  break;
+	}
+      in >>tempSite;
+      in >>tempPos1;
+      in >>tempPos2;
+      in >>tempPos3;
+      bool newAtom=true;
+      if(elements.size()==0)
+	{
+	  elements.push_back(tempSite);
+	  elementCounts.push_back(1);
+	}
+      else
+	{
+	  for(int eleIndex=0; eleIndex<elements.size(); eleIndex++)
+	    {
+	      if(tempSite==elements[eleIndex])
+		{
+		  elementCounts[eleIndex]++;
+		  newAtom=false;
+		  break;
+		}
+	      
+	    }//end for
+	  if(newAtom)
+	    {
+	      elementCounts.push_back(1);
+	      elements.push_back(tempSite);
+	    }
+	}// end else
+
+
+
+      atomTypeList[loopIndex]=tempSite;
+      posList2[3*loopIndex]=tempPos1;
+      posList2[3*loopIndex+1]=tempPos2;
+      posList2[3*loopIndex+2]=tempPos3;
+      loopIndex++;      
+    }
+  
+  for(int i=(nbrOfAtoms*3); i<cellSizeX*(nbrOfAtoms*3); i+=3)
+    {
+      posList2[i]=posList2[i-(nbrOfAtoms*3)]+latticeConstant;
+      posList2[i+1]=posList2[i+1-(nbrOfAtoms*3)];
+      posList2[i+2]=posList2[i+2-(nbrOfAtoms*3)];
+    }
+  for(int i=(nbrOfAtoms*3)*cellSizeX; i<cellSizeX*cellSizeY*(nbrOfAtoms*3); i+=3)
+    {
+      posList2[i]=posList2[i-(nbrOfAtoms*3)*cellSizeX];
+      posList2[i+1]=posList2[i+1-(nbrOfAtoms*3)*cellSizeX]+latticeConstant;
+      posList2[i+2]=posList2[i+2-(nbrOfAtoms*3)*cellSizeX];
+    }
+  for(int i=(nbrOfAtoms*3)*cellSizeX*cellSizeY; i<cellSizeX*cellSizeY*cellSizeZ*(nbrOfAtoms*3); i+=3 )
+    {
+      posList2[i]=posList2[i-(nbrOfAtoms*3)*cellSizeX*cellSizeY];
+      posList2[i+1]=posList2[i+1-(nbrOfAtoms*3)*cellSizeX*cellSizeY];
+      posList2[i+2]=posList2[i+2-(nbrOfAtoms*3)*cellSizeX*cellSizeY]+latticeConstant;
+    }
+  in.close(); 
+}
 
 
 
@@ -532,4 +655,16 @@ double LatticeList::getLy()
 double LatticeList::getLz()
 {
   return Lz;
+}
+
+
+double LatticeList::getProperty(int index)
+{
+  if(index >= properties.size())
+    {
+      std::cout<<"ERROR: trying to fetch property from lattice beyond the limit of property vector"<<std::endl;
+      std::cout<<"ERROR: trying to get property "<<index<<" length of property: "<<properties.size()<<std::endl;
+      return 0;
+    }
+  return properties[index];
 }

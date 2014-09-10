@@ -566,7 +566,7 @@ void shuffleLists(std::vector<double> &energies,std::vector<LatticeList> &dftPos
 
 
 
-std::vector<LatticeList> readConfig(std::string posFileName,int configs)
+std::vector<LatticeList> readConfig(std::string posFileName,int configs,int nbrOfAtoms,int nbrOfProperties)
 {
  std::vector<LatticeList> ret;
  for(int i=0; i<configs; i++)
@@ -574,13 +574,15 @@ std::vector<LatticeList> readConfig(std::string posFileName,int configs)
      std::ostringstream ss;
      //ss << "confs4/config_"<<i;
      ss << posFileName<<i;
-     LatticeList ll = LatticeList(1,1,1,46,ss.str());
+     LatticeList ll = LatticeList(1,1,1,nbrOfProperties,nbrOfAtoms,ss.str());
 
      
      ret.push_back(ll);
    }
  return ret; 
 }
+
+
 
 PairList countPairs(LatticeList ll, PairList pl)
 {
@@ -1356,7 +1358,7 @@ void printCVCorr2(std::string confDirectory,std::string parameterFile,int number
 std::vector<double> getAwithATAT(std::vector<LatticeList> dftPos,int numberOfConfigs,std::vector<std::string> subElements,double cutOff,std::vector<double> & dist,bool doAverage)
 {
   const double PI = 3.1415926535897932384626;
-  bool doTriplet=true;
+  bool doTriplet=false;
 
   double tripCO=4.6;
   int Mi=subElements.size(); //same notation as Wal09 
@@ -1750,4 +1752,25 @@ std::vector<NeighbourList> getNLVector(LatticeList ll, ParameterList pl)
   //std::cout<<"returning with size "<<ret.size()<<std::endl;
   return ret;
 }
+
+
+
+
+void doClusterStuff(std::string configFolder,int numberOfConfigs, int numberOfProperties,int numberOfAtoms,std::string outputFolder,double cutoff,int tuplets,std::vector<std::string> subElements)
+{
+  
+  //read configs
+  //generate X matrix with atat
+  // write out CV from soon to be function
+  // print parameters for nbr of configs with best cv score
+  //profit?
+
+  //std::vector<double> getAwithATAT(std::vector<LatticeList> dftPos,int numberOfConfigs,std::vector<std::string> subElements,double cutOff,std::vector<double> & dist,bool doAverage)
+  
+  std::vector<LatticeList> dftPos = readConfigs(configFolder,numberOfConfigs,numberOfAtoms,numberOfProperties);
+ std::vector<double> dists;
+ std::vector<double> X = getAwithATAT(dftPos,numberOfConfigs,subElements,cutoff,dist,false);
+ 
+}
+
 

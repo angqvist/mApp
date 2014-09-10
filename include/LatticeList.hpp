@@ -9,6 +9,7 @@ public:
   LatticeList(); // default consructor
   LatticeList(int , int , int );
   LatticeList(int , int , int ,int , std::string );
+  LatticeList(int,int,int,int,int,std::string);
   double getDistance(int,int);
   int getNbrOfSites();
   void printList(); //Mostly for bug checking
@@ -30,10 +31,13 @@ public:
   double getLy();
   double getLz();
   std::string getAtomInfo(int, double &, double &, double &);
+  double getProperty(int);
 
 private:
   void readIdealPos(); // read positions from file  
   void readIdealPos2(); // read positions from file  
+  void readIdealPos3(); // read positions from file  
+
   std::vector<std::string> elements;
   std::vector<int> elementCounts;
   
@@ -54,4 +58,6 @@ private:
   double bandGap;
   double volume;
   double averageLatticeConstant;
+  std::vector<double> properties;
+  
 };
