@@ -41,7 +41,7 @@ void printData(int configStart, int configStop,int configStep, int nbrOfConfigs,
 {
   //initial stuff
   std::cout<<"start print data"<<std::endl;
-  std::vector<LatticeList> dftPos = readConfig(confDirectory,nbrOfConfigs);
+  std::vector<LatticeList> dftPos = readConfig(confDirectory,nbrOfConfigs,46,4,subElements);
   std::vector<double> energies;
   for(int i=0; i<nbrOfConfigs; i++)
     {
@@ -67,7 +67,7 @@ void printData(int configStart, int configStop,int configStep, int nbrOfConfigs,
   std::cout<<"read data: "<< energies.size()<< " entries"<<std::endl;
 
 
-  shuffleLists(energies,dftPos);
+  //shuffleLists(energies,dftPos);
 
   
   LatticeList lista = LatticeList(1,1,1);
@@ -596,7 +596,7 @@ void shuffleLists(std::vector<double> &energies,std::vector<double> &energies2, 
 
 
 
-std::vector<LatticeList> readConfig(std::string posFileName,int configs,int nbrOfAtoms,int nbrOfProperties)
+std::vector<LatticeList> readConfig(std::string posFileName,int configs,int nbrOfAtoms,int nbrOfProperties,std::vector<std::string> subElements)
 {
  std::vector<LatticeList> ret;
  for(int i=0; i<configs; i++)
@@ -604,8 +604,8 @@ std::vector<LatticeList> readConfig(std::string posFileName,int configs,int nbrO
      std::ostringstream ss;
      //ss << "confs4/config_"<<i;
      ss << posFileName<<i;
-     LatticeList ll = LatticeList(1,1,1,nbrOfProperties,nbrOfAtoms,ss.str());
-
+     //LatticeList ll = LatticeList(1,1,1,nbrOfAtoms,nbrOfProperties,ss.str(),subElements);
+      LatticeList ll = LatticeList(1,1,1,nbrOfAtoms,ss.str());
      
      ret.push_back(ll);
    }
@@ -1324,7 +1324,7 @@ std::vector<double> energyFromParams(std::vector<double> inParams, std::vector<d
 void printCVCorr(std::string confDirectory,int numberOfConfigs,std::vector<std::string> subElements,double cutOff)
 {
   PairList pl = PairList();
-  std::vector<LatticeList> dftPos = readConfig(confDirectory,numberOfConfigs);
+  std::vector<LatticeList> dftPos = readConfig(confDirectory,numberOfConfigs,46,4,subElements);
   LatticeList lista = LatticeList(1,1,1);
   pl.initializePairs(lista,subElements,cutOff);  
 
@@ -1350,7 +1350,7 @@ void printCVCorr(std::string confDirectory,int numberOfConfigs,std::vector<std::
 void printCVCorr2(std::string confDirectory,std::string parameterFile,int numberOfConfigs,std::vector<std::string> subElements,double cutOff)
 {
   PairList pl = PairList();
-  std::vector<LatticeList> dftPos = readConfig(confDirectory,numberOfConfigs);
+  std::vector<LatticeList> dftPos = readConfig(confDirectory,numberOfConfigs,46,4,subElements);
   LatticeList lista = LatticeList(1,1,1);
   pl.initializePairs(lista,subElements,cutOff);  
   ParameterList paramList = ParameterList(parameterFile,0.0000001);
@@ -1447,7 +1447,6 @@ std::vector<double> getAwithATAT(std::vector<LatticeList> dftPos,int numberOfCon
   double singletCount;
   for(int confIter=0; confIter<numberOfConfigs; confIter++)
     {   
-      std::cout<<confIter/(double)numberOfConfigs<<std::endl;
  
       TripletList t3 = TripletList();
       t3.initializeTriplets(dftPos[confIter],subElements,tripCO);
@@ -1788,6 +1787,7 @@ std::vector<NeighbourList> getNLVector(LatticeList ll, ParameterList pl)
 
 void doClusterStuff(std::string configFolder,int numberOfConfigs, int numberOfProperties,int numberOfAtoms,std::string outputFolder,double cutoff,int tuplets,std::vector<std::string> subElements)
 {
+  std::cout<<"Do cluster stuff.."<<std::endl;
   
   //read configs
   //generate X matrix with atat
@@ -1796,66 +1796,85 @@ void doClusterStuff(std::string configFolder,int numberOfConfigs, int numberOfPr
   //profit?
 
   //std::vector<double> getAwithATAT(std::vector<LatticeList> dftPos,int numberOfConfigs,std::vector<std::string> subElements,double cutOff,std::vector<double> & dist,bool doAverage)
-  
-  std::vector<LatticeList> dftPos = readConfigs(configFolder,numberOfConfigs,numberOfAtoms,numberOfProperties);
- std::vector<double> dists;
- std::vector<double> X = getAwithATAT(dftPos,numberOfConfigs,subElements,cutoff,dist,false);
+  std::cout<<"Reading configurations...."<<std::endl;
+  std::vector<LatticeList> dftPos = readConfig(configFolder,numberOfConfigs,numberOfAtoms,numberOfProperties,subElements);
+ std::vector<double> dist;
+ 
+// std::vector<double> X = getAwithATAT(dftPos,numberOfConfigs,subElements,cutoff,dist,false);
+ std::cout<<"Print CV data..."<<std::endl;
+ printCVdata(dftPos,cutoff,numberOfConfigs,subElements);
  
 }
 
 
-void printCVdata(std::vector<LatticeList> dftPos,double cutoff,int numberOfConfigs)
+void printCVdata(std::vector<LatticeList> dftPos,double cutoff,int numberOfConfigs,std::vector<std::string> subElements)
 {
 
-
-  std::vector<double> X2=getAwithATAT(dftPos,nbrOfConfigs,subElements,doubleCO,distances,false);
-  int columns=X2.size()/nbrOfConfigs;
-  std::vector<double> cvCorr = getAwithATAT(dftPos,nbrOfConfigs,subElements,doubleCO,distances,true);
+  int nbrOfAverageSteps=10;
+  std::vector<double> params;
+  std::vector<double> distances;
+  std::vector<double> X2=getAwithATAT(dftPos,numberOfConfigs,subElements,cutoff,distances,false);
+  int columns=X2.size()/numberOfConfigs;
+  std::vector<double> cv_corr = getAwithATAT(dftPos,numberOfConfigs,subElements,cutoff,distances,true);
 
   std::vector<double> property;
-  property.resize(nbrOfConfigs);
+  property.resize(numberOfConfigs);
+  std::vector<double> X2_mini;
+  std::vector<double> cv_corr_mini;
+  std::vector<double> tempEnergy;
 
-  std::cout<<" Printing CV score for different properties "<<std::endl;
-  std::cout<<" Number of configs in training, 50 times averaged "<<std::endl;
+  std::cout<<" Printing CV and standard deviation of CV  score for different properties "<<std::endl;
+  std::cout<<" Number of configs in training,"<< nbrOfAverageSteps<<" times averaged "<<std::endl;
   std::cout<<"================================================================="<<std::endl;
   for(int j=0; j<dftPos[0].getNumberOfProperties(); j++)
     {
-      for(int jj=0; jj<nbrOfConfigs; jj++)
+      for(int jj=0; jj<numberOfConfigs; jj++)
 	{
-	  property[jj]=(dftPos[jj].getProperty[j]);
+	  property[jj]=(dftPos[jj].getProperty(j));
 	}
 
       
 
       std::cout<<"#Property "<<j<< " %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"<<std::endl;
       
-      for(int i=columns+1; i<nbrOfConfigs; i++)
+      for(int i=columns+1; i<numberOfConfigs; i++)
 	{
 	  double tempCV=0;
-	  for(int ii =0 ii<100; ii++) //some averaging
+	  double cv=0;
+	  double cvSquare=0;
+	  for(int ii =0; ii<nbrOfAverageSteps; ii++) //some averaging
 	    {
+	      tempCV=0;
+	      X2_mini=getAMatrixFromExistingOne(X2,i,X2.size()/numberOfConfigs);
+	      cv_corr_mini=getAMatrixFromExistingOne(cv_corr,i,X2.size()/numberOfConfigs);
+	      params = standardParameters(X2_mini,property,columns);
+	      tempEnergy = energyFromParams(params,X2_mini);
 	      
-	      
-	      
-
+	      for(int ii2=0; ii2<params.size(); ii2++)
+		{
+		  tempCV += pow(((tempEnergy[ii2]-property[ii2])/(1.0-cv_corr[ii2])),2.0);
+		}
+	      cv += tempCV/((double)cv_corr_mini.size());
+	      cvSquare += pow(tempCV/((double)cv_corr_mini.size()),2.0);
+	      shuffleXMatrix(X2,cv_corr,property);
 	    }
 
-	  
-      
+	  std::cout<<i<< " "<<sqrt(cv/(double)nbrOfAverageSteps)<< " "<< sqrt(cvSquare/(double)nbrOfAverageSteps-pow(cv/((double)nbrOfAverageSteps),2.0))<<std::endl;
 	}
     }
+  
+  std::cout<<"================================================================="<<std::endl;
 
 }
 
 
-void shuffleXMatrix(std::vector<double> &X, std::vector<double> &X2, std::vector<double> &property) //
+void shuffleXMatrix(std::vector<double> &X, std::vector<double> &cvCorr, std::vector<double> &property) //
 {
   //X=[property.size()==numberOfConfigs][columns == X.size/property.size()]
   
   int columns=X.size()/property.size();
   
   double tempRow;
-  tempRow.resize(columns);
   double tempProperty;
   for(int i=0; i< columns*2; i++)
     {
@@ -1867,6 +1886,11 @@ void shuffleXMatrix(std::vector<double> &X, std::vector<double> &X2, std::vector
       tempProperty=property[temp2];
       property[temp2]=property[temp];
       property[temp]=tempProperty;
+      
+      tempProperty=cvCorr[temp2];
+      cvCorr[temp2]=cvCorr[temp];
+      cvCorr[temp]=tempProperty;
+
 
       
       for(int j=0; j<columns; j++)
@@ -1875,9 +1899,7 @@ void shuffleXMatrix(std::vector<double> &X, std::vector<double> &X2, std::vector
 	  X[temp2*columns+j]=X[temp*columns+j];
 	  X[temp*columns+j]=tempRow;
 	  
-      	  tempRow=X2[temp2*columns+j];
-	  X2[temp2*columns+j]=X2[temp*columns+j];
-	  X2[temp*columns+j]=tempRow;
+
 	}
 
 
@@ -1887,5 +1909,25 @@ void shuffleXMatrix(std::vector<double> &X, std::vector<double> &X2, std::vector
 
 
 
+
+}
+
+
+std::vector<double> standardParameters(std::vector<double> X,std::vector<double> property,int columns)
+{
+
+  const double alpha=0.1;
+  const double mu=0.65;
+  //const double mu=0.65;
+  const double lambda=100;
+  const bool doSB=true;
+  const int sbIters=1000;
+  const double sbTol=1e-6;
+  const int bfgsIters=5000;
+  const double bfgsTol=1e-5;
+  const bool verbal=false;
+
+
+  return doMinimize(X,columns,property,alpha,lambda,mu,doSB,sbIters,sbTol,bfgsIters,verbal,bfgsTol);
 
 }

@@ -20,7 +20,7 @@ std::vector<double> readEnergies(std::string,int);
 void shuffleLists(std::vector<double> &,std::vector<class LatticeList> &);
 void shuffleLists(std::vector<double> &,std::vector<double> &,std::vector<class LatticeList> &);
 
-std::vector<class LatticeList> readConfig(std::string,int,int,int);
+std::vector<class LatticeList> readConfig(std::string,int,int,int,std::vector<std::string>);
 class PairList countPairs(class LatticeList,class PairList);
 class TripletList countTriplets(class LatticeList,class TripletList);
 
@@ -58,8 +58,11 @@ void getFileNames(int , std::string &, std::string &,std::string &,std::string &
 
 std::vector<class NeighbourList> getNLVector(class LatticeList,class ParameterList);
 
-void doClusterStuff(std::string,int,int,int,std::string,double,int);
+void doClusterStuff(std::string,int,int,int,std::string,double,int,std::vector<std::string>);
 
 
-void printCVdata();
-void shuffleXMatrix(std::vector<double> &,std::vector<double> &,std::vector<double> &)
+void printCVdata(std::vector<class LatticeList>, double,int,std::vector<std::string>);
+void shuffleXMatrix(std::vector<double> &,std::vector<double> &,std::vector<double> &);
+
+
+  std::vector<double> standardParameters(std::vector<double>,std::vector<double>,int);

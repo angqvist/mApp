@@ -63,7 +63,7 @@ LatticeList::LatticeList(int sizeX, int sizeY, int sizeZ, int newNbrOfAtoms, str
   fileName=newFileName;
   readIdealPos2();
 }
-LatticeList::LatticeList(int sizeX, int sizeY, int sizeZ, int newNbrOfAtoms, int nbrOfProperties, string newFileName) 
+LatticeList::LatticeList(int sizeX, int sizeY, int sizeZ, int newNbrOfAtoms, int nbrOfProperties, string newFileName,std::vector<std::string> subElements) 
 {
   cellSizeX=sizeX;
   cellSizeY=sizeY;
@@ -78,7 +78,7 @@ LatticeList::LatticeList(int sizeX, int sizeY, int sizeZ, int newNbrOfAtoms, int
   Lz=cellSizeZ*latticeConstant;
   properties.resize(nbrOfProperties);
   fileName=newFileName;
-  readIdealPos3();
+  readIdealPos3(subElements);
 
 }
 
@@ -233,7 +233,7 @@ void LatticeList::readIdealPos2()
 
 
 
-void LatticeList::readIdealPos3()
+void LatticeList::readIdealPos3(std::vector<std::string> subElements)
 {
   ifstream in(fileName.c_str());  
   if (!in)
@@ -261,7 +261,6 @@ void LatticeList::readIdealPos3()
   Ly=cellSizeY*latticeConstant;
   Lz=cellSizeZ*latticeConstant;
   
-  
   for(int i=0; i<properties.size(); i++)
     {
       in >> properties[i];
@@ -283,6 +282,10 @@ void LatticeList::readIdealPos3()
       in >>tempPos2;
       in >>tempPos3;
       bool newAtom=true;
+
+
+  
+      
       if(elements.size()==0)
 	{
 	  elements.push_back(tempSite);
@@ -308,6 +311,21 @@ void LatticeList::readIdealPos3()
 	}// end else
 
 
+
+      bool illegalAtom=true;
+      for(int i=0; i<subElements.size(); i++)
+      	{
+      	  if(subElements[i]==tempSite)
+      	    {
+      	      illegalAtom=false;
+      	    }
+      	}
+      if(illegalAtom)
+      	{
+      	  continue;
+      	}
+
+ 
 
       atomTypeList[loopIndex]=tempSite;
       posList2[3*loopIndex]=tempPos1;

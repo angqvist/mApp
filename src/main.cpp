@@ -140,11 +140,11 @@ int main()
   // PairList pl2 = countPairs(l2,pl);
   // pl2.printList();
 
-  int configStart=120;
-  int configMax=176;
+  int configStart=1;
+  int configMax=100;
   int configStep=1;
-  int nbrOfConfigs=200;
-  int printParamAtIndex=175;
+  int nbrOfConfigs=100;
+  int printParamAtIndex=70;
   std::string posFile="testPosT";
   std::string energyFile="torsdag2";
   double paramCutOff=0;
@@ -156,8 +156,8 @@ int main()
   bool doNrgNorms=true;
   bool doParams=false;
   
-  bool doBandGap=true;
-  bool doVolume=false;
+  bool doBandGap=false;
+  bool doVolume=true;
   bool doLattice=false; 
   bool printTrainingAndValidationEnergy=true;
   bool doATAT=true;
@@ -183,7 +183,7 @@ int main()
   // option 12 power BGG 100
 
 
-  getFileNames(1,energyTrainFile,energyValidFile,confFileName,confDirectory,subElements);
+  getFileNames(12,energyTrainFile,energyValidFile,confFileName,confDirectory,subElements);
   //std::string ECIParamOutFile ="ECIParams/pBGG_rp.param";
   std::string ECIParamOutFile ="dataFiles/params.data";
 
