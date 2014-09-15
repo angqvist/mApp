@@ -53,7 +53,7 @@ void printData(int configStart, int configStop,int configStep, int nbrOfConfigs,
 	}
       else if(doVolume)
 	{
-	  energies.push_back(dftPos[i].getVolume());
+	  energies.push_back(dftPos[i].getVolume()*1e-9);
 	}
       else if(doLattice)
 	{
@@ -67,7 +67,8 @@ void printData(int configStart, int configStop,int configStep, int nbrOfConfigs,
   std::cout<<"read data: "<< energies.size()<< " entries"<<std::endl;
 
 
-  //shuffleLists(energies,dftPos);
+  shuffleLists(energies,dftPos);
+  shuffleLists(energies,dftPos);
 
   
   LatticeList lista = LatticeList(1,1,1);
@@ -604,8 +605,8 @@ std::vector<LatticeList> readConfig(std::string posFileName,int configs,int nbrO
      std::ostringstream ss;
      //ss << "confs4/config_"<<i;
      ss << posFileName<<i;
-     //LatticeList ll = LatticeList(1,1,1,nbrOfAtoms,nbrOfProperties,ss.str(),subElements);
-      LatticeList ll = LatticeList(1,1,1,nbrOfAtoms,ss.str());
+     LatticeList ll = LatticeList(1,1,1,nbrOfAtoms,nbrOfProperties,ss.str(),subElements);
+     // LatticeList ll = LatticeList(1,1,1,nbrOfAtoms,ss.str());
      
      ret.push_back(ll);
    }
@@ -1376,10 +1377,10 @@ void printCVCorr2(std::string confDirectory,std::string parameterFile,int number
 	  if(allNbrList[j].isThisMatchingNeighbour(dftPos[0],tempNbr)==1)
 	    {
 	      alpha[j]=1;
-	      std::cout<<j<<" = "<< 1<<std::endl;
+	      std::cout<<j<<" = "<<1<<std::endl;
 	    }
 	  else
-	    std::cout<<j<<" = "<< 0<<std::endl;
+	    std::cout<<j<<" = "<<0<<std::endl;
 	}
       alphas.push_back(alpha);
     }
@@ -1571,7 +1572,7 @@ std::vector<double> getAwithATAT(std::vector<LatticeList> dftPos,int numberOfCon
 
 	  t3=countTriplets(dftPos[confIter],t3);      
 	  //t3.printList();
-	  std::vector<double> tripletCluster = t3.getClusterVector(subElements,tripCO);
+	  std::vector<double> tripletCluster = t3.getClusterVector(subElements,tripCO,false);
        
 	  for(int kl=0; kl<tripletCluster.size(); kl++)
 	    {
@@ -1598,7 +1599,7 @@ std::vector<double> getAwithATAT(std::vector<LatticeList> dftPos,int numberOfCon
   if(doTriplet)
     {
       TripletList t3 = TripletList(dftPos[0],subElements,tripCO);
-      std::vector<double> tripletCluster = t3.getClusterVector(subElements,tripCO);
+      std::vector<double> tripletCluster = t3.getClusterVector(subElements,tripCO,false);
       distances.resize(distances.size()+tripletCluster.size());
     }
 dist=distances;
@@ -1830,6 +1831,7 @@ void printCVdata(std::vector<LatticeList> dftPos,double cutoff,int numberOfConfi
     {
       for(int jj=0; jj<numberOfConfigs; jj++)
 	{
+	  std::cout<<dftPos[jj].getProperty(j)<<std::endl;
 	  property[jj]=(dftPos[jj].getProperty(j));
 	}
 
@@ -1898,18 +1900,8 @@ void shuffleXMatrix(std::vector<double> &X, std::vector<double> &cvCorr, std::ve
 	  tempRow=X[temp2*columns+j];
 	  X[temp2*columns+j]=X[temp*columns+j];
 	  X[temp*columns+j]=tempRow;
-	  
-
-	}
-
-
- 
-      
+	}      
     }
-
-
-
-
 }
 
 
@@ -1927,7 +1919,76 @@ std::vector<double> standardParameters(std::vector<double> X,std::vector<double>
   const double bfgsTol=1e-5;
   const bool verbal=false;
 
-
   return doMinimize(X,columns,property,alpha,lambda,mu,doSB,sbIters,sbTol,bfgsIters,verbal,bfgsTol);
+
+}
+
+
+std::vector<double> getSingleClusterVector(std::string fileName,std::vector<double> cutoffs,std::vector<std::string> subElements, int properties, int atoms,bool average)
+{
+  
+  const double PI = 3.1415926535897932384626;
+
+  LatticeList ll= LatticeList(1,1,1,atoms,properties,fileName,subElements);
+
+  // first singlets
+  std::vector<double> singletVector;
+  double tempAverage;
+  int tempT;
+  int s1;
+  double tempVal;
+  for(int m=2; m<=subElements.size(); m++)
+    {
+      tempAverage=0;
+      for(int i=0; i<ll.getNbrOfSites(); i++)
+	{
+	  for(int ii=0; ii<subElements.size(); ii++)
+	    {
+	      if(ll.getSite(i)==subElements[ii])
+		{
+		  s1=ii;
+		}
+	    }
+	  
+	  tempT=(m/2); //round down aye
+	  if(((m-2)%2==0))
+	    {
+	      tempVal=-cos(2*PI*s1*tempT/(subElements.size()));
+	    }
+	  else
+	    {
+	      tempVal=-sin(2*PI*s1*tempT/(subElements.size()));
+	    }
+	  tempAverage +=tempVal;
+	}
+      if(average)
+	{
+	  singletVector.push_back(tempVal/(double)ll.getNbrOfSites());
+	}
+      else
+	{
+	   singletVector.push_back(tempVal);
+	}
+	  
+    }
+
+  if(cutoffs.size() >=1)
+    {
+      PairList pl = PairList();
+      pl.initializePairs(ll,subElements,cutoffs[0]);
+      pl= countPairs(ll,pl);
+      std::vector<double> pairVector = pl.getClusterVector(subElements,cutoffs[0],average);
+      singletVector.insert(singletVector.end(),pairVector.begin(), pairVector.end());
+    }
+
+  if(cutoffs.size() >=2)
+    {
+      TripletList tl = TripletList(ll,subElements,cutoffs[1]);
+      tl = countTriplets(ll,tl);
+      std::vector<double> tripletVector = tl.getClusterVector(subElements,cutoffs[1],average);
+      singletVector.insert(singletVector.end(),tripletVector.begin(), tripletVector.end());
+    }
+
+  return singletVector;
 
 }

@@ -38,7 +38,7 @@ int main()
 
 
 
-
+  
 
 
 
@@ -91,11 +91,22 @@ int main()
   // // 	// l3.printList();
 
   //  	 TripletList t3 = TripletList();
-  // 	 std::vector<string> subE;
+   	 std::vector<string> subE;
   // 	 //subE.push_back("Al");
-  // 	 subE.push_back("Ga");
-  // 	 subE.push_back("Ge");
+  	 subE.push_back("Ga");
+  	 subE.push_back("Ge");
+	 std::vector<double> cutoffs;
+	 cutoffs.push_back(10.0);
+	 cutoffs.push_back(5.0);
 
+	 std::vector<double> stuff = getSingleClusterVector("configs/confBaGaGe/config_0",cutoffs,subE,4,46,true);
+
+	 for(int i2=0; i2<stuff.size(); i2++)
+	   {
+	     std::cout<<stuff[i2]<< " ";
+	   }
+	 std::cout<<std::endl;
+	 return 0;
   // 	 t3.initializeTriplets(l3, subE, 5);
   //  	 t3.sortTripletList();
   // 	 t3.printList();
@@ -144,7 +155,7 @@ int main()
   int configMax=100;
   int configStep=1;
   int nbrOfConfigs=100;
-  int printParamAtIndex=70;
+  int printParamAtIndex=80;
   std::string posFile="testPosT";
   std::string energyFile="torsdag2";
   double paramCutOff=0;

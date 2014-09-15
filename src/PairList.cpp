@@ -117,3 +117,109 @@ void PairList::divideCountByTwo()
       pairList[i].setCount(pairList[i].getCount()/2);
     }
 }
+
+std::vector<double> PairList::getUniqueDistances(double cutoff)
+{
+  std::vector<double> uniq_dist;
+  bool addDistance;
+  for(int i=0; i<pairList.size(); i++)
+    {
+      addDistance=true;
+      if(pairList[i].getDistance()>cutoff)
+	{
+	  continue;
+	}
+      for(int j=0; j<uniq_dist.size(); j++)
+	{
+	  if(fabs(pairList[i].getDistance()-uniq_dist[j])<1e-4)
+	    {
+	      addDistance=false;
+	      break;
+	    }
+	}
+      if(addDistance)
+	uniq_dist.push_back(pairList[i].getDistance());
+    }
+  return uniq_dist;
+}
+int s1;
+int s2;
+
+
+std::vector<double> PairList::getClusterVector(std::vector<std::string> subElements, double cutoff,bool doAverage)
+{
+  const double PI = 3.1415926535897932384626;
+
+  std::vector<double> uniq_dist = getUniqueDistances(cutoff);  
+  int Mi=subElements.size();
+  std::vector<double> clusterVector;
+  
+  //first do singlets---  no! do it somewhere else... you need latticeList for it
+
+  int tempT=0;
+  double tempVal=0;
+  int totalPairs;
+  double tempAverage;
+
+      
+  for(int i=0; i<uniq_dist.size(); i++)
+    {
+      for(int m=2; m<=Mi; m++)
+	{	  
+	  for(int t=0; t<m-1; t++)
+	    {
+	      tempAverage=0;
+	      totalPairs=0;
+	      for(int j=0; j<pairList.size(); j++)
+		{		  
+		  if(fabs(pairList[j].getDistance()-uniq_dist[i])<1e-4)
+		    {
+		      
+		      for(int ii=0; ii<Mi; ii++)
+			{
+			  if(subElements[ii]==pairList[j].getSite1())
+			    {
+			      s1=ii;
+			    }
+		   
+			  if(subElements[ii]==pairList[j].getSite2())
+			    {
+			      s2=ii;
+			    }
+			}
+		      tempT=(m/2); //round down aye
+		      if(((m-2)%2==0))
+			{
+			  tempVal=-cos(2*PI*s1*tempT/(subElements.size()));
+			}
+		      else
+			{
+			  tempVal=-sin(2*PI*s1*tempT/(subElements.size()));
+			}
+		      tempT=((t+2)/2); //round down aye
+				  
+		      if((t%2==0))
+			{
+			  tempVal*=-cos(2*PI*s2*tempT/(subElements.size()));
+			}
+		      else
+			{
+			  tempVal*=-sin(2*PI*s2*tempT/(subElements.size()));
+			}	
+		      totalPairs += pairList[j].getCount();
+		      tempAverage +=pairList[j].getCount()*tempVal;
+		    }
+		}
+	      if( !doAverage )
+		{
+		  clusterVector.push_back(tempAverage);
+		}
+	      else
+		{
+		  clusterVector.push_back(tempAverage/(double)totalPairs);
+		}
+	    }
+	}
+    }
+  return clusterVector;
+}

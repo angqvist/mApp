@@ -16,7 +16,8 @@ public:
   void printList();
   void resetCounts();
   void divideCountByTwo();
-
+  std::vector<double> getClusterVector(std::vector<std::string>, double,bool);
+  std::vector<double> getUniqueDistances(double);
   
 private:
   int nbrOfPairs;

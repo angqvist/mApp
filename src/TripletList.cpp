@@ -207,12 +207,10 @@ std::vector<std::vector<double> > TripletList::getUniqueDistances(double cutoff)
       // tripletList[i].printTriplet();
       isTripletUnique(tripletList[i],distances,true);
     }
-  
-  
-
-
   return distances;
 }
+
+
 
 bool TripletList::isTripletUnique(Triplet t1, std::vector<std::vector<double> > &distances, bool add)
 {
@@ -273,9 +271,6 @@ void TripletList::sortTripletList()
 	      tripletList[i+1]=tempTriplet;
 	      swapped=true;
 	    }
-
-
-
 	}
     }
   swapped=true;
@@ -320,7 +315,7 @@ void TripletList::sortTripletList()
 }
 
 
-std::vector<double> TripletList::getClusterVector(std::vector<std::string > subElements,double cutoff)
+std::vector<double> TripletList::getClusterVector(std::vector<std::string > subElements,double cutoff,bool average)
 {
 
   const double PI = 3.1415926535897932384626;
@@ -347,10 +342,10 @@ std::vector<double> TripletList::getClusterVector(std::vector<std::string > subE
   //     std::cout<<"Error, size of subelements is bad. Size is: "<<Mi<< " expects value between [2,4] "<<std::endl;
   //   }
   int tripletCount;
-  double average;
   double tempAverage;
   int tempT=0;
   double tempVal=0;
+  int tempTripletCount;
 
   int s1;
   int s2;
@@ -378,7 +373,7 @@ std::vector<double> TripletList::getClusterVector(std::vector<std::string > subE
 		  tempVal=0.0;
 		  tempAverage=0.0;
 
-
+		  tempTripletCount=0;
 		  for(int j=0; j<tripletList.size(); j++)
 		    {
 		      if(tripletList[j].getDistance1()<(uniq_dists[i][0]-1e-4))
@@ -443,11 +438,20 @@ std::vector<double> TripletList::getClusterVector(std::vector<std::string > subE
 			      tempVal*=-sin(2*PI*s3*tempT/(Mi));
 			    }	
 			  //	  std::cout<<tempVal<<" "<<tripletList[i].std::endl;
-			  
+			  tempTripletCount += tripletList[j].getCount();
 			  tempAverage +=tripletList[j].getCount()*tempVal;
 			}
 		    }//end tripletlist loop
-		  clusterVector.push_back(tempAverage);
+		  if(average)
+		    {
+		  
+			  clusterVector.push_back(tempAverage/(double)tempTripletCount);
+		
+		    }
+		  else
+		    {
+		      clusterVector.push_back(tempAverage);
+		    }
 		}//end l loop
 	    }//en t loop
 	}//end m loop

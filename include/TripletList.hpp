@@ -15,7 +15,7 @@ public:
   void resetCounts();
   std::vector<std::vector<double> > getUniqueDistances(double);
   void sortTripletList();
-  std::vector<double> getClusterVector(std::vector<std::string >,double);
+  std::vector<double> getClusterVector(std::vector<std::string >,double,bool);
 
 private:
   int nbrOfTriplets;
