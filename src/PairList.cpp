@@ -151,6 +151,7 @@ std::vector<double> PairList::getClusterVector(std::vector<std::string> subEleme
   const double PI = 3.1415926535897932384626;
 
   std::vector<double> uniq_dist = getUniqueDistances(cutoff);  
+  std::sort (uniq_dist.begin(),uniq_dist.end());
   int Mi=subElements.size();
   std::vector<double> clusterVector;
   

@@ -94,6 +94,7 @@ int main()
    	 std::vector<string> subE;
   // 	 //subE.push_back("Al");
   	 subE.push_back("Ga");
+
   	 subE.push_back("Ge");
 	 std::vector<double> cutoffs;
 	 cutoffs.push_back(10.0);

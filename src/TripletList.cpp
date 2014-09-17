@@ -393,60 +393,72 @@ std::vector<double> TripletList::getClusterVector(std::vector<std::string > subE
 			{
 			  //  tripletList[j].printTriplet();
 			  tempVal=0.0;
+			  bool founds1=false;
+			  bool founds2=false;
+			  bool founds3=false;
+
 			  for(int ii=0; ii<subElements.size(); ii++)
 			    {
 			      if(subElements[ii]==tripletList[j].getSite1())
 				{
 				  s1=ii;
+				  founds1=true;
 				}
 			      if(subElements[ii]==tripletList[j].getSite2())
 				{
 				  s2=ii;
+				  founds2=true;
 				}
 			      if(subElements[ii]==tripletList[j].getSite3())
 				{
 				  s3=ii;
+				  founds3=true;
 				}
+			    }
+			  if(!founds1 || !founds2 || !founds3)
+			    {
+			      std::cout<<"did not found atoms.. tripletlist clyuster vectors"<<std::endl;
 			    }
 
 			  tempT=(m/2);
 			  if(((m-2)%2==0))
 			    {
-			      tempVal=-cos(2*PI*s1*tempT/(Mi));
+			      tempVal=-cos(2.0*PI*s1*tempT/((double)Mi));
 			    }
 			  else
 			    {
-			      tempVal=-sin(2*PI*s1*tempT/(Mi));
+			      tempVal=-sin(2.0*PI*s1*tempT/((double)Mi));
 			    }
 			  tempT=((t+2)/2); //round down aye
 				  
 			  if((t%2==0))
 			    {
-			      tempVal*=-cos(2*PI*s2*tempT/(Mi));
+			      tempVal*=-cos(2.0*PI*s2*tempT/((double)Mi));
 			    }
 			  else
 			    {
-			      tempVal*=-sin(2*PI*s2*tempT/(Mi));
+			      tempVal*=-sin(2.0*PI*s2*tempT/((double)Mi));
 			    }	
 			  tempT=((l+2)/2);
 			  if((l%2==0))
 			    {
-			      tempVal*=-cos(2*PI*s3*tempT/(Mi));
+			      tempVal*=-cos(2.0*PI*s3*tempT/((double)Mi));
 			    }
 			  else
 			    {
-			      tempVal*=-sin(2*PI*s3*tempT/(Mi));
+			      tempVal*=-sin(2.0*PI*s3*tempT/((double)Mi));
 			    }	
+
+			  
+			  std::cout<<tempVal<<" "<<m<<" "<<t<< " "<<l<<std::endl;
 			  //	  std::cout<<tempVal<<" "<<tripletList[i].std::endl;
 			  tempTripletCount += tripletList[j].getCount();
 			  tempAverage +=tripletList[j].getCount()*tempVal;
 			}
 		    }//end tripletlist loop
 		  if(average)
-		    {
-		  
+		    {		  
 			  clusterVector.push_back(tempAverage/(double)tempTripletCount);
-		
 		    }
 		  else
 		    {
@@ -462,3 +474,4 @@ std::vector<double> TripletList::getClusterVector(std::vector<std::string > subE
 		      
 		  
       
+

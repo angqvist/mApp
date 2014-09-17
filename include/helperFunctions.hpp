@@ -68,3 +68,8 @@ void shuffleXMatrix(std::vector<double> &,std::vector<double> &,std::vector<doub
 std::vector<double> standardParameters(std::vector<double>,std::vector<double>,int);
 
 std::vector<double> getSingleClusterVector(std::string,std::vector<double>,std::vector<std::string>,int,int,bool);
+
+
+void getClusterVectors(std::vector<std::string>, std::vector<double> &,std::vector<double> &,std::vector<std::vector<double> > &,std::vector<double>, std::vector<std::string>, int, int,bool);
+
+void shuffleFittingObject(std::vector<double> &,std::vector<double> &,std::vector<std::vector<double> > &,int);

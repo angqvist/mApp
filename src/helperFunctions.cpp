@@ -1907,7 +1907,6 @@ void shuffleXMatrix(std::vector<double> &X, std::vector<double> &cvCorr, std::ve
 
 std::vector<double> standardParameters(std::vector<double> X,std::vector<double> property,int columns)
 {
-
   const double alpha=0.1;
   const double mu=0.65;
   //const double mu=0.65;
@@ -1918,7 +1917,6 @@ std::vector<double> standardParameters(std::vector<double> X,std::vector<double>
   const int bfgsIters=5000;
   const double bfgsTol=1e-5;
   const bool verbal=false;
-
   return doMinimize(X,columns,property,alpha,lambda,mu,doSB,sbIters,sbTol,bfgsIters,verbal,bfgsTol);
 
 }
@@ -1953,21 +1951,21 @@ std::vector<double> getSingleClusterVector(std::string fileName,std::vector<doub
 	  tempT=(m/2); //round down aye
 	  if(((m-2)%2==0))
 	    {
-	      tempVal=-cos(2*PI*s1*tempT/(subElements.size()));
+	      tempVal=-cos(2.0*PI*s1*tempT/(subElements.size()));
 	    }
 	  else
 	    {
-	      tempVal=-sin(2*PI*s1*tempT/(subElements.size()));
+	      tempVal=-sin(2.0*PI*s1*tempT/(subElements.size()));
 	    }
 	  tempAverage +=tempVal;
 	}
       if(average)
 	{
-	  singletVector.push_back(tempVal/(double)ll.getNbrOfSites());
+	  singletVector.push_back(tempAverage/(double)ll.getNbrOfSites());
 	}
       else
 	{
-	   singletVector.push_back(tempVal);
+	   singletVector.push_back(tempAverage);
 	}
 	  
     }
@@ -1978,7 +1976,10 @@ std::vector<double> getSingleClusterVector(std::string fileName,std::vector<doub
       pl.initializePairs(ll,subElements,cutoffs[0]);
       pl= countPairs(ll,pl);
       std::vector<double> pairVector = pl.getClusterVector(subElements,cutoffs[0],average);
-      singletVector.insert(singletVector.end(),pairVector.begin(), pairVector.end());
+      if(pairVector.size()>0)
+	{
+	  singletVector.insert(singletVector.end(),pairVector.begin(), pairVector.end());
+	}
     }
 
   if(cutoffs.size() >=2)
@@ -1986,9 +1987,80 @@ std::vector<double> getSingleClusterVector(std::string fileName,std::vector<doub
       TripletList tl = TripletList(ll,subElements,cutoffs[1]);
       tl = countTriplets(ll,tl);
       std::vector<double> tripletVector = tl.getClusterVector(subElements,cutoffs[1],average);
-      singletVector.insert(singletVector.end(),tripletVector.begin(), tripletVector.end());
+      if(tripletVector.size()>0)
+	{
+	  singletVector.insert(singletVector.end(),tripletVector.begin(), tripletVector.end());
+	}
     }
 
   return singletVector;
 
 }
+//getSingleClusterVector(std::string fileName,std::vector<double> cutoffs,std::vector<std::string> subElements, int properties, int atoms,bool average)
+
+
+void getClusterVectors(std::vector<std::string> filenames, std::vector<double> &X, std::vector<double> &cv_correction,std::vector<std::vector<double> > &properties,std::vector<double> cutoffs, std::vector<std::string> subelements,int nbrOfproperties,int atoms,bool verbal)
+{
+  std::vector<double> temp;
+  std::vector<double> X_avg;
+  if(verbal)
+    {
+      std::cout<<"Starting to parse "<<filenames.size()<<" structures "<<std::endl;
+    }
+  for(int i=0; i<filenames.size(); i++)
+    {
+      temp=getSingleClusterVector(filenames[i],cutoffs,subelements,nbrOfproperties,atoms,false);
+      X.insert(X.end(),temp.begin(),temp.end());
+      temp=getSingleClusterVector(filenames[i],cutoffs,subelements,nbrOfproperties,atoms,true);
+      X_avg.insert(X_avg.end(),temp.begin(),temp.end());
+      LatticeList ll= LatticeList(1,1,1,atoms,nbrOfproperties,filenames[i],subelements);
+      for(int j=0; j<nbrOfproperties; j++)
+	{
+	  properties[j].push_back(ll.getProperty(j));
+	}
+    }
+  //  std::vector<double> cvCorr = getCVCorrection(X,numberOfConfigs,distances.size());
+
+  cv_correction=getCVCorrection(X_avg,filenames.size(),X_avg.size()/filenames.size()); //X_avg,rows,columns
+}
+
+  
+      
+      
+void shuffleFittingObject(std::vector<double> &X,std::vector<double> &cvCorr,std::vector<std::vector<double> > &properties,int n)
+{
+ 
+  int columns=X.size()/properties[0].size();
+  int rows = properties[0].size();
+  double tempRow;
+  double tempProperty;
+  for(int i=0; i< columns*n; i++)
+    {
+      int temp =rand()%(rows);
+      int temp2 = rand()%(rows);
+      while(temp == temp2)
+	temp2=rand()%(rows);
+      
+      for(int j=0; j<properties.size(); j++)
+	{
+	  tempProperty=properties[j][temp2];
+	  properties[j][temp2]=properties[j][temp];
+	  properties[j][temp]=tempProperty;
+	}
+      tempProperty=cvCorr[temp2];
+      cvCorr[temp2]=cvCorr[temp];
+      cvCorr[temp]=tempProperty;
+     
+      for(int j=0; j<columns; j++)
+	{
+	  tempRow=X[temp2*columns+j];
+	  X[temp2*columns+j]=X[temp*columns+j];
+	  X[temp*columns+j]=tempRow;
+	}      
+
+    }
+}
+
+
+
+

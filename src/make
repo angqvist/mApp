@@ -6,7 +6,7 @@ CFLAGS=-O3 -fopenmp -I$(IDIR1) -I$(IDIR2)
 ODIR=obj
 LDIR = /usr/lib
 
-LIBS= -lgsl -lgslcblas -lm
+LIBS= -lgsl -lgslcblas 
  
 _DEPS = Pair.hpp Triplet.hpp TripletList.hpp PairList.hpp LatticeList.hpp Neighbour.hpp NeighbourList.hpp ParameterList.hpp helperFunctions.hpp MC_methods.hpp MC.hpp
 DEPS = $(patsubst %,$(IDIR1)/%,$(_DEPS))
