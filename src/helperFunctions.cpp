@@ -680,35 +680,117 @@ TripletList countTriplets(LatticeList ll, TripletList tl)
   return tl;
 }
 
+
+TripletList countTriplets(LatticeList ll, TripletList tl,double cutoff)
+{
+  double dr1;
+  double dr2;
+  double dr3;
+  std::vector<double> orderDr;
+  std::vector<int> orderIndex;
+  orderDr.resize(3);
+  orderIndex.resize(3);
+  tl.resetCounts(); 
+
+  Triplet tempTriplet;
+  //#pragma omp parallel for private(dr1,dr2,dr3,orderDr,orderIndex,tempTriplet,tl) shared(ll)
+  for(size_t i=0; i<ll.getNbrOfSites(); i++)
+    {
+      for(size_t j=i+1; j<ll.getNbrOfSites(); j++)
+	{
+	  for(size_t k=j+1; k<ll.getNbrOfSites(); k++)
+	    {
+	      if(i==k || j == k || i==j)
+		{
+		  continue;
+		}
+	      dr1=ll.getDistance(i,j);
+	      dr2=ll.getDistance(i,k);
+	      dr3=ll.getDistance(j,k);
+	      orderDr[0]=dr1;
+	      orderDr[1]=dr2;
+	      orderDr[2]=dr3;
+	      orderIndex[0]=i;
+	      orderIndex[1]=j;
+	      orderIndex[2]=k;
+	      sortOrder(orderDr,orderIndex);
+	      if(orderDr[1]>cutoff)
+		{
+		  continue;
+		}
+	      tempTriplet=Triplet(orderDr[0],orderDr[1],orderDr[2],ll.getSite(orderIndex[0]),ll.getSite(orderIndex[1]),ll.getSite(orderIndex[2]));
+	      tl.updateTriplet(tempTriplet,false);
+		}		
+	    
+	}
+    }
+  return tl;
+}
+
+
+
 void sortOrder(std::vector<double>  &orderDr, std::vector<int>  &orderIndex)
 {
   bool swapped=true;
   double tempDr;
   int tempIndex;
+
+  double d1=orderDr[0]+orderDr[1];
+  double d2=orderDr[0]+orderDr[2];
+  double d3=orderDr[1]+orderDr[2];
+      
+  std::vector<double> sumVector;
+  sumVector.push_back(d1);
+  sumVector.push_back(d2);
+  sumVector.push_back(d3);
+  
   if(orderDr.size() != orderIndex.size())
     {
       std::cout<<"Error size mismatch between orderDr and ORderIndex"<<std::endl;
       std::cout<<"Aborting sorting.... luser"<<std::endl;
     }
-  else{
-    while(swapped)
-      {
-	swapped=false;
-	for(int i=0; i<orderDr.size()-1; i++)
-	  {
-	    if(orderDr[i]>orderDr[i+1])
-	      {
-		tempDr=orderDr[i];
-		tempIndex=orderIndex[i];
-		orderDr[i]=orderDr[i+1];
-		orderDr[i+1]=tempDr;
-		orderIndex[i]=orderIndex[i+1];
-		orderIndex[i+1]=tempIndex;
-		swapped=true;
-	      }
-	  }
-      }
-  }
+  else
+    {
+      while(swapped)
+	{
+
+	  swapped=false;
+	  for(int i=0; i<2; i++)
+	    {
+	      //if(sumVector[i]>sumVector[i+1])
+	      if(orderDr[i]>orderDr[i+1])
+		{
+
+		  if(i==0)
+		    {
+		      //swap atoms 2 and 3
+		      tempIndex=orderIndex[1];
+		      orderIndex[1]=orderIndex[2];
+		      orderIndex[2]=tempIndex;
+		    }
+		  if(i==1)
+		    {
+		      //swap atoms 1 and 2
+		      tempIndex=orderIndex[0];
+		      orderIndex[0]=orderIndex[1];
+		      orderIndex[1]=tempIndex;
+
+		    }
+  
+	
+		  tempDr=orderDr[i];
+		  orderDr[i]=orderDr[i+1];
+		  orderDr[i+1]=tempDr;
+
+		  sumVector[0]=orderDr[0]+orderDr[1];
+		  sumVector[1]=orderDr[0]+orderDr[2];
+		  sumVector[2]=orderDr[1]+orderDr[2];
+
+		  swapped=true;
+		}
+	    }
+	}
+    }
 }
 std::vector<int> getPairCounts(PairList pl)
 {
@@ -1849,7 +1931,7 @@ void printCVdata(std::vector<LatticeList> dftPos,double cutoff,int numberOfConfi
 	      tempCV=0;
 	      X2_mini=getAMatrixFromExistingOne(X2,i,X2.size()/numberOfConfigs);
 	      cv_corr_mini=getAMatrixFromExistingOne(cv_corr,i,X2.size()/numberOfConfigs);
-	      params = standardParameters(X2_mini,property,columns);
+	      params = standardParameters(X2_mini,property,columns,false);
 	      tempEnergy = energyFromParams(params,X2_mini);
 	      
 	      for(int ii2=0; ii2<params.size(); ii2++)
@@ -1905,7 +1987,7 @@ void shuffleXMatrix(std::vector<double> &X, std::vector<double> &cvCorr, std::ve
 }
 
 
-std::vector<double> standardParameters(std::vector<double> X,std::vector<double> property,int columns)
+std::vector<double> standardParameters(std::vector<double> X,std::vector<double> property,int columns,bool newVerbal)
 {
   const double alpha=0.1;
   const double mu=0.65;
@@ -1916,7 +1998,7 @@ std::vector<double> standardParameters(std::vector<double> X,std::vector<double>
   const double sbTol=1e-6;
   const int bfgsIters=5000;
   const double bfgsTol=1e-5;
-  const bool verbal=false;
+  const bool verbal=newVerbal;
   return doMinimize(X,columns,property,alpha,lambda,mu,doSB,sbIters,sbTol,bfgsIters,verbal,bfgsTol);
 
 }
@@ -1992,28 +2074,117 @@ std::vector<double> getSingleClusterVector(std::string fileName,std::vector<doub
 	  singletVector.insert(singletVector.end(),tripletVector.begin(), tripletVector.end());
 	}
     }
-
   return singletVector;
-
 }
+
+
+//version 2 OVERLOADED
+std::vector<double> getSingleClusterVector(LatticeList ll, PairList pl, TripletList tl,std::vector<double> cutoffs,std::vector<std::string> subElements, int properties, int atoms,bool average)
+{
+  
+  const double PI = 3.1415926535897932384626;
+
+  //LatticeList ll= LatticeList(1,1,1,atoms,properties,fileName,subElements);
+
+  // first singlets
+  std::vector<double> singletVector;
+  double tempAverage;
+  int tempT;
+  int s1;
+  double tempVal;
+  for(int m=2; m<=subElements.size(); m++)
+    {
+      tempAverage=0;
+      for(int i=0; i<ll.getNbrOfSites(); i++)
+	{
+	  for(int ii=0; ii<subElements.size(); ii++)
+	    {
+	      if(ll.getSite(i)==subElements[ii])
+		{
+		  s1=ii;
+		}
+	    }
+	  
+	  tempT=(m/2); //round down aye
+	  if(((m-2)%2==0))
+	    {
+	      tempVal=-cos(2.0*PI*s1*tempT/(subElements.size()));
+	    }
+	  else
+	    {
+	      tempVal=-sin(2.0*PI*s1*tempT/(subElements.size()));
+	    }
+	  tempAverage +=tempVal;
+	}
+      if(average)
+	{
+	  singletVector.push_back(tempAverage/(double)ll.getNbrOfSites());
+	}
+      else
+	{
+	   singletVector.push_back(tempAverage);
+	}
+	  
+    }
+
+  if(cutoffs.size() >=1)
+    {
+      // PairList pl = PairList();
+      //pl.initializePairs(ll,subElements,cutoffs[0]);
+      pl= countPairs(ll,pl);
+      std::vector<double> pairVector = pl.getClusterVector(subElements,cutoffs[0],average);
+      if(pairVector.size()>0)
+	{
+	  singletVector.insert(singletVector.end(),pairVector.begin(), pairVector.end());
+	}
+    }
+
+  if(cutoffs.size() >=2)
+    {
+      // TripletList tl = TripletList(ll,subElements,cutoffs[1]);
+      tl = countTriplets(ll,tl,cutoffs[1]);
+      std::vector<double> tripletVector = tl.getClusterVector(subElements,cutoffs[1],average);
+      if(tripletVector.size()>0)
+	{
+	  singletVector.insert(singletVector.end(),tripletVector.begin(), tripletVector.end());
+	}
+    }
+  return singletVector;
+}
+
+
+
+
 //getSingleClusterVector(std::string fileName,std::vector<double> cutoffs,std::vector<std::string> subElements, int properties, int atoms,bool average)
 
 
-void getClusterVectors(std::vector<std::string> filenames, std::vector<double> &X, std::vector<double> &cv_correction,std::vector<std::vector<double> > &properties,std::vector<double> cutoffs, std::vector<std::string> subelements,int nbrOfproperties,int atoms,bool verbal)
+void getClusterVectors(std::vector<std::string> filenames, std::vector<double> &X, std::vector<double> &X_avg,std::vector<std::vector<double> > &properties,std::vector<double> cutoffs, std::vector<std::string> subelements,int nbrOfproperties,int atoms,bool verbal)
 {
   std::vector<double> temp;
-  std::vector<double> X_avg;
+  //std::vector<double> X_avg;
   if(verbal)
     {
       std::cout<<"Starting to parse "<<filenames.size()<<" structures "<<std::endl;
     }
+  
+  LatticeList ll= LatticeList(1,1,1,atoms,nbrOfproperties,filenames[0],subelements);
+
+  PairList pl = PairList();
+  pl.initializePairs(ll,subelements,cutoffs[0]);
+  TripletList tl;
+  if(cutoffs.size() >=2)
+    {
+      tl = TripletList(ll,subelements,cutoffs[1]);
+    }
+
   for(int i=0; i<filenames.size(); i++)
     {
-      temp=getSingleClusterVector(filenames[i],cutoffs,subelements,nbrOfproperties,atoms,false);
+      std::cout<<i<<std::endl;
+      ll= LatticeList(1,1,1,atoms,nbrOfproperties,filenames[i],subelements);
+      temp=getSingleClusterVector(ll,pl,tl,cutoffs,subelements,nbrOfproperties,atoms,false);
       X.insert(X.end(),temp.begin(),temp.end());
-      temp=getSingleClusterVector(filenames[i],cutoffs,subelements,nbrOfproperties,atoms,true);
+      temp=getSingleClusterVector(ll,pl,tl,cutoffs,subelements,nbrOfproperties,atoms,true);
       X_avg.insert(X_avg.end(),temp.begin(),temp.end());
-      LatticeList ll= LatticeList(1,1,1,atoms,nbrOfproperties,filenames[i],subelements);
       for(int j=0; j<nbrOfproperties; j++)
 	{
 	  properties[j].push_back(ll.getProperty(j));
@@ -2021,13 +2192,13 @@ void getClusterVectors(std::vector<std::string> filenames, std::vector<double> &
     }
   //  std::vector<double> cvCorr = getCVCorrection(X,numberOfConfigs,distances.size());
 
-  cv_correction=getCVCorrection(X_avg,filenames.size(),X_avg.size()/filenames.size()); //X_avg,rows,columns
+  //  cv_correction=getCVCorrection(X_avg,filenames.size(),X_avg.size()/filenames.size()); //X_avg,rows,columns
 }
 
   
       
       
-void shuffleFittingObject(std::vector<double> &X,std::vector<double> &cvCorr,std::vector<std::vector<double> > &properties,int n)
+void shuffleFittingObject(std::vector<double> &X,std::vector<double> &X_avg,std::vector<std::vector<double> > &properties,int n)
 {
  
   int columns=X.size()/properties[0].size();
@@ -2047,20 +2218,44 @@ void shuffleFittingObject(std::vector<double> &X,std::vector<double> &cvCorr,std
 	  properties[j][temp2]=properties[j][temp];
 	  properties[j][temp]=tempProperty;
 	}
-      tempProperty=cvCorr[temp2];
-      cvCorr[temp2]=cvCorr[temp];
-      cvCorr[temp]=tempProperty;
      
       for(int j=0; j<columns; j++)
 	{
 	  tempRow=X[temp2*columns+j];
 	  X[temp2*columns+j]=X[temp*columns+j];
 	  X[temp*columns+j]=tempRow;
+
+	  tempRow=X_avg[temp2*columns+j];
+	  X_avg[temp2*columns+j]=X_avg[temp*columns+j];
+	  X_avg[temp*columns+j]=tempRow;	  
 	}      
 
     }
 }
 
 
+void pushToBack(std::vector<double> &X,std::vector<double> &X_avg,std::vector<std::vector<double> > &properties)
+{
 
+  
+  int columns=X.size()/properties[0].size();
+  int rows = properties[0].size();
+  double tempRow;
+  double tempProperty;
 
+  for(int i=0; i<properties.size(); i++)
+    {
+      properties[i].push_back(properties[i][0]);
+      properties[i].erase(properties[i].begin());
+    }
+
+  for(int i=0; i<columns; i++)
+    {
+      X.push_back(X[0]);
+      X.erase(X.begin());      
+      X_avg.push_back(X_avg[0]);
+      X_avg.erase(X_avg.begin());
+    }
+}
+      
+      

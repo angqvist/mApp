@@ -23,6 +23,7 @@ void shuffleLists(std::vector<double> &,std::vector<double> &,std::vector<class 
 std::vector<class LatticeList> readConfig(std::string,int,int,int,std::vector<std::string>);
 class PairList countPairs(class LatticeList,class PairList);
 class TripletList countTriplets(class LatticeList,class TripletList);
+class TripletList countTriplets(class LatticeList,class TripletList,double);
 
 std::vector<int> getPairCounts(class PairList);
 // from the pairlist, get the rows of pairs you got, int is the number of configs you want to take from ll vector
@@ -65,11 +66,13 @@ void printCVdata(std::vector<class LatticeList>, double,int,std::vector<std::str
 void shuffleXMatrix(std::vector<double> &,std::vector<double> &,std::vector<double> &);
 
 
-std::vector<double> standardParameters(std::vector<double>,std::vector<double>,int);
+std::vector<double> standardParameters(std::vector<double>,std::vector<double>,int,bool);
 
 std::vector<double> getSingleClusterVector(std::string,std::vector<double>,std::vector<std::string>,int,int,bool);
+std::vector<double> getSingleClusterVector(class LatticeList , class PairList ,class TripletList ,std::vector<double> ,std::vector<std::string> , int , int ,bool );
 
 
 void getClusterVectors(std::vector<std::string>, std::vector<double> &,std::vector<double> &,std::vector<std::vector<double> > &,std::vector<double>, std::vector<std::string>, int, int,bool);
 
 void shuffleFittingObject(std::vector<double> &,std::vector<double> &,std::vector<std::vector<double> > &,int);
+void pushToBack(std::vector<double> &,std::vector<double> &,std::vector<std::vector<double> > &);
