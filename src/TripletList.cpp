@@ -45,7 +45,10 @@ int TripletList::updateTriplet(Triplet newTriplet,bool add)
   return true;
 }
 
-
+void TripletList::reset()
+{
+  tripletList.clear();
+}
 
 int TripletList::isAtomInSubElements(std::string atom, std::vector<std::string> subelements)
 {
@@ -66,6 +69,8 @@ int TripletList::isAtomInSubElements(std::string atom, std::vector<std::string> 
 
 void TripletList::initializeTriplets(LatticeList ll, std::vector<std::string> subelements, double cutOff)
 {
+
+  reset();
   double dr1;
   double dr2;
   double dr3;
@@ -94,11 +99,6 @@ void TripletList::initializeTriplets(LatticeList ll, std::vector<std::string> su
 	      if(!(isAtomInSubElements(ll.getSite(j2),subelements)))
 		{
 		  std::cout<<"Atom not in subelements in TripletList"<<std::endl;
-		  continue;
-		}
-	      if(i==j2 || j == j2)
-		{
-		  std::cout<<"ofta eller?"<<std::endl;
 		  continue;
 		}
 	      
@@ -173,11 +173,6 @@ void TripletList::sortOrder(std::vector<double>  &orderDr, std::vector<int>  &or
   int tempIndex;
 
 
-  double d1=orderDr[0]+orderDr[1];
-  double d2=orderDr[0]+orderDr[2];
-  double d3=orderDr[1]+orderDr[2];
-      
-
 
 
   while(swapped)
@@ -185,7 +180,6 @@ void TripletList::sortOrder(std::vector<double>  &orderDr, std::vector<int>  &or
       swapped=false;
       for(int i=0; i<2; i++)
 	{
-	  //if(sumVector[i]>sumVector[i+1])
 	  if(orderDr[i]>orderDr[i+1])
 	    {
 	      if(i==0)
@@ -204,9 +198,6 @@ void TripletList::sortOrder(std::vector<double>  &orderDr, std::vector<int>  &or
 		}
 
 		
-	      // tempDr=sumVector[i];
-	      // sumVector[i]=sumVector[i+1];
-	      //sumVector[i+1]=tempDr;
 	      tempDr=orderDr[i];
 	      orderDr[i]=orderDr[i+1];
 	      orderDr[i+1]=tempDr;	      
@@ -345,7 +336,7 @@ std::vector<double> TripletList::getClusterVector(std::vector<std::string > subE
   const double PI = 3.1415926535897932384626;
 
   sortTripletList(); //importante
-  std::vector<std::vector<double> > uniq_dists =getUniqueDistances(cutoff);
+  std::vector<std::vector<double> > uniq_dists = getUniqueDistances(cutoff);
   std::vector<double> clusterVector;
 
   int  Mi=subElements.size();
@@ -424,38 +415,38 @@ std::vector<double> TripletList::getClusterVector(std::vector<std::string > subE
 				  founds3=true;
 				}
 			    }
-			  // if(!founds1 || !founds2 || !founds3)
-			  //   {
-			  //     std::cout<<"did not found atoms.. tripletlist clyuster vectors"<<std::endl;
-			  //   }
+			  if(!founds1 || !founds2 || !founds3)
+			    {
+			      std::cout<<"did not found atoms.. tripletlist clyuster vectors"<<std::endl;
+			    }
 
 			  tempT=(m/2);
 			  if(((m-2)%2==0))
 			    {
-			      tempVal=-cos(2.0*PI*s1*(double)tempT/((double)Mi));
+			      tempVal =-cos(2.0*PI*s1*(double)tempT/((double)Mi));
 			    }
 			  else
 			    {
-			      tempVal=-sin(2.0*PI*s1*(double)tempT/((double)Mi));
+			      tempVal =-sin(2.0*PI*s1*(double)tempT/((double)Mi));
 			    }
 			  tempT=((t+2)/2); //round down aye
 				  
 			  if((t%2==0))
 			    {
-			      tempVal*=-cos(2.0*PI*s2*(double)tempT/((double)Mi));
+			      tempVal *=-cos(2.0*PI*s2*(double)tempT/((double)Mi));
 			    }
 			  else
 			    {
-			      tempVal*=-sin(2.0*PI*s2*(double)tempT/((double)Mi));
+			      tempVal *=-sin(2.0*PI*s2*(double)tempT/((double)Mi));
 			    }	
 			  tempT=((l+2)/2);
 			  if((l%2==0))
 			    {
-			      tempVal*=-cos(2.0*PI*s3*(double)tempT/((double)Mi));
+			      tempVal *=-cos(2.0*PI*s3*(double)tempT/((double)Mi));
 			    }
 			  else
 			    {
-			      tempVal*=-sin(2.0*PI*s3*(double)tempT/((double)Mi));
+			      tempVal *=-sin(2.0*PI*s3*(double)tempT/((double)Mi));
 			    }	
 
 			  

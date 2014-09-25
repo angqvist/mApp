@@ -355,16 +355,16 @@ int main()
 
 
 
-   ParameterList paraE = ParameterList("ECIParams/pBGG_E.param",0.0,subElements);
-   ParameterList paraBG = ParameterList("ECIParams/pBGG_P.param",0.0,subElements);
-   ParameterList paraVOL = ParameterList("ECIParams/pBGG_P.param",0.0,subElements);
-   ParameterList paraLAT = ParameterList("ECIParams/pBGG_rp.param",0.0,subElements);
+  ParameterList paraE = ParameterList("ECIParams/pBGG_E.param",0.0,subElements);
+  ParameterList paraBG = ParameterList("ECIParams/pBGG_P.param",0.0,subElements);
+  ParameterList paraVOL = ParameterList("ECIParams/pBGG_P.param",0.0,subElements);
+  ParameterList paraLAT = ParameterList("ECIParams/pBGG_rp.param",0.0,subElements);
 
 
 
 
   LatticeList l2 = LatticeList(size,size,size,46,confFileName);
-     std::string Wtype ="Ga";
+  std::string Wtype ="Ga";
 
   l2.setRandomSites(16,"Ga","Ge");
   

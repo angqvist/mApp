@@ -147,11 +147,11 @@ int operator==(Triplet t1 ,Triplet t2)
     {
       return false;
     }
-  if(t1.getSite2() !=t2.getSite2())
+  if(t1.getSite2() != t2.getSite2())
     {
       return false;
     }
-  if(t1.getSite3() !=t2.getSite3())
+  if(t1.getSite3() != t2.getSite3())
     {
       return false;
     }
@@ -178,7 +178,7 @@ void Triplet::sortTriplet()
   double diff2;
   double diff3;
   
-  if(this->distance1>this->distance2 || this->distance1>this->distance3 || this->distance2 > this->distance3)
+  if(this->distance1 > this->distance2 || this->distance1>this->distance3 || this->distance2 > this->distance3)
     {
       std::cout<<"Error distances not in order in sort triplet"<<std::endl;
       std::cout<<diff1<< " "<<diff2<<std::endl;
@@ -188,8 +188,9 @@ void Triplet::sortTriplet()
   diff1= fabs(distance1-distance2);
   diff2= fabs(distance2-distance3);
   std::vector< std::string > types;
-  if(diff1<this->LIMIT && diff2<this->LIMIT)
+  if(diff1 < this->LIMIT && diff2 < this->LIMIT)
     {
+      //all distances are considered equal
       //alphabetically sort site1, site2, site3
       types.push_back(site1);
       types.push_back(site2);
@@ -198,12 +199,12 @@ void Triplet::sortTriplet()
       site1=types[0];
       site2=types[1];
       site3=types[2];
-           
+      
     }
 
 
   //if d2==d3, site1 kan vara på site2
-  else if(diff2<this->LIMIT) 
+  else if(diff2 < this->LIMIT) 
     {
       types.push_back(site1);
       types.push_back(site2);
@@ -213,7 +214,7 @@ void Triplet::sortTriplet()
       //alphabetically sort site1, site 2
     }
   //if d1==d2, site2 kan vara på site3
-  else if(diff1<this->LIMIT)
+  else if(diff1 < this->LIMIT)
     {
 
       //alphatetically sort site2, site3

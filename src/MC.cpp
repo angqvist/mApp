@@ -26,9 +26,6 @@ double MC::step(LatticeList &ll,std::vector<NeighbourList> nl)
   double energyDiff;
 
   energyDiff=stepSGC(ll,nl);
-
-
-
   //if(ensemble=="SGC")
   // {
   // }
@@ -50,7 +47,6 @@ double MC::step(int N,LatticeList &ll,std::vector<NeighbourList> nl)
 double MC::averageStep(int mcsteps,int averageStep,LatticeList &ll,std::vector<std::vector<NeighbourList> > nlVectors,std::vector<double> &data,std::string Wtype)
 {
   std::string fileName = "dataFiles/mcConfs/binary/conf_new_bagage";
-
   for(int i=0; i<data.size(); i++)
     {
       data[i]=0;
@@ -59,7 +55,14 @@ double MC::averageStep(int mcsteps,int averageStep,LatticeList &ll,std::vector<s
   //data:  E-0, std E-1,BG-2, stdBG-3,VOL-4,stdVOL-5,Lat-6,stdLat-7, c6-8, k24-9, i16-10, stdC6-11, stdk24-12, stdi16-13
 
 
+  // std::vector<double> avg_prop;
+  // std::vector<double> std_prop;
 
+  int properties=nlVectors.size();
+
+  // avg_prop.resize(properties);
+  // std_prop.resize(properties);
+  
   double averageNrg=0;
   double averageBG=0;
   double averageVOL=0;
@@ -79,6 +82,9 @@ double MC::averageStep(int mcsteps,int averageStep,LatticeList &ll,std::vector<s
   double tempK24;
   double tempI16;
   double fastEnergy = MC_totalEnergy(ll,nlVectors[0]);
+  
+
+  double tempVal;
   // i16 = 0;
   //  k24 = 0;
   //  c6  = 0;
@@ -93,71 +99,72 @@ double MC::averageStep(int mcsteps,int averageStep,LatticeList &ll,std::vector<s
 	{
 	  energyDiff += step(ll,nlVectors[0]);
 	} 
-      fastEnergy += energyDiff;
 
-      MC_occupations(ll,tempC6,tempK24,tempI16,Wtype);
-      data[11] += pow(tempC6,2.0);
-      // stdc6 += pow(tempC6,2.0);
-      data[12] +=pow(tempK24,2.0);
-      // stdk24 +=pow(tempK24,2.0);
-      data[13] +=pow(tempI16,2.0);
-      // stdi16 +=pow(tempI16,2.0);
-      data[10] +=tempI16;
-      // i16 += tempI16;
-      data[9] +=tempK24;
-      // k24 += tempK24;
-      data[8] +=tempC6;
-      // c6  += tempC6;
-      
-
+      fastEnergy += energyDiff;      
       tempEnergy = fastEnergy;
-      tempBG = MC_totalEnergy(ll,nlVectors[1]);
-      tempVOL= MC_totalEnergy(ll,nlVectors[2]);
-      tempLAT= MC_totalEnergy(ll,nlVectors[3]);
-      //tempEnergy =  MC_totalEnergy(ll,nl);
-      //std::cout<<T<<" "<<tempEnergy<<std::endl;//<<" "<<fastEnergy<<" "<<tempEnergy-fastEnergy<<std::endl;
-      averageNrg +=tempEnergy;
-      data[2] += tempBG;
-      data[4] +=tempVOL;
-      data[6] += tempLAT;
-      nrgSquared += pow(tempEnergy,2.0);
-      data[3] += pow(tempBG,2.0);
-      data[5] += pow(tempVOL,2.0);
-      data[7] += pow(tempLAT,2.0);
-      
-      //orderP += MC_orderValue(ll,3.0);
-      std::ostringstream ss;
-      if(k%150==0)
-	{
-	  ss << fileName <<"_"<<T<<"_"<< k;
-	  printInfo(ss.str(),ll,0.5,3);
-	}
 
+      averageNrg += tempEnergy;
+      nrgSquared += pow(tempEnergy,2.0);
+
+
+      
+      MC_occupations(ll,tempC6,tempK24,tempI16,Wtype);
+      data[2*properties] +=tempC6;
+      data[2*properties+1] +=pow(tempC6,2.0);
+
+      data[2*properties+2] +=tempK24;
+      data[2*properties+3] +=pow(tempK24,2.0);
+
+      data[2*properties+4] +=tempI16;
+      data[2*properties+5] +=pow(tempI16,2.0);
+
+ 
+      
+
+      
+      for( int i=0; i< properties-1; i++)
+	{
+	  tempVal=MC_totalEnergy(ll,nlVectors[i+1]);
+	  data[2*(i+1)+0] += tempVal;
+	  data[2*(i+1)+1] += pow(tempVal,2.0);
+	}
+            
+      
+
+    }
+  
+  
+  
+
+  data[0]=averageNrg/(double)averageStep;
+  data[1] = sqrt(nrgSquared/(double)averageStep-pow(data[0],2.0));
+  for(int i=2; i<data.size()/2; i++)
+    {
+      data[2*i]=data[2*i]/(double)averageStep;
+      data[2*i+1]=sqrt(data[2*i+1]/(double)averageStep-pow(data[2*i],2.0));
     }
   
 
 
 
 
-  data[10] =data[10]/(double)averageStep;
-  data[9] = data[9]/(double)averageStep;
-  data[8]  = data[8]/(double)averageStep;
+  // data[10] =data[10]/(double)averageStep;
+  // data[9] = data[9]/(double)averageStep;
+  // data[8]  = data[8]/(double)averageStep;
            
-  data[12] = sqrt(data[12]/(double)averageStep-pow(data[9],2.0));
-  data[13] = sqrt(data[13]/(double)averageStep-pow(data[10],2.0));
-  data[11] = sqrt(data[11]/(double)averageStep-pow(data[8],2.0));
+  // data[12] = sqrt(data[12]/(double)averageStep-pow(data[9],2.0));
+  // data[13] = sqrt(data[13]/(double)averageStep-pow(data[10],2.0));
+  // data[11] = sqrt(data[11]/(double)averageStep-pow(data[8],2.0));
   
 
-  data[2]=data[2]/(double)averageStep;
-  data[4]=data[4]/(double)averageStep;
-  data[6]=data[6]/(double)averageStep;
+  // data[2]=data[2]/(double)averageStep;
+  // data[4]=data[4]/(double)averageStep;
+  // data[6]=data[6]/(double)averageStep;
 
-  data[3]=sqrt(data[3]/(double)averageStep-pow(data[2],2.0));
-  data[5]=sqrt(data[5]/(double)averageStep-pow(data[4],2.0));
-  data[7]=sqrt(data[7]/(double)averageStep-pow(data[6],2.0));
+  // data[3]=sqrt(data[3]/(double)averageStep-pow(data[2],2.0));
+  // data[5]=sqrt(data[5]/(double)averageStep-pow(data[4],2.0));
+  // data[7]=sqrt(data[7]/(double)averageStep-pow(data[6],2.0));
 
-  data[0]=averageNrg/(double)averageStep;
-  data[1] = sqrt(nrgSquared/(double)averageStep-pow(data[0],2.0));
   // orderP = orderP/(double)averageStep;
   return data[0];
 }

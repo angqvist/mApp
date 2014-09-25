@@ -735,15 +735,6 @@ void sortOrder(std::vector<double>  &orderDr, std::vector<int>  &orderIndex)
   double tempDr;
   int tempIndex;
 
-  double d1=orderDr[0]+orderDr[1];
-  double d2=orderDr[0]+orderDr[2];
-  double d3=orderDr[1]+orderDr[2];
-      
-  std::vector<double> sumVector;
-  sumVector.push_back(d1);
-  sumVector.push_back(d2);
-  sumVector.push_back(d3);
-  
   if(orderDr.size() != orderIndex.size())
     {
       std::cout<<"Error size mismatch between orderDr and ORderIndex"<<std::endl;
@@ -757,10 +748,8 @@ void sortOrder(std::vector<double>  &orderDr, std::vector<int>  &orderIndex)
 	  swapped=false;
 	  for(int i=0; i<2; i++)
 	    {
-	      //if(sumVector[i]>sumVector[i+1])
 	      if(orderDr[i]>orderDr[i+1])
 		{
-
 		  if(i==0)
 		    {
 		      //swap atoms 2 and 3
@@ -781,10 +770,6 @@ void sortOrder(std::vector<double>  &orderDr, std::vector<int>  &orderIndex)
 		  tempDr=orderDr[i];
 		  orderDr[i]=orderDr[i+1];
 		  orderDr[i+1]=tempDr;
-
-		  sumVector[0]=orderDr[0]+orderDr[1];
-		  sumVector[1]=orderDr[0]+orderDr[2];
-		  sumVector[2]=orderDr[1]+orderDr[2];
 
 		  swapped=true;
 		}
@@ -2143,11 +2128,26 @@ std::vector<double> getSingleClusterVector(LatticeList ll, PairList pl, TripletL
     {
       // TripletList tl = TripletList(ll,subElements,cutoffs[1]);
       tl = countTriplets(ll,tl,cutoffs[1]);
+
+
+      for(int i=0; i<tl.getNbrOfTriplets(); i++)
+	{
+	  if(tl.getTriplet(i).getDistance2()<cutoffs[1])
+	    {
+	      singletVector.push_back(tl.getTriplet(i).getCount());
+	    }
+	}
+
+      /*
+      
       std::vector<double> tripletVector = tl.getClusterVector(subElements,cutoffs[1],average);
       if(tripletVector.size()>0)
 	{
 	  singletVector.insert(singletVector.end(),tripletVector.begin(), tripletVector.end());
 	}
+
+      */
+      
     }
   return singletVector;
 }
@@ -2171,10 +2171,13 @@ void getClusterVectors(std::vector<std::string> filenames, std::vector<double> &
 
   PairList pl = PairList();
   pl.initializePairs(ll,subelements,cutoffs[0]);
+  //pl.printList();
   TripletList tl;
   if(cutoffs.size() >=2)
     {
       tl = TripletList(ll,subelements,cutoffs[1]);
+       tl.sortTripletList();
+      // tl.printList();
     }
 
   for(int i=0; i<filenames.size(); i++)

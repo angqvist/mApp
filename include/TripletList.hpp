@@ -16,9 +16,11 @@ public:
   std::vector<std::vector<double> > getUniqueDistances(double);
   void sortTripletList();
   std::vector<double> getClusterVector(std::vector<std::string >,double,bool);
-
+  
+  
 private:
   int nbrOfTriplets;
+  void reset();
   std::vector<Triplet> tripletList;
   int isAtomInSubElements(std::string,std::vector<std::string>);
   void sortOrder(std::vector<double> &,std::vector<int> &);

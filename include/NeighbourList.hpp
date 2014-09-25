@@ -1,5 +1,6 @@
 #include <vector>
 #include <string>
+
 class Neighbour; //fishy - should work without but doesnt
 
 class NeighbourList
