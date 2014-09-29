@@ -138,7 +138,7 @@ double MC::averageStep(int mcsteps,int averageStep,LatticeList &ll,std::vector<s
 
   data[0]=averageNrg/(double)averageStep;
   data[1] = sqrt(nrgSquared/(double)averageStep-pow(data[0],2.0));
-  for(int i=2; i<data.size()/2; i++)
+  for(int i=1; i<data.size()/2; i++)
     {
       data[2*i]=data[2*i]/(double)averageStep;
       data[2*i+1]=sqrt(data[2*i+1]/(double)averageStep-pow(data[2*i],2.0));
