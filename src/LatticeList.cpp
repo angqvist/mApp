@@ -691,3 +691,16 @@ double LatticeList::getProperty(int index)
     }
   return properties[index];
 }
+
+
+double LatticeList::getConcentration(std::string type)
+{
+  for(int i=0; i<elements.size(); i++)
+    {
+      if(type==elements[i])
+	{
+	  return (double)elementCounts[i]/(double)nbrOfAtoms;
+	}
+    }
+  return 0;
+}

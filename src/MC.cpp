@@ -57,7 +57,6 @@ double MC::averageStep(int mcsteps,int averageStep,LatticeList &ll,std::vector<s
 
   // std::vector<double> avg_prop;
   // std::vector<double> std_prop;
-
   int properties=nlVectors.size();
 
   // avg_prop.resize(properties);

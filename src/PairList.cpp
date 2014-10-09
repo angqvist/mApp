@@ -87,6 +87,36 @@ void PairList::initializePairs(LatticeList ll, std::vector<std::string> subeleme
 	    }//end for k loop
 	}//end for j loop
     }//end i loop
+  std::cout<<"sort pairs"<<std::endl;
+  sortPairs();
+  std::cout<<"done sort pairs"<<std::endl;
+
+}
+
+
+void PairList::sortPairs()
+{
+  Pair tempPair;
+  bool switched=true;
+
+  if(pairList.size()==0)
+    {
+      switched=false;
+    }
+  while(switched)
+    {
+      switched=false;
+      for(int i=0; i<pairList.size()-1; i++)
+	{
+	  if(pairList[i].getDistance()>pairList[i+1].getDistance())
+	    {
+	      tempPair=pairList[i];
+	      pairList[i]=pairList[i+1];
+	      pairList[i+1]=tempPair;
+	      switched=true;
+	    }
+	}
+    }
 }
 
 void PairList::printList()

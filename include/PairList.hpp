@@ -23,4 +23,5 @@ private:
   int nbrOfPairs;
   std::vector<Pair> pairList;
   int isAtomInSubElements(std::string,std::vector<std::string>);
+  void sortPairs();
 };

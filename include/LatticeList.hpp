@@ -34,7 +34,7 @@ public:
   double getProperty(int);
   int getNumberOfProperties();
   std::vector<double> properties;
-
+  double getConcentration(std::string);
 private:
   void readIdealPos(); // read positions from file  
   void readIdealPos2(); // read positions from file  

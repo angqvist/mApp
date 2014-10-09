@@ -1112,13 +1112,13 @@ std::vector<double> doMinimize(std::vector<double> inA, int columns,std::vector<
     {
       if(doSB)
 	{
-      initialValue = my_fSB(ceParams,my_func.params);      
+	  initialValue = my_fSB(ceParams,my_func.params);      
 	}
       else
 	{
 	  initialValue = my_f(ceParams,my_func.params);      
 	}
-      gsl_multimin_fdfminimizer_set(s,&my_func,ceParams,0.10,bfgsTol); //1e-7
+      gsl_multimin_fdfminimizer_set(s,&my_func,ceParams,0.1,bfgsTol); //1e-7
       do
 	{  
 	  iter++;
@@ -1235,7 +1235,7 @@ void shrink(const gsl_vector * ceParams, void *params)
   double mu = inParams->parMu;
   double lambdaInv = 1.0/inParams->parLambda;
   gsl_vector * tmpX = gsl_vector_alloc(inParams->parColumns);
-  gsl_vector * tmpY = gsl_vector_alloc(inParams->parColumns);
+  gsl_vector * tmpY = gsl_vector_alloc(inParams->parColumns); //vector that replaces d
   gsl_vector_memcpy(tmpX,ceParams);//x
   gsl_vector_scale(tmpX,mu);//mu*x
   gsl_vector_add(tmpX,inParams->parB); // tmpX= mu*x+b
@@ -1270,18 +1270,18 @@ double my_fSB(const gsl_vector * ceParams, void *params)
   gsl_blas_dgemv(CblasNoTrans,1.0,inParams->parA,ceParams,0.0,Ax);
   gsl_vector_sub(Ax,inParams->parEnergy); //Ax-y
   double term1;
-  gsl_blas_ddot(Ax,Ax,&term1);
+  gsl_blas_ddot(Ax,Ax,&term1); //||ax-y||^2
   term1=0.5*term1;
   double term2;
   gsl_vector * tempV = gsl_vector_alloc(inParams->parColumns);
   gsl_vector * tempV2= gsl_vector_alloc(inParams->parColumns);
-  gsl_vector_memcpy(tempV,inParams->parD);
+  gsl_vector_memcpy(tempV,inParams->parD); //tempV=d
   gsl_vector_memcpy(tempV2,ceParams);
-  gsl_vector_scale(tempV2,inParams->parMu);   
+  gsl_vector_scale(tempV2,inParams->parMu); //tempV2=mu*x
 
-  gsl_vector_sub(tempV,inParams->parB); //d-b
-  gsl_vector_sub(tempV,tempV2); // d-b-mu*x
-  gsl_blas_ddot(tempV,tempV,&term2);  
+  gsl_vector_sub(tempV,inParams->parB); //tempV=tempV-b = d-b
+  gsl_vector_sub(tempV,tempV2); // tempV=tempV-my*x =d - b - mu*x
+  gsl_blas_ddot(tempV,tempV,&term2);  // ||d-b-mu*x||^2
   term2=term2*0.5*(inParams->parLambda);
   //std::cout<<term1<< " "<<term2<<std::endl;
 
@@ -1332,7 +1332,7 @@ double my_f(const gsl_vector * ceParams, void *params)
 {
   minPar *inParams = (minPar *) params;
   gsl_vector * Ax = gsl_vector_alloc(inParams->parRows);
-  gsl_blas_dgemv(CblasNoTrans,1.0,inParams->parA,ceParams,0.0,Ax);
+  gsl_blas_dgemv(CblasTrans,1.0,inParams->parA,ceParams,0.0,Ax);
   gsl_vector_sub(Ax,inParams->parEnergy); //Ax-y
   double term1;
   gsl_blas_ddot(Ax,Ax,&term1);
@@ -1343,7 +1343,7 @@ double my_f(const gsl_vector * ceParams, void *params)
 void my_df(const gsl_vector * ceParams, void *params , gsl_vector * df)
 { 
   minPar *inParams = (minPar *) params;
-  gsl_blas_dgemv(CblasNoTrans,1.0,inParams->parAtA,ceParams,0.0,df); // N.B transpose here 
+  gsl_blas_dgemv(CblasTrans,1.0,inParams->parAtA,ceParams,0.0,df); // N.B transpose here 
   gsl_vector_sub(df,inParams->parftA);  
   // return ret;
 }
@@ -2064,7 +2064,7 @@ std::vector<double> getSingleClusterVector(std::string fileName,std::vector<doub
 
 
 //version 2 OVERLOADED
-std::vector<double> getSingleClusterVector(LatticeList ll, PairList pl, TripletList tl,std::vector<double> cutoffs,std::vector<std::string> subElements, int properties, int atoms,bool average)
+std::vector<double> getSingleClusterVector(LatticeList ll, PairList pl, TripletList tl,std::vector<double> cutoffs,std::vector<std::string> subElements, int properties, int atoms,bool average,bool ATAT)
 {
   
   const double PI = 3.1415926535897932384626;
@@ -2073,43 +2073,71 @@ std::vector<double> getSingleClusterVector(LatticeList ll, PairList pl, TripletL
 
   // first singlets
   std::vector<double> singletVector;
+  //singletVector.push_back(1); //zerolets
   double tempAverage;
   int tempT;
   int s1;
   double tempVal;
-  for(int m=2; m<=subElements.size(); m++)
+  if(ATAT)
     {
-      tempAverage=0;
-      for(int i=0; i<ll.getNbrOfSites(); i++)
+      for(int m=2; m<=subElements.size(); m++)
 	{
-	  for(int ii=0; ii<subElements.size(); ii++)
+	  tempAverage=0;
+	  for(int i=0; i<ll.getNbrOfSites(); i++)
 	    {
-	      if(ll.getSite(i)==subElements[ii])
+	      for(int ii=0; ii<subElements.size(); ii++)
 		{
-		  s1=ii;
+		  if(ll.getSite(i)==subElements[ii])
+		    {
+		      s1=ii;
+		    }
 		}
-	    }
 	  
-	  tempT=(m/2); //round down aye
-	  if(((m-2)%2==0))
+	      tempT=(m/2); //round down aye
+	      if(((m-2)%2==0))
+		{
+		  tempVal=-cos(2.0*PI*s1*tempT/(subElements.size()));
+		}
+	      else
+		{
+		  tempVal=-sin(2.0*PI*s1*tempT/(subElements.size()));
+		}
+	      tempAverage +=tempVal;
+	    }
+	  if(average)
 	    {
-	      tempVal=-cos(2.0*PI*s1*tempT/(subElements.size()));
+	      singletVector.push_back(tempAverage/(double)ll.getNbrOfSites());
 	    }
 	  else
 	    {
-	      tempVal=-sin(2.0*PI*s1*tempT/(subElements.size()));
+	      singletVector.push_back(tempAverage);
 	    }
-	  tempAverage +=tempVal;
-	}
-      if(average)
-	{
-	  singletVector.push_back(tempAverage/(double)ll.getNbrOfSites());
-	}
-      else
-	{
-	   singletVector.push_back(tempAverage);
-	}
 	  
+	}
+    }
+  else
+    {
+      for(int m=0; m<subElements.size(); m++)
+	{
+	  tempAverage=0;
+	  for(int i=0; i<ll.getNbrOfSites(); i++)
+	    {
+	      if(ll.getSite(i)==subElements[m])
+		{
+		  tempAverage++;
+		}
+	  
+	    }
+	  if(average)
+	    {
+	      singletVector.push_back(tempAverage/(double)ll.getNbrOfSites());
+	    }
+	  else
+	    {
+	      singletVector.push_back(tempAverage);
+	    }
+	  
+	}
     }
 
   if(cutoffs.size() >=1)
@@ -2117,10 +2145,31 @@ std::vector<double> getSingleClusterVector(LatticeList ll, PairList pl, TripletL
       // PairList pl = PairList();
       //pl.initializePairs(ll,subElements,cutoffs[0]);
       pl= countPairs(ll,pl);
-      std::vector<double> pairVector = pl.getClusterVector(subElements,cutoffs[0],average);
-      if(pairVector.size()>0)
+
+
+      if(ATAT)
 	{
-	  singletVector.insert(singletVector.end(),pairVector.begin(), pairVector.end());
+	  std::vector<double> pairVector = pl.getClusterVector(subElements,cutoffs[0],average);
+	  
+	  if(pairVector.size()>0)
+	    {
+	      singletVector.insert(singletVector.end(),pairVector.begin(), pairVector.end());
+	    }
+
+      
+	}
+      else
+	{
+
+	  for(int i=0; i<pl.getNbrOfPairs(); i++)
+	    {
+	      if(pl.getPair(i).getDistance()<cutoffs[0])
+		{
+		  singletVector.push_back(pl.getPair(i).getCount());
+		}
+
+	    }
+
 	}
     }
 
@@ -2130,24 +2179,27 @@ std::vector<double> getSingleClusterVector(LatticeList ll, PairList pl, TripletL
       tl = countTriplets(ll,tl,cutoffs[1]);
 
 
-      for(int i=0; i<tl.getNbrOfTriplets(); i++)
+      
+      //ATAT below
+      if(ATAT)
 	{
-	  if(tl.getTriplet(i).getDistance2()<cutoffs[1])
+	  std::vector<double> tripletVector = tl.getClusterVector(subElements,cutoffs[1],average);
+	  if(tripletVector.size()>0)
 	    {
-	      singletVector.push_back(tl.getTriplet(i).getCount());
+	      singletVector.insert(singletVector.end(),tripletVector.begin(), tripletVector.end());
 	    }
 	}
-
-      /*
-      
-      std::vector<double> tripletVector = tl.getClusterVector(subElements,cutoffs[1],average);
-      if(tripletVector.size()>0)
+      else
 	{
-	  singletVector.insert(singletVector.end(),tripletVector.begin(), tripletVector.end());
+            
+	  for(int i=0; i<tl.getNbrOfTriplets(); i++)
+	    {
+	      if(tl.getTriplet(i).getDistance2()<cutoffs[1])
+		{
+		  singletVector.push_back(tl.getTriplet(i).getCount());
+		}
+	    }
 	}
-
-      */
-      
     }
   return singletVector;
 }
@@ -2158,7 +2210,7 @@ std::vector<double> getSingleClusterVector(LatticeList ll, PairList pl, TripletL
 //getSingleClusterVector(std::string fileName,std::vector<double> cutoffs,std::vector<std::string> subElements, int properties, int atoms,bool average)
 
 
-void getClusterVectors(std::vector<std::string> filenames, std::vector<double> &X, std::vector<double> &X_avg,std::vector<std::vector<double> > &properties,std::vector<double> cutoffs, std::vector<std::string> subelements,int nbrOfproperties,int atoms,bool verbal)
+void getClusterVectors(std::vector<std::string> filenames, std::vector<double> &X, std::vector<double> &X_avg,std::vector<std::vector<double> > &properties,std::vector<double> cutoffs, std::vector<std::string> subelements,int nbrOfproperties,int atoms,bool verbal,bool ATAT)
 {
   std::vector<double> temp;
   //std::vector<double> X_avg;
@@ -2168,10 +2220,11 @@ void getClusterVectors(std::vector<std::string> filenames, std::vector<double> &
     }
   
   LatticeList ll= LatticeList(1,1,1,atoms,nbrOfproperties,filenames[0],subelements);
-
   PairList pl = PairList();
   pl.initializePairs(ll,subelements,cutoffs[0]);
+  
   //pl.printList();
+
   TripletList tl;
   if(cutoffs.size() >=2)
     {
@@ -2182,11 +2235,10 @@ void getClusterVectors(std::vector<std::string> filenames, std::vector<double> &
 
   for(int i=0; i<filenames.size(); i++)
     {
-      std::cout<<i<<std::endl;
       ll= LatticeList(1,1,1,atoms,nbrOfproperties,filenames[i],subelements);
-      temp=getSingleClusterVector(ll,pl,tl,cutoffs,subelements,nbrOfproperties,atoms,false);
+      temp=getSingleClusterVector(ll,pl,tl,cutoffs,subelements,nbrOfproperties,atoms,false,ATAT);
       X.insert(X.end(),temp.begin(),temp.end());
-      temp=getSingleClusterVector(ll,pl,tl,cutoffs,subelements,nbrOfproperties,atoms,true);
+      temp=getSingleClusterVector(ll,pl,tl,cutoffs,subelements,nbrOfproperties,atoms,true,ATAT);
       X_avg.insert(X_avg.end(),temp.begin(),temp.end());
       for(int j=0; j<nbrOfproperties; j++)
 	{
@@ -2198,8 +2250,7 @@ void getClusterVectors(std::vector<std::string> filenames, std::vector<double> &
   //  cv_correction=getCVCorrection(X_avg,filenames.size(),X_avg.size()/filenames.size()); //X_avg,rows,columns
 }
 
-  
-      
+
       
 void shuffleFittingObject(std::vector<double> &X,std::vector<double> &X_avg,std::vector<std::vector<double> > &properties,int n)
 {
@@ -2262,3 +2313,72 @@ void pushToBack(std::vector<double> &X,std::vector<double> &X_avg,std::vector<st
 }
       
       
+void printInterfaceParameters(std::vector<double> parameters,std::vector<double>cutoffs,LatticeList ll,std::string fileName,std::vector<std::string>subelements)
+{
+  
+
+  PairList pl = PairList();
+  pl.initializePairs(ll,subelements,cutoffs[0]);
+  TripletList tl;
+  if(cutoffs.size() >=2)
+    {
+      tl = TripletList(ll,subelements,cutoffs[1]);
+      tl.sortTripletList();
+      // tl.printList();
+    }
+
+  int count=0;
+  std::vector<double> pair_dist=pl.getUniqueDistances(cutoffs[0]);
+  std::ofstream outF;
+  outF.open(fileName.c_str());
+  
+  outF<<0<<" "<<parameters[0];
+  count++;
+
+  for(int jj=1; jj<subelements.size()-1; jj++)
+    {
+      outF<<std::endl;      
+      outF<<0<< " "<<parameters[count];
+      count++;
+    }
+  int atat_pairs;
+  if(subelements.size()==2)
+    {
+      atat_pairs=1;
+    }
+  else if(subelements.size()==3)
+    {
+      atat_pairs=3;
+    }
+  
+  for(int i=0; i<pair_dist.size(); i++)
+  {
+    for(int jj=0; jj<atat_pairs; jj++)
+      {
+	outF<<std::endl;
+	outF<<pair_dist[i]<< " "<<parameters[count];
+	count++;
+      }
+    }
+
+
+  if(cutoffs.size()>=2)
+    {
+      std::vector<std::vector<double> > tl_dists=tl.getUniqueDistances(cutoffs[1]);
+      for(int i=0; i<tl_dists.size(); i++)
+	{
+	  outF<<std::endl;	 
+	  outF<<tl_dists[i][0]<< " "<<tl_dists[i][1]<< " "<<tl_dists[i][2]<< " "<<parameters[count];
+	  count++;
+	}
+    }
+  if(parameters.size() != count)
+    {
+      std::cout<<"ERROR: doesnt write out parameters correctly...."<<std::endl;
+    }
+
+}
+
+      
+
+  
