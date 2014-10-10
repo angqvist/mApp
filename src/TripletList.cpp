@@ -171,10 +171,6 @@ void TripletList::sortOrder(std::vector<double>  &orderDr, std::vector<int>  &or
   bool swapped=true;
   double tempDr;
   int tempIndex;
-
-
-
-
   while(swapped)
     {
       swapped=false;
