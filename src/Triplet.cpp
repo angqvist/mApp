@@ -226,8 +226,6 @@ void Triplet::sortTriplet()
       site3=types[1];
 
     }
-
-
 }
 
 
