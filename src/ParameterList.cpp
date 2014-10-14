@@ -2,8 +2,12 @@
 #include <iostream>
 #include <fstream>
 #include "Pair.hpp"
-#include"PairList.hpp"
+#include "PairList.hpp"
+#include "clust.hpp"
 #include <cmath>
+// // // // // #include "Atom.hpp"
+// // #include "Triplet.hpp"
+// #include "Quatuplet.hpp"
 
 ParameterList::ParameterList()
 {
@@ -77,25 +81,24 @@ const double PI = 3.1415926535897932384626;
     {
       nbrSinglet=1;
       nbrPairs=1;
-
     }
+
   else if(Mi==3)
     {
       nbrSinglet=2;
       nbrPairs=3;
-
     }
+
   else if(Mi==4)
     {
       nbrSinglet=3;
       nbrPairs=4;
-
     }
+
   else if(Mi==5)
     {
       nbrSinglet=4;
       nbrPairs=5;
-
     }
   
   
@@ -110,7 +113,6 @@ const double PI = 3.1415926535897932384626;
       in >> tempValue;
       energies.push_back(tempValue);
       // std::cout<<tempValue<<std::endl;
-
     }
   int count=0;
   Pair tempPair = Pair();
@@ -241,6 +243,88 @@ void ParameterList::readParams()
 
     } 
   in.close();
+}
+
+void ParameterList::readParams_new(std::vector<std::string > subElements)
+{
+  offset_value=0;
+
+  int Mi=subElements.size();
+  std::ifstream in(fileName.c_str());  
+  if (!in)
+    {
+      std::cout<< "Cannot open file: "<<fileName<<std::endl;
+      return;
+    }
+
+  Atom tempAtom = Atom();
+  Pair tempPair= Pair();
+  Triplet tempTriplet = Triplet();
+  
+  std::string tempS1;
+  std::string tempS2;
+  
+  double tempDist;
+  double tempEnergy;
+  int tempNbrParams=0;
+  
+  int tuple_order;
+  
+  while(!(in.eof()))
+    {
+      //if( in.eof() ) break;
+      in >> tuple_order;
+
+      if(tuple_order==0)
+	{
+	  in >> offset_value;
+	}
+      //singlets
+      if(tuple_order==1)
+	{
+	  in >> tempEnergy;
+	  tempAtom.setProperty(tempEnergy);	  
+	  paramList_0.push_back(tempAtom); 	    
+	}
+      //pairs
+      if(tuple_order==2)
+	{	  
+	  in>> tempDist;
+	  in>> tempEnergy;
+	  tempPair.setDistance(tempDist);
+	  tempPair.setEnergy(tempEnergy);   
+	  paramList.push_back(tempPair);
+	}
+      
+      if(tuple_order==3)
+	{
+	  in >> tempEnergy;
+	  tempTriplet.setEnergy(tempEnergy);
+	  
+	  in >> tempDist;
+	  tempTriplet.setDistance1(tempDist);
+
+	  in >> tempDist;
+	  tempTriplet.setDistance2(tempDist);
+	  
+	  in >> tempDist;
+	  tempTriplet.setDistance3(tempDist);
+	  
+	  paramList_3.push_back(tempTriplet);	  
+	}
+
+      if(tuple_order==4)
+	{
+	  //need quatuplet code
+
+	  
+	}
+      
+
+    } 
+  in.close();
+
+
 }
 
 Pair& ParameterList::getPair(int i)

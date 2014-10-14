@@ -11,9 +11,9 @@ Triplet::Triplet()
   distance2=0;
   distance3=0;
 
-  site1="Ga";
-  site2="Ga";
-  site3="Ga";
+  site1="A";
+  site2="A";
+  site3="A";
   count=0;
 }
 

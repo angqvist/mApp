@@ -7,8 +7,8 @@ Pair::Pair()
   energy=0;
   LIMIT=1e-5;
   distance=0;
-  site1="Ga";
-  site2="Ga";
+  site1="A";
+  site2="A";
   count=0;
 }
 
