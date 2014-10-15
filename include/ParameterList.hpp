@@ -2,7 +2,7 @@
 #include <string>
 #include "Triplet.hpp"
 #include "Atom.hpp"
-//#include "Quatuplet.hpp"
+#include "Quatuplet.hpp"
 class ParameterList
 {
 public:
@@ -16,6 +16,8 @@ public:
   void printPair(int);
 
 private:
+
+  void unwrapPairs(std::vector<Pair>, std::vector<std::string>);
   double eCutOff;
   void readParams();
   void readParams_new();
@@ -24,6 +26,7 @@ private:
   std::vector<class Atom> paramList_0;
   std::vector<Pair> paramList;
   std::vector<Triplet> paramList_3;
+  std::vector<Quatuplet> paramList_4;
   void readParamsWithPL(class PairList);
   void readParamsATATStyle(std::vector<std::string >);
   void readParams_new(std::vector<std::string > );

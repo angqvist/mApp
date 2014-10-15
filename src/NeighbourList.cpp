@@ -12,14 +12,14 @@
 NeighbourList::NeighbourList()
 {
   thisIndex=0;
-  distanceLimit=0.001;
+  distanceLimit=1e-4;
   // empty
 }
 //check up if you should send references to latticeList or something like that
 NeighbourList::NeighbourList(int i, LatticeList ll, ParameterList pl)
 {
   thisIndex=i;
-  distanceLimit=0.001;
+  distanceLimit=1e-4;
   findNeighbours(ll,pl);
 }
 void NeighbourList::addNeighbour(Neighbour nbr1)
@@ -44,6 +44,8 @@ int NeighbourList::newNeighbour(Neighbour nbr1)
     }
   return true;
 }
+
+
 void NeighbourList::printList()
 {
   for(size_t i=0; i < manyNbrLists.size(); i++)

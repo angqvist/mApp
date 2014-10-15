@@ -5,6 +5,7 @@
 #include "PairList.hpp"
 #include "clust.hpp"
 #include <cmath>
+
 // // // // // #include "Atom.hpp"
 // // #include "Triplet.hpp"
 // #include "Quatuplet.hpp"
@@ -119,7 +120,7 @@ const double PI = 3.1415926535897932384626;
   double tempEnergy=0;
   int tempT;
   for(int i=0; i<Mi; i++)
-    {      
+    {
       count=0;
       tempPair.setSite1(subElements[i]);
       tempPair.setSite2(subElements[i]);
@@ -260,7 +261,7 @@ void ParameterList::readParams_new(std::vector<std::string > subElements)
   Atom tempAtom = Atom();
   Pair tempPair= Pair();
   Triplet tempTriplet = Triplet();
-  
+  Quatuplet tempQ = Quatuplet();
   std::string tempS1;
   std::string tempS2;
   
@@ -272,13 +273,15 @@ void ParameterList::readParams_new(std::vector<std::string > subElements)
   
   while(!(in.eof()))
     {
-      //if( in.eof() ) break;
       in >> tuple_order;
 
+      
+      //offset, zeroth cluster
       if(tuple_order==0)
 	{
 	  in >> offset_value;
 	}
+      
       //singlets
       if(tuple_order==1)
 	{
@@ -286,6 +289,8 @@ void ParameterList::readParams_new(std::vector<std::string > subElements)
 	  tempAtom.setProperty(tempEnergy);	  
 	  paramList_0.push_back(tempAtom); 	    
 	}
+      
+      
       //pairs
       if(tuple_order==2)
 	{	  
@@ -296,6 +301,7 @@ void ParameterList::readParams_new(std::vector<std::string > subElements)
 	  paramList.push_back(tempPair);
 	}
       
+      //triplets
       if(tuple_order==3)
 	{
 	  in >> tempEnergy;
@@ -316,8 +322,15 @@ void ParameterList::readParams_new(std::vector<std::string > subElements)
       if(tuple_order==4)
 	{
 	  //need quatuplet code
-
 	  
+	  in >> tempEnergy;
+	  tempQ.setEnergy(tempEnergy);
+	  for(int i=0; i<5; i++)
+	    {
+	      in>>tempDist;
+	      tempQ.setDistance(i,tempDist);
+	    }
+	  paramList_4.push_back(tempQ);	  
 	}
       
 
@@ -326,6 +339,36 @@ void ParameterList::readParams_new(std::vector<std::string > subElements)
 
 
 }
+
+
+void ParameterList::unwrapPairs(std::vector<Pair> parList,std::vector<std::string> subelements)
+{
+  std::vector<Pair> new_list;
+  std::vector<std::vector<std::string> > unWrapped_elements;
+  std::vector<std::vector<int> > clusterFunctions;
+  std::vector<double> dists;
+  dists.resize(1);
+  double energy;
+  for(int i=0; i<parList.size(); i++)
+    {
+      dists[0]=parList[i].getDistance();
+      unWrapped_elements = symmetric_cluster_function(dists,subelements);
+      clusterFunctions = symmetric_cluster_function(dists,subelements.size());
+      
+      for(int j=0; j<unWrapped_elements.size(); j++)
+	{
+	  energy=0;
+	  for(int k=0; k<clusterFunctions.size(); k++)
+	    {
+	      //energy += clusterFunction(subelements.size,
+	      
+	    }
+	}
+    }
+}
+	  
+      
+
 
 Pair& ParameterList::getPair(int i)
 {
