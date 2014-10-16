@@ -1,0 +1,23 @@
+IDIR1 = ../include
+IDIR2 = /usr/include
+CC=g++
+CFLAGS=-O3 -fopenmp -I$(IDIR1) -I$(IDIR2)
+
+ODIR=obj
+LDIR = /usr/lib
+
+LIBS= -lgsl -lgslcblas -lm
+ 
+_DEPS = Pair.hpp Triplet.hpp TripletList.hpp PairList.hpp LatticeList.hpp Neighbour.hpp NeighbourList.hpp ParameterList.hpp helperFunctions.hpp MC_methods.hpp MC.hpp
+DEPS = $(patsubst %,$(IDIR1)/%,$(_DEPS))
+
+
+_OBJ = Pair.o Triplet.o TripletList.o PairList.o LatticeList.o Neighbour.o NeighbourList.o ParameterList.o helperFunctions.o MC.o MC_methods.o main.o
+OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
+
+$(ODIR)/%.o: %.cpp $(DEPS)
+	$(CC) -c -o $@ $< $(CFLAGS)
+
+
+mainmake: $(OBJ)
+	g++ -o $@ $^ $(CFLAGS) $(LIBS)

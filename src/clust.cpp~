@@ -1,0 +1,135 @@
+#include "clust.hpp"
+#include <math.h>
+
+#define PI 3.14159265
+
+double clusterFunction(int nbr_of_elements,int atom_type,int clustFunction)
+{
+
+if((clustFunction%2!=0)) //odd: use cos
+    {
+      return -cos(2.0*PI * (double)( (int)(clustFunction+2)/2 ) * (double)atom_type/((double)nbr_of_elements));
+    }
+  else //even: use sin
+    {
+      return -sin(2.0*PI * (double)( (int)(clustFunction+2)/2 ) * (double)atom_type/((double)nbr_of_elements));
+    }
+}
+
+
+std::vector<int> symmetric_cluster_function(std::vector<double> dists, int nbr_of_elements)
+{
+  int tuple_size=dists.size();
+
+  if(tuple_size==1)
+    {
+      // code for singlets
+    }
+  else if(tuple_size==2)
+    {
+      //code for pairs
+    }
+  else if(tuple_size==3)
+    {
+      //code for triplets
+    }
+  else if(tuple_size==4)
+    {
+      //code for quatuplets
+    }
+}
+
+//this function takes distances and elements and make it into a symmetric equivalent reduced form if possible
+// the distances and elements will be smallest first and alphabetical order
+void tuple_remodulator(std::vector<double> &dists, std::vector<std::string> &elements)
+{ 
+  if(dists.size() != elements.size())
+    {
+
+      std::cout<<"distance/elements mismatch in tuple_remodulator"<<std::endl;
+      return;
+    }
+  int d_size = dists.size();
+  
+  if(d_size==2)
+    {
+      sortElements(elements);
+    }
+  if(d_size==3)
+    {
+      
+}
+
+}
+
+
+void clust_sort_triplet(std::vector<double> &dists, std::vector<std::string> &elements)
+{
+  bool swapped=true;
+  double tempDr;
+  std::string temp_element;
+
+  //first step gives the most reduced form of the distances
+  //second step consists of finding the alphabetical order of elements which are symmetric equivalent
+  while(swapped)
+    {
+      swapped=false;
+      for(int i=0; i<2; i++)
+	{
+	  if(dists[i]>dists[i+1])
+	    {
+	      if(i==0)
+		{
+		  //swap atoms 2 and 3
+		  temp_element=elements[1];
+		  elements[1]=elements[2];
+		  elements[2]=temp_element;
+		}
+	      if(i==1)
+		{
+		  //swap atoms 1 and 2
+		  temp_element=elements[0];
+		  elements[0]=elements[1];
+		  elements[1]=temp_element;
+		}
+
+		
+	      tempDr=dists[i];
+	      dists[i]=dists[i+1];
+	      dists[i+1]=tempDr;	      
+	      swapped=true;
+}
+}
+
+//second part
+
+
+
+}
+}
+
+
+void sortElements (std::vector<std::string> &elements)
+{
+  bool swapped = true;
+  std::string tempString;
+  
+  while(swapped)
+    {
+      swapped= false;
+      for(int i=0; i<elements.size()-1; i++)
+	{
+	  if(elements[i].compare(elements[i+1])>0)
+	    {
+	      tempString = elements[i];
+	      elements[i]=elements[i+1];
+	      elements[i+1]=tempString;
+	      swapped=true;
+	    }
+	}
+    }
+}
+
+
+
+  

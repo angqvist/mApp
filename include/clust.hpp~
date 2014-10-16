@@ -1,0 +1,9 @@
+#include <vector>
+#include <string>
+
+
+double clusterFunction(int, int, int);
+
+void tuple_remodulator(std::vector<double> &, std::vector<std::string> &);
+
+void sortElements(std::vector<std::string> &);

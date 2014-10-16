@@ -1,0 +1,16 @@
+#include <string>
+#include <vector>
+
+class Atom
+{
+public:
+  Atom();
+  Atom(std::string,std::vector<double>);
+  std::string getType();
+  double getProperty(int);
+
+
+private:
+  std::vector<double> properties;
+  std::string type;
+};
