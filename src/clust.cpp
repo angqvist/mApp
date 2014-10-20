@@ -22,7 +22,9 @@ double clusterFunction(int nbr_of_elements,int atom_type,int clustFunction)
 
 std::vector<std::vector<std::string> > symmetric_cluster_function(std::vector<double> dists,std::vector<std::string> subelements)
 {
-  std::vector<std::vector<int> > int_base = symmetric_cluster_function(dists,subelements.size()+1);
+  bool reverse_sort=false;
+  //N.B +1 in number of elements
+  std::vector<std::vector<int> > int_base = symmetric_cluster_function(dists,subelements.size()+1,reverse_sort);
   std::vector<std::vector<std::string> > ret;
   ret.resize(int_base.size());
   for(int i=0; i<int_base.size(); i++)
@@ -37,8 +39,10 @@ std::vector<std::vector<std::string> > symmetric_cluster_function(std::vector<do
   
 
 
-std::vector<std::vector<int> > symmetric_cluster_function(std::vector<double> dists, int nbr_of_elements)
+std::vector<std::vector<int> > symmetric_cluster_function(std::vector<double> dists, int nbr_of_elements,bool reverse_sort)
 {
+
+
   int tuple_size=dists.size();
   std::vector<std::vector<int> >returnVector;
   
@@ -68,7 +72,7 @@ std::vector<std::vector<int> > symmetric_cluster_function(std::vector<double> di
 	      temp_element[0]=std::to_string(i);
 	      temp_element[1]=std::to_string(j);
 	      
-	      sortElements(temp_element,true);
+	      sortElements(temp_element,reverse_sort);
 	      two_ret[0] = std::stoi(temp_element[0]);
 	      two_ret[1] = std::stoi(temp_element[1]);
 	      
@@ -101,7 +105,7 @@ std::vector<std::vector<int> > symmetric_cluster_function(std::vector<double> di
 		  temp_element[1]=std::to_string(j);
 		  temp_element[2]=std::to_string(k);
 		  
-		  tuple_remodulator(temp_dists,temp_element,true);
+		  tuple_remodulator(temp_dists,temp_element,reverse_sort);
 
 		  three_ret[0]=std::stoi(temp_element[0]);
 		  three_ret[1]=std::stoi(temp_element[1]);
@@ -143,7 +147,7 @@ std::vector<std::vector<int> > symmetric_cluster_function(std::vector<double> di
 		      temp_element[2]=std::to_string(k);
 		      temp_element[3]=std::to_string(l);
 
-		      tuple_remodulator(temp_dists,temp_element,true);
+		      tuple_remodulator(temp_dists,temp_element,reverse_sort);
 
 		      four_ret[0]=std::stoi(temp_element[0]);
 		      four_ret[1]=std::stoi(temp_element[1]);
@@ -161,8 +165,44 @@ std::vector<std::vector<int> > symmetric_cluster_function(std::vector<double> di
 
     }
 
-
+  clust_sort_return_vector(returnVector);
   return returnVector;
+}
+
+
+void clust_sort_return_vector(std::vector<std::vector<int> > &return_vector)
+{
+  bool swapped=true;
+  bool previous_columns_equal;
+  for(int j=0; j<return_vector[0].size(); j++)
+    {
+
+      while(swapped)
+	{
+	  swapped=false;
+	  //sort the j:th column
+	  for(int i=0; i<return_vector.size()-1; i++)
+	    {
+	      previous_columns_equal=true;
+	      for(int jj= j-1; jj>=0; jj--)
+		{
+		  if(return_vector[i][jj] != return_vector[i+1][jj])
+		    {
+		      previous_columns_equal=false;
+		      
+		    }
+		}
+	      // (j==0 || return_vector[i][j-1]==return_vector[i+1][j-1]) )
+	      
+	      if(return_vector[i][j]>return_vector[i+1][j] && previous_columns_equal) 
+		{
+		  return_vector[i].swap(return_vector[i+1]);
+		  //swap
+		  swapped=true;
+		}
+	    }
+	}
+    }
 }
 
 
@@ -291,9 +331,7 @@ void clust_sort_quatuplet(std::vector<double> &dists, std::vector<std::string> &
 		  //swap s2,s3
 		  //swap r1,r2 and r5,r6
 		  clust_swap_atom(2,3,elements,dists);
-
 		  swapped = true;
-
 		}
 
 	      if(i==1)
@@ -319,9 +357,6 @@ void clust_sort_quatuplet(std::vector<double> &dists, std::vector<std::string> &
 	      clust_swap_atom(1,2,elements,dists);
 	      swapped=true;
 	    }
-	      
-		  
-
 	}
 
       //second part, sort alphabetically where possible
@@ -408,76 +443,337 @@ void clust_sort_quatuplet(std::vector<double> &dists, std::vector<std::string> &
       swapped=false;
       for(int i=0; i<3; i++)
   	{
-  	  same_dists_after_swaps=false;
+	  for(int ii=i+1; ii<4; ii++)
+	    {
+	      // if(i==ii)
+	      // 	{
+	      // 	  continue;
+	      // 	}
+	      same_dists_after_swaps=false;
 	      
-  	  if(reverseInt*elements[i].compare(elements[i+1])>0)
-  	    {
+	      if(reverseInt*elements[i].compare(elements[ii])>0)
+		{
 
 	      
-  	      clust_swap_atom(i+1,i+2,elements,dists);
-	      same_dists_after_swaps=true;
-  	      for(int j=0; j<temp_dists.size(); j++)
-  		{
-  		  if(fabs(temp_dists[j]-dists[j])> 1e-4)
-  		    {
-  		      same_dists_after_swaps=false;
+		  clust_swap_atom(i+1,ii+1,elements,dists);
+		  same_dists_after_swaps=true;
+		  for(int j=0; j<temp_dists.size(); j++)
+		    {
+		      if(fabs(temp_dists[j]-dists[j])> 1e-4)
+			{
+			  same_dists_after_swaps=false;
 		      
-  		    }
-  		}
+			}
+		    }
+
+		  if(same_dists_after_swaps)
+		    {
+		      swapped=true;
+		    }
+		  else
+		    {
+		      clust_swap_atom(i+1,ii+1,elements,dists);
+		    }
+		}
+
+	    }
+	  //rotation clockwise if 
+	  // s2<=s1
+	  // s4<=s2
+	  //s3<=s4
+	  //s1<=s3
+
+	  //rotation c_clockwise is swap:
+	  // desirable if the ones that go back are large and the ones that go forth are small
+
+	  //s1 to s3
+	  //s2 to s1
+	  //s3 to s4
+	  //s4 to s2
+	  // old order, s1,s2,s3,s4
+	  // new order, s2,s4,s1,s3
+	  //first s2<=s1 s4<=s2, s3<=s1
+	  //rotating ccw
+
+	  bool rotate=false;
+	  bool check_rotate=true;
+	  while(check_rotate && swapped==false)
+	    {
+
+	      //first position
+	      if(reverseInt*elements[1].compare(elements[0])!=0)
+		{
+		  if(reverseInt*elements[1].compare(elements[0])<0)
+		    {
+		      rotate=true;
+		      check_rotate=false;
+		      break;
+		    }
+		  else
+		    {
+		      rotate=false;
+		      check_rotate=false;
+		      break;
+		    }
+		}
+	      
+	      //second position
+	      else if(reverseInt*elements[3].compare(elements[1]) !=0)
+		{
+		  if(reverseInt*elements[3].compare(elements[1])<0)
+		    {
+		      rotate=true;
+		      check_rotate=false;
+		      break;
+		    }
+		  else
+		    {
+		      rotate=false;
+		      check_rotate=false;
+		      break;
+		    }
+		}
+	      //third position
+	      else if(reverseInt*elements[0].compare(elements[2]) !=0)
+		{
+		  if(reverseInt*elements[0].compare(elements[2])<0)
+		    {
+		      rotate=true;
+		      check_rotate=false;
+		      break;
+		    }
+		  else
+		    {
+		      rotate=false;
+		      check_rotate=false;
+		      break;
+		    }
+		}
+	      //fourth position
+	      else if(reverseInt*elements[2].compare(elements[3]) !=0)
+		{
+		  if(reverseInt*elements[2].compare(elements[3])<0)
+		    {
+		      rotate=true;
+		      check_rotate=false;
+		      break;
+		    }
+		  else
+		    {
+		      rotate=false;
+		      check_rotate=false;
+		      break;
+		    }
+		}
+	      check_rotate=false;
+	    }
+	  
+	      //third postion
+	      //if(
+
+	      // else if(reverseInt*elements[1].compare(elements[0])==0)
+	  //   {
+	  //     if(reverseInt*elements[3].compare(elements[1])>0)
+	  // 	{
+	  // 	  rotate=true;
+	  // 	}
+	  //     else if(reverseInt*elements[3].compare(elements[1])==0)
+	  // 	{
+	  // 	  if(reverseInt*elements[0].compare(elements[2])<0)
+	  // 	    {
+	  // 	      rotate=true;
+	  // 	    }
+	  // 	  else if(reverseInt*elements[0].compare(elements[2])==0)
+	  // 	    {
+	  // 	      if(reverseInt*elements[2].compare(elements[3])<0)
+	  // 		{
+	  // 		  rotate=true;
+	  // 		}
+	  // 	    }
+	  // 	}
+	  //   }
+	    
+
+
+
+	  //changing back is the reverse
+	     //   if(reverseInt*elements[0].compare(elements[3])>= 0 &&
+	     // reverseInt*elements[1].compare(elements[0])<= 0 &&
+	     // reverseInt*elements[2].compare(elements[1])<= 0 &&
+	     // reverseInt*elements[3].compare(elements[2])<= 0 &&
+	     // (reverseInt*elements[0].compare(elements[3])> 0 ||
+	     //  reverseInt*elements[1].compare(elements[0])< 0 ||
+	     //  reverseInt*elements[2].compare(elements[1])< 0 ||
+	     //  reverseInt*elements[3].compare(elements[2])< 0 )
+
+	  if(rotate)	    
+	    {
+	      //-1 cw, -2=ccw
+	      clust_swap_atom(-1,0,elements,dists);
+	      same_dists_after_swaps=true;
+
+	      for(int j=0; j<temp_dists.size(); j++)
+	  	{
+	  	  if(fabs(temp_dists[j]-dists[j])> 1e-4)
+	  	    {
+	  	      same_dists_after_swaps=false;		      
+	  	    }
+	  	}
 
 	      if(same_dists_after_swaps)
-		{
-		  swapped=true;
-		}
+	  	{
+	  	  swapped=true;
+	  	}
 	      else
+	  	{
+	  	  clust_swap_atom(-2,0,elements,dists);
+	  	}
+	    }
+	
+
+	  //clockwise rotation
+	  // old: 1,2,3,4
+	  // new: 3,1,4,2
+	  rotate=false;
+  while(check_rotate && swapped==false)
+	    {
+
+	      //first position
+	      if(reverseInt*elements[2].compare(elements[0])!=0)
 		{
-		  clust_swap_atom(i+1,i+2,elements,dists);
+		  if(reverseInt*elements[2].compare(elements[0])<0)
+		    {
+		      rotate=true;
+		      check_rotate=false;
+		      break;
+		    }
+		  else
+		    {
+		      rotate=false;
+		      check_rotate=false;
+		      break;
+		    }
 		}
+	      
+	      //second position
+	      else if(reverseInt*elements[0].compare(elements[1]) !=0)
+		{
+		  if(reverseInt*elements[0].compare(elements[1])<0)
+		    {
+		      rotate=true;
+		      check_rotate=false;
+		      break;
+		    }
+		  else
+		    {
+		      rotate=false;
+		      check_rotate=false;
+		      break;
+		    }
+		}
+	      //third position
+	      else if(reverseInt*elements[3].compare(elements[2]) !=0)
+		{
+		  if(reverseInt*elements[3].compare(elements[2])<0)
+		    {
+		      rotate=true;
+		      check_rotate=false;
+		      break;
+		    }
+		  else
+		    {
+		      rotate=false;
+		      check_rotate=false;
+		      break;
+		    }
+		}
+	      //fourth position
+	      else if(reverseInt*elements[1].compare(elements[3]) !=0)
+		{
+		  if(reverseInt*elements[1].compare(elements[3])<0)
+		    {
+		      rotate=true;
+		      check_rotate=false;
+		      break;
+		    }
+		  else
+		    {
+		      rotate=false;
+		      check_rotate=false;
+		      break;
+		    }
+		}
+	      check_rotate=false;
+	    }
+
+
+  	  if(rotate)	    
+	    {
+	      //-1 cw, -2=ccw
+	      clust_swap_atom(-2,0,elements,dists);
+	      same_dists_after_swaps=true;
+
+	      for(int j=0; j<temp_dists.size(); j++)
+	  	{
+	  	  if(fabs(temp_dists[j]-dists[j])> 1e-4)
+	  	    {
+	  	      same_dists_after_swaps=false;		      
+	  	    }
+	  	}
+
+	      if(same_dists_after_swaps)
+	  	{
+	  	  swapped=true;
+	  	}
+	      else
+	  	{
+	  	  clust_swap_atom(-1,0,elements,dists);
+	  	}
 	    }
 
 	}
-
-	      
-  
     }
-    
 
 
   //r2==r3, if swap s3,s4 it will also swap r4,r5 so only swap it if that doesn't change the distance order
-    //   if(diff2 < DISTANCE_LIMIT && diff4 < DISTANCE_LIMIT)
-    // 	{
-    // 	  //alphabetically sort s3,s4
-    // 	  if(reverseInt*(elements[2].compare(elements[3]))>0)
-    // 	    {
-    // 	      temp_element=elements[2];
-    // 	      elements[2]=elements[3];
-    // 	      elements[3]=temp_element;
-    // 	    }
-    // 	}
-    //   // r1==r3, swaps s2,s3 and r5,r6 but only if r5==r6
-    //   if(diff1 < DISTANCE_LIMIT && diff5  < DISTANCE_LIMIT)
-    // 	{
-    // 	  // alphabetically sort s2,s3
-    // 	  if(reverseInt*(elements[1].compare(elements[2]))>0)
-    // 	    {
-    // 	      temp_element=elements[2];
-    // 	      elements[2]=elements[3];
-    // 	      elements[3]=temp_element;
-    // 	    }    
-    // 	}
-    // }
+  //   if(diff2 < DISTANCE_LIMIT && diff4 < DISTANCE_LIMIT)
+  // 	{
+  // 	  //alphabetically sort s3,s4
+  // 	  if(reverseInt*(elements[2].compare(elements[3]))>0)
+  // 	    {
+  // 	      temp_element=elements[2];
+  // 	      elements[2]=elements[3];
+  // 	      elements[3]=temp_element;
+  // 	    }
+  // 	}
+  //   // r1==r3, swaps s2,s3 and r5,r6 but only if r5==r6
+  //   if(diff1 < DISTANCE_LIMIT && diff5  < DISTANCE_LIMIT)
+  // 	{
+  // 	  // alphabetically sort s2,s3
+  // 	  if(reverseInt*(elements[1].compare(elements[2]))>0)
+  // 	    {
+  // 	      temp_element=elements[2];
+  // 	      elements[2]=elements[3];
+  // 	      elements[3]=temp_element;
+  // 	    }    
+  // 	}
+  // }
       
 
 		      
 }
 
   
-  
 void clust_swap_atom(int atom1, int atom2,std::vector<std::string> &element, std::vector<double> &dists)
 {
   std::string temp_element;
   double tempDistance;
   
+
+
+  
+
+
   if(atom2<atom1)
     {
       int temp_atom = atom1;
@@ -568,6 +864,26 @@ void clust_swap_atom(int atom1, int atom2,std::vector<std::string> &element, std
 	  clust_swap_element(2,3,element);
 	}
     }
+  //clockwise rotation
+	  //s1,s2
+	  //s2,s4
+	  //s3,s4
+  else if(atom1==-1)
+    {
+      clust_swap_atom(1,2,element,dists);
+      clust_swap_atom(2,4,element,dists);
+      clust_swap_atom(3,4,element,dists);
+    }
+  //counter-clockwise rotation
+  else if(atom1==-2)
+    {
+      clust_swap_atom(3,4,element,dists);
+      clust_swap_atom(2,4,element,dists);
+      clust_swap_atom(1,2,element,dists);
+
+    }
+      
+
 }
 
 void clust_swap_dist(int index1,int index2,std::vector<double> &dists)

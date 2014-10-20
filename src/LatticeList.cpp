@@ -26,12 +26,16 @@ LatticeList::LatticeList()
   Ly=cellSizeY*latticeConstant;
   Lz=cellSizeZ*latticeConstant;
   fileName="configs/confs4/config_0";
+  distance_table_init=false;
+
   readIdealPos2();
 
 }
 
 LatticeList::LatticeList(int sizeX, int sizeY, int sizeZ)
 {
+  distance_table_init=false;
+
   cellSizeX=sizeX;
   cellSizeY=sizeY;
   cellSizeZ=sizeZ;
@@ -48,6 +52,8 @@ LatticeList::LatticeList(int sizeX, int sizeY, int sizeZ)
 }
 LatticeList::LatticeList(int sizeX, int sizeY, int sizeZ, int newNbrOfAtoms, string newFileName) 
 {
+  distance_table_init=false;
+
   cellSizeX=sizeX;
   cellSizeY=sizeY;
   cellSizeZ=sizeZ;
@@ -65,6 +71,8 @@ LatticeList::LatticeList(int sizeX, int sizeY, int sizeZ, int newNbrOfAtoms, str
 }
 LatticeList::LatticeList(int sizeX, int sizeY, int sizeZ, int newNbrOfAtoms, int nbrOfProperties, string newFileName,std::vector<std::string> subElements) 
 {
+  distance_table_init=false;
+
   cellSizeX=sizeX;
   cellSizeY=sizeY;
   cellSizeZ=sizeZ;
@@ -703,4 +711,29 @@ double LatticeList::getConcentration(std::string type)
 	}
     }
   return 0;
+}
+
+
+void LatticeList::calculate_lookup_table()
+{
+  if(!distance_table_init)
+    {
+      distance_table.resize(nbrOfSites);
+      for(int i=0; i<nbrOfSites; i++)
+	{
+	  distance_table[i].resize(nbrOfSites);
+	  for(int j=0; j<nbrOfSites; j++)
+	    {
+	      distance_table[i][j]=getDistance(i,j);
+	    }
+	}
+    }
+  distance_table_init=true;
+
+}
+
+
+double LatticeList::fast_distance(int i,int j)
+{
+  return distance_table[i][j];
 }

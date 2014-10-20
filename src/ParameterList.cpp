@@ -336,14 +336,13 @@ void ParameterList::readParams_new(std::vector<std::string > subElements)
 
     } 
   in.close();
-
-
 }
 
 
 void ParameterList::unwrapPairs(std::vector<Pair> parList,std::vector<std::string> subelements)
 {
   std::vector<Pair> new_list;
+  Pair temp_pair = Pair();
   std::vector<std::vector<std::string> > unWrapped_elements;
   std::vector<std::vector<int> > clusterFunctions;
   std::vector<double> dists;
@@ -351,23 +350,184 @@ void ParameterList::unwrapPairs(std::vector<Pair> parList,std::vector<std::strin
   double energy;
   for(int i=0; i<parList.size(); i++)
     {
+      temp_pair.setDistance(parList[i].getDistance());
       dists[0]=parList[i].getDistance();
       unWrapped_elements = symmetric_cluster_function(dists,subelements);
-      clusterFunctions = symmetric_cluster_function(dists,subelements.size());
-      
+      //true for reverse_sort
+      clusterFunctions = symmetric_cluster_function(dists,subelements.size(),true);
+
       for(int j=0; j<unWrapped_elements.size(); j++)
 	{
+	  int atom1;
+	  int atom2;
+	  for(int jj=0; jj<subelements.size(); jj++)
+	    {
+	      if(unWrapped_elements[j][0]==subelements[jj])
+		{
+		  atom1=jj;
+		}
+	      if(unWrapped_elements[j][1]==subelements[jj])
+		{
+		  atom2=jj;
+		}
+
+	    }
 	  energy=0;
 	  for(int k=0; k<clusterFunctions.size(); k++)
 	    {
-	      //energy += clusterFunction(subelements.size,
+	      energy += clusterFunction(subelements.size(),atom1,clusterFunctions[k][0])*
+		clusterFunction(subelements.size(),atom2,clusterFunctions[k][1])*parList[i].getEnergy();
 	      
 	    }
+	  temp_pair.setSite1(unWrapped_elements[j][0]);
+	  temp_pair.setSite2(unWrapped_elements[j][1]);
+	  temp_pair.setEnergy(energy);
+	  new_list.push_back(temp_pair);
 	}
     }
+  paramList=new_list; //REALLY?!?!?! yes
 }
 	  
       
+
+void ParameterList::unwrapTriplets(std::vector<Triplet> trip_list,std::vector<std::string> subelements)
+{
+  std::vector<Triplet> new_list;
+  Triplet temp_trip = Triplet();
+  std::vector<std::vector<std::string> > unWrapped_elements;
+  std::vector<std::vector<int> > clusterFunctions;
+  std::vector<double> dists;
+  dists.resize(3);
+  double energy;
+
+  for(int i=0; i<trip_list.size(); i++)
+    {
+      temp_trip.setDistance1(trip_list[i].getDistance1());
+      temp_trip.setDistance1(trip_list[i].getDistance1());
+      temp_trip.setDistance1(trip_list[i].getDistance1());
+      dists[0]=trip_list[i].getDistance1();
+      dists[1]=trip_list[i].getDistance2();
+      dists[2]=trip_list[i].getDistance3();
+      
+      unWrapped_elements = symmetric_cluster_function(dists,subelements);
+      clusterFunctions = symmetric_cluster_function(dists,subelements.size(),true);
+      
+      for(int j=0; j<unWrapped_elements.size(); j++)
+	{
+	  int atom1;
+	  int atom2;
+	  int atom3;
+	  for(int jj=0; jj<subelements.size(); jj++)
+	    {
+	      if(unWrapped_elements[j][0]==subelements[jj])
+		{
+		  atom1=jj;
+		}
+	      if(unWrapped_elements[j][1]==subelements[jj])
+		{
+		  atom2=jj;
+		}
+
+	      if(unWrapped_elements[j][2]==subelements[jj])
+		{
+		  atom3=jj;
+		}
+	    }
+	  energy=0;
+
+	  for(int k=0; k<clusterFunctions.size(); k++)
+	    {
+	      energy += clusterFunction(subelements.size(),atom1,clusterFunctions[k][0])*
+		clusterFunction(subelements.size(),atom2,clusterFunctions[k][1])*
+		clusterFunction(subelements.size(),atom3,clusterFunctions[k][2])*trip_list[i].getEnergy();
+	    }
+	  temp_trip.setSite1(unWrapped_elements[j][0]);
+	  temp_trip.setSite2(unWrapped_elements[j][1]);
+	  temp_trip.setSite3(unWrapped_elements[j][2]);
+	  temp_trip.setEnergy(energy);
+	  new_list.push_back(temp_trip);
+	}
+    }
+  paramList_3=new_list;
+}
+
+void ParameterList::unwrapQuatuplets(std::vector<Quatuplet> quat_list, std::vector<std::string> subelements)
+{
+  std::vector<Quatuplet> new_list;
+  Quatuplet temp_quat = Quatuplet();
+    std::vector<std::vector<std::string> > unWrapped_elements;
+  std::vector<std::vector<int> > clusterFunctions;
+  std::vector<double> dists;
+  dists.resize(6);
+  double energy;
+  
+  for(int i=0; i<quat_list.size(); i++)
+    {
+      temp_quat.setDistance1(quat_list[i].getDistance1());
+      temp_quat.setDistance2(quat_list[i].getDistance2());
+      temp_quat.setDistance3(quat_list[i].getDistance3());
+      temp_quat.setDistance4(quat_list[i].getDistance4());
+      temp_quat.setDistance5(quat_list[i].getDistance5());
+      temp_quat.setDistance6(quat_list[i].getDistance6());
+      dists[0]=quat_list[i].getDistance1();
+      dists[1]=quat_list[i].getDistance2();
+      dists[2]=quat_list[i].getDistance3();
+      dists[3]=quat_list[i].getDistance4();
+      dists[4]=quat_list[i].getDistance5();
+      dists[5]=quat_list[i].getDistance6();
+
+      unWrapped_elements = symmetric_cluster_function(dists,subelements);
+      clusterFunctions = symmetric_cluster_function(dists,subelements.size(),true);
+      
+      for(int j=0; j<unWrapped_elements.size(); j++)
+	{
+	  int atom1;
+	  int atom2;
+	  int atom3;
+	  int atom4;
+	  for(int jj=0; jj<subelements.size(); jj++)
+	    {
+	      if(unWrapped_elements[j][0]==subelements[jj])
+		{
+		  atom1=jj;
+		}
+	      if(unWrapped_elements[j][1]==subelements[jj])
+		{
+		  atom2=jj;
+		}
+
+	      if(unWrapped_elements[j][2]==subelements[jj])
+		{
+		  atom3=jj;
+		}
+	      if(unWrapped_elements[j][3]==subelements[jj])
+		{
+		  atom4=jj;
+		}
+	    }
+	  
+	  energy=0;
+
+	  for(int k=0; k<clusterFunctions.size(); k++)
+	    {
+	      energy += clusterFunction(subelements.size(),atom1,clusterFunctions[k][0])*
+		clusterFunction(subelements.size(),atom2,clusterFunctions[k][1])*
+		clusterFunction(subelements.size(),atom3,clusterFunctions[k][2])*
+		clusterFunction(subelements.size(),atom4,clusterFunctions[k][3])*quat_list[i].getEnergy();
+	    }
+	  temp_quat.setSite1(unWrapped_elements[j][0]);
+	  temp_quat.setSite2(unWrapped_elements[j][1]);
+	  temp_quat.setSite3(unWrapped_elements[j][2]);
+	  temp_quat.setSite4(unWrapped_elements[j][3]);
+	  temp_quat.setEnergy(energy);
+	  new_list.push_back(temp_quat);
+	}
+    }
+  paramList_4=new_list;
+}
+
+
+  
 
 
 Pair& ParameterList::getPair(int i)

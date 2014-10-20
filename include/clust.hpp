@@ -3,9 +3,9 @@
 
 
 double clusterFunction(int, int, int);
-std::vector<std::vector<int> > symmetric_cluster_function(std::vector<double> , int);
+std::vector<std::vector<int> > symmetric_cluster_function(std::vector<double> , int,bool);
 std::vector<std::vector<std::string> > symmetric_cluster_function(std::vector<double> ,std::vector<std::string> );
-
+void clust_sort_return_vector(std::vector<std::vector<int> > &);
 bool add_new_cluster_controller(std::vector<std::vector<int> >, std::vector<int> );
 
 void tuple_remodulator(std::vector<double> &, std::vector<std::string> &,bool);

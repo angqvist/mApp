@@ -197,3 +197,5 @@ void NeighbourList::calcCurrentLocalEnergy(LatticeList ll)
 {
   currentLocalEnergy = getLocalEnergy(ll);
 }
+
+

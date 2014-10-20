@@ -70,6 +70,7 @@ int TripletList::isAtomInSubElements(std::string atom, std::vector<std::string> 
 void TripletList::initializeTriplets(LatticeList ll, std::vector<std::string> subelements, double cutOff)
 {
 
+  ll.calculate_lookup_table();
   reset();
   double dr1;
   double dr2;
@@ -79,6 +80,9 @@ void TripletList::initializeTriplets(LatticeList ll, std::vector<std::string> su
   std::vector<int> orderIndex;
   orderDr.resize(3);
   orderIndex.resize(3);
+  std::vector<std::string> elements;
+  elements.resize(3);
+  std::vector<std::vector< std::string> > all_element_combinations;
   for(size_t i=0; i< ll.getNbrOfSites(); i++)//first loop
     {
       if(!(isAtomInSubElements(ll.getSite(i),subelements)))
@@ -102,9 +106,9 @@ void TripletList::initializeTriplets(LatticeList ll, std::vector<std::string> su
 		  continue;
 		}
 	      
-	      dr1=ll.getDistance(i,j);
-	      dr2=ll.getDistance(i,j2);
-	      dr3=ll.getDistance(j,j2);
+	      dr1=ll.fast_distance(i,j);
+	      dr2=ll.fast_distance(i,j2);
+	      dr3=ll.fast_distance(j,j2);
 	 
 
 	      //std::cout<<"over cutoff "<<dr1<<" "<<dr2<< " "<<dr3<<std::endl;
@@ -112,16 +116,30 @@ void TripletList::initializeTriplets(LatticeList ll, std::vector<std::string> su
 	      orderDr[0]=dr1;
 	      orderDr[1]=dr2;
 	      orderDr[2]=dr3;
-	      orderIndex[0]=i;
-	      orderIndex[1]=j;
-	      orderIndex[2]=j2;
+	      // orderIndex[0]=i;
+	      // orderIndex[1]=j;
+	      // orderIndex[2]=j2;
+
+	      elements[0]=ll.getSite(i);
+	      elements[1]=ll.getSite(j);
+	      elements[2]=ll.getSite(j2);
+	      
+	      // all_element_combinations=symmetric_cluster_function
+	      //false for sorting alphabetically
+
+	      
+	      //tuple_remodulator(orderDr,elements,false);
+
+
 	       //std::cout<<"Before "<<orderDr[0]<< " "<<orderDr[1]<< " "<<orderDr[2]<<std::endl;
-	      sortOrder(orderDr,orderIndex);
+	      // sortOrder(orderDr,orderIndex);
 	      if(orderDr[1]>cutOff)
 		{
 		  continue;
 		}
 	       // std::cout<<"After "<<orderDr[0]<< " "<<orderDr[1]<< " "<<orderDr[2]<<std::endl;
+
+	      
 
 	      for(int k=0; k< subelements.size(); k++)
 		{

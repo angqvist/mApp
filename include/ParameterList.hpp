@@ -16,8 +16,11 @@ public:
   void printPair(int);
 
 private:
-
+  void unwrapSinglets(std::vector<Atom>,std::vector<std::string>);
   void unwrapPairs(std::vector<Pair>, std::vector<std::string>);
+  void unwrapTriplets(std::vector<Triplet> ,std::vector<std::string> );
+  void unwrapQuatuplets(std::vector<Quatuplet> ,std::vector<std::string> );
+
   double eCutOff;
   void readParams();
   void readParams_new();

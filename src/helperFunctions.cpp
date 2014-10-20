@@ -19,6 +19,7 @@
 #include <algorithm> 
 #include <sstream>
 #include<omp.h>
+#include "clust.hpp"
   struct minPar
   {
     gsl_matrix * parA;
@@ -618,8 +619,12 @@ std::vector<LatticeList> readConfig(std::string posFileName,int configs,int nbrO
 PairList countPairs(LatticeList ll, PairList pl)
 {
   double dr;
+  ll.calculate_lookup_table();
   pl.resetCounts();
   Pair tempPair;
+  std::string site1;
+  std::string site2;
+  std::string tempSite;
   for(size_t i=0; i<ll.getNbrOfSites(); i++)
     {
       for(size_t j=i; j<ll.getNbrOfSites(); j++)
@@ -628,8 +633,17 @@ PairList countPairs(LatticeList ll, PairList pl)
 	    {
 	      continue;
 	    }
-	  dr=ll.getDistance(i,j);
-	  tempPair=Pair(dr,ll.getSite(i),ll.getSite(j));
+	  site1=ll.getSite(i);
+	  site2=ll.getSite(j);
+	  if(site1.compare(site2)>0) //use tuple_remodulator instead you archaic buffoon
+	    {
+	      tempSite=site1;
+	      site1=site2;
+	      site2=tempSite;
+	    }
+	  
+	  dr=ll.fast_distance(i,j); // add cutoff here?
+	  tempPair=Pair(dr,site1,site2);
 	  pl.updatePair(tempPair,false);
 	}
     }
@@ -642,11 +656,15 @@ TripletList countTriplets(LatticeList ll, TripletList tl)
   double dr1;
   double dr2;
   double dr3;
+  ll.calculate_lookup_table();
+
   std::vector<double> orderDr;
   std::vector<int> orderIndex;
   orderDr.resize(3);
   orderIndex.resize(3);
   tl.resetCounts(); 
+  std::vector<std::string> elements;
+  elements.resize(3);
 
   Triplet tempTriplet;
   //#pragma omp parallel for private(dr1,dr2,dr3,orderDr,orderIndex,tempTriplet,tl) shared(ll)
@@ -660,20 +678,27 @@ TripletList countTriplets(LatticeList ll, TripletList tl)
 		{
 		  continue;
 		}
-	      dr1=ll.getDistance(i,j);
-	      dr2=ll.getDistance(i,k);
-	      dr3=ll.getDistance(j,k);
+	      dr1=ll.fast_distance(i,j);
+	      dr2=ll.fast_distance(i,k);
+	      dr3=ll.fast_distance(j,k);
 	      orderDr[0]=dr1;
 	      orderDr[1]=dr2;
 	      orderDr[2]=dr3;
-	      orderIndex[0]=i;
-	      orderIndex[1]=j;
-	      orderIndex[2]=k;
-	      sortOrder(orderDr,orderIndex);
+	      elements[0]=ll.getSite(i);
+	      elements[1]=ll.getSite(j);
+	      elements[2]=ll.getSite(k);
+	      //false for sorting alphabetically
+	      tuple_remodulator(orderDr,elements,false);
 	      
-	      tempTriplet=Triplet(orderDr[0],orderDr[1],orderDr[2],ll.getSite(orderIndex[0]),ll.getSite(orderIndex[1]),ll.getSite(orderIndex[2]));
+	      
+	      // orderIndex[0]=i;
+	      // orderIndex[1]=j;
+	      // orderIndex[2]=k;
+	      // sortOrder(orderDr,orderIndex);
+	      
+	      tempTriplet=Triplet( orderDr[0],orderDr[1],orderDr[2],elements[0],elements[1],elements[2] );
 	      tl.updateTriplet(tempTriplet,false);
-		}		
+	    }		
 	    
 	}
     }
@@ -691,8 +716,11 @@ TripletList countTriplets(LatticeList ll, TripletList tl,double cutoff)
   orderDr.resize(3);
   orderIndex.resize(3);
   tl.resetCounts(); 
-
+  ll.calculate_lookup_table();
   Triplet tempTriplet;
+  std::vector<std::string> elements;
+  elements.resize(3);
+
   //#pragma omp parallel for private(dr1,dr2,dr3,orderDr,orderIndex,tempTriplet,tl) shared(ll)
   for(size_t i=0; i<ll.getNbrOfSites(); i++)
     {
@@ -704,23 +732,25 @@ TripletList countTriplets(LatticeList ll, TripletList tl,double cutoff)
 		{
 		  continue;
 		}
-	      dr1=ll.getDistance(i,j);
-	      dr2=ll.getDistance(i,k);
-	      dr3=ll.getDistance(j,k);
+
+	      dr1=ll.fast_distance(i,j);
+	      dr2=ll.fast_distance(i,k);
+	      dr3=ll.fast_distance(j,k);
 	      orderDr[0]=dr1;
 	      orderDr[1]=dr2;
 	      orderDr[2]=dr3;
-	      orderIndex[0]=i;
-	      orderIndex[1]=j;
-	      orderIndex[2]=k;
-	      sortOrder(orderDr,orderIndex);
+	      elements[0]=ll.getSite(i);
+	      elements[1]=ll.getSite(j);
+	      elements[2]=ll.getSite(k);
+	      //false for sorting alphabetically
+	      tuple_remodulator(orderDr,elements,false);
 	      if(orderDr[1]>cutoff)
 		{
 		  continue;
 		}
-	      tempTriplet=Triplet(orderDr[0],orderDr[1],orderDr[2],ll.getSite(orderIndex[0]),ll.getSite(orderIndex[1]),ll.getSite(orderIndex[2]));
+	      tempTriplet=Triplet(orderDr[0],orderDr[1],orderDr[2],elements[0],elements[1],elements[2]);
 	      tl.updateTriplet(tempTriplet,false);
-		}		
+	    }		
 	    
 	}
     }

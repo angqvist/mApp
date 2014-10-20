@@ -35,7 +35,13 @@ public:
   int getNumberOfProperties();
   std::vector<double> properties;
   double getConcentration(std::string);
+  void calculate_lookup_table();
+  double fast_distance(int,int);
 private:
+
+  bool distance_table_init;
+  std::vector<std::vector<double> > distance_table;
+
   void readIdealPos(); // read positions from file  
   void readIdealPos2(); // read positions from file  
   void readIdealPos3(std::vector<std::string>); // read positions from file  
