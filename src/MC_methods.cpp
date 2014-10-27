@@ -12,7 +12,7 @@ double MC_totalEnergy(LatticeList ll, std::vector<NeighbourList> nl)
     {
       ret += nl[i].getLocalEnergy(ll);
     }
-  return ret/2.0;
+  return ret;
 }
 
 double MC_orderValue(LatticeList ll, double orderLimit)

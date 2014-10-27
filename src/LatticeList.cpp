@@ -53,7 +53,6 @@ LatticeList::LatticeList(int sizeX, int sizeY, int sizeZ)
 LatticeList::LatticeList(int sizeX, int sizeY, int sizeZ, int newNbrOfAtoms, string newFileName) 
 {
   distance_table_init=false;
-
   cellSizeX=sizeX;
   cellSizeY=sizeY;
   cellSizeZ=sizeZ;
@@ -71,11 +70,14 @@ LatticeList::LatticeList(int sizeX, int sizeY, int sizeZ, int newNbrOfAtoms, str
 }
 LatticeList::LatticeList(int sizeX, int sizeY, int sizeZ, int newNbrOfAtoms, int nbrOfProperties, string newFileName,std::vector<std::string> subElements) 
 {
-  distance_table_init=false;
 
+
+  distance_table_init=false;
+    
   cellSizeX=sizeX;
   cellSizeY=sizeY;
   cellSizeZ=sizeZ;
+
   nbrOfAtoms=newNbrOfAtoms;
   nbrOfSites=nbrOfAtoms*cellSizeX*cellSizeY*cellSizeZ;
   posList2.resize((nbrOfSites*3));
@@ -91,6 +93,30 @@ LatticeList::LatticeList(int sizeX, int sizeY, int sizeZ, int newNbrOfAtoms, int
 }
 
 
+LatticeList::LatticeList(int sizeX, int sizeY, int sizeZ, int newNbrOfAtoms, int nbrOfProperties, string newFileName,std::vector<std::string> subElements,std::vector<std::vector<double> > new_table) 
+{
+
+
+  distance_table_init=true;
+  distance_table=new_table;
+    
+  cellSizeX=sizeX;
+  cellSizeY=sizeY;
+  cellSizeZ=sizeZ;
+
+  nbrOfAtoms=newNbrOfAtoms;
+  nbrOfSites=nbrOfAtoms*cellSizeX*cellSizeY*cellSizeZ;
+  posList2.resize((nbrOfSites*3));
+  atomTypeList.resize(nbrOfSites);
+  latticeConstant=10.9868239608;  
+  Lx=cellSizeX*latticeConstant;
+  Ly=cellSizeY*latticeConstant;
+  Lz=cellSizeZ*latticeConstant;
+  properties.resize(nbrOfProperties);
+  fileName=newFileName;
+  readIdealPos3(subElements);
+
+}
 
 
 void LatticeList::readIdealPos()
@@ -154,7 +180,7 @@ void LatticeList::readIdealPos2()
   Lx=cellSizeX*latticeConstant;
   Ly=cellSizeY*latticeConstant;
   Lz=cellSizeZ*latticeConstant;
-  
+  cout<<"reading more 2"<<std::endl;
   
   double tempEnergy;
   in >> tempEnergy;
@@ -236,6 +262,8 @@ void LatticeList::readIdealPos2()
       posList2[i+2]=posList2[i+2-(nbrOfAtoms*3)*cellSizeX*cellSizeY]+latticeConstant;
     }
   in.close(); 
+ 
+  cout<<"done reading"<<std::endl;
 }
 
 
@@ -265,6 +293,7 @@ void LatticeList::readIdealPos3(std::vector<std::string> subElements)
 	    }
 	}
     }
+
   Lx=cellSizeX*latticeConstant;
   Ly=cellSizeY*latticeConstant;
   Lz=cellSizeZ*latticeConstant;
@@ -292,7 +321,7 @@ void LatticeList::readIdealPos3(std::vector<std::string> subElements)
       bool newAtom=true;
 
 
-  
+
       
       if(elements.size()==0)
 	{
@@ -361,6 +390,7 @@ void LatticeList::readIdealPos3(std::vector<std::string> subElements)
       posList2[i+2]=posList2[i+2-(nbrOfAtoms*3)*cellSizeX*cellSizeY]+latticeConstant;
     }
   in.close(); 
+
 }
 
 
@@ -512,7 +542,7 @@ double LatticeList::getDistance(int i, int j)
   return sqrt(pow(dx,2.0)+pow(dy,2.0)+pow(dz,2.0));
 }
 
-int LatticeList::getNbrOfSites()
+int LatticeList::getNbrOfSites() 
 {
   return nbrOfSites;
 }
@@ -718,15 +748,17 @@ void LatticeList::calculate_lookup_table()
 {
   if(!distance_table_init)
     {
+      std::cout<<"starting to calculate lookup table..."<<std::endl;
       distance_table.resize(nbrOfSites);
       for(int i=0; i<nbrOfSites; i++)
-	{
-	  distance_table[i].resize(nbrOfSites);
-	  for(int j=0; j<nbrOfSites; j++)
-	    {
-	      distance_table[i][j]=getDistance(i,j);
-	    }
-	}
+  	{
+  	  distance_table[i].resize(nbrOfSites);
+  	  for(int j=0; j<nbrOfSites; j++)
+  	    {
+  	      distance_table[i][j]=getDistance(i,j);
+  	    }
+  	}
+      std::cout<<"Done."<<std::endl;
     }
   distance_table_init=true;
 
@@ -735,5 +767,19 @@ void LatticeList::calculate_lookup_table()
 
 double LatticeList::fast_distance(int i,int j)
 {
+  // return getDistance(i,j);
   return distance_table[i][j];
+}
+std::vector<std::vector<double> > LatticeList::getLookupTable()
+{
+
+  if(distance_table_init)
+    {
+      return distance_table;
+    }
+  else
+    {
+      calculate_lookup_table();
+      return distance_table;
+    }
 }

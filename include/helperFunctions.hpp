@@ -69,7 +69,7 @@ void shuffleXMatrix(std::vector<double> &,std::vector<double> &,std::vector<doub
 std::vector<double> standardParameters(std::vector<double>,std::vector<double>,int,bool);
 
 std::vector<double> getSingleClusterVector(std::string,std::vector<double>,std::vector<std::string>,int,int,bool);
-std::vector<double> getSingleClusterVector(class LatticeList , class PairList ,class TripletList ,std::vector<double> ,std::vector<std::string> , int , int ,bool,bool );
+std::vector<double> getSingleClusterVector(class LatticeList , class PairList ,class TripletList , class QuatupletList,std::vector<double> ,std::vector<std::string> , int , int ,bool,bool );
 
 
 void getClusterVectors(std::vector<std::string>, std::vector<double> &,std::vector<double> &,std::vector<std::vector<double> > &,std::vector<double>, std::vector<std::string>, int, int,bool,bool);

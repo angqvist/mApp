@@ -39,7 +39,19 @@ ParameterList::ParameterList(std::string newFileName,double newCutOff,std::vecto
   eCutOff=newCutOff;
   nbrOfParams=0;
 
-  readParamsATATStyle(subElements);
+  //readParamsATATStyle(subElements);
+  readParams_new(subElements);
+  unwrapSinglets(paramList_0,subElements);
+  unwrapPairs(paramList,subElements);
+  unwrapTriplets(paramList_3,subElements);
+  unwrapQuatuplets(paramList_4,subElements);
+  std::cout<<"Done unwrapping"<<std::endl;
+  std::cout<<" Number of pairs: "<< paramList.size()<<" Triplets: "<<paramList_3.size()<< " Quatuplets: "<< paramList_4.size()<<std::endl;
+  for(int i=0; i<paramList.size(); i++)
+    {
+      paramList[i].printPair();
+    }
+
 }
 
 
@@ -52,13 +64,13 @@ void ParameterList::readParamsWithPL(PairList pl)
     }
 }
 
-int ParameterList::getNbrOfParams()
+int ParameterList::getNbrOfPairs()
 {
-  if(nbrOfParams==-1)
-    {
-      std::cout<<" No params has been read, nbr of params = -1"<<std::endl;
-    }
-  return nbrOfParams;
+  // if(nbrOfParams==-1)
+  //   {
+  //     std::cout<<" No params has been read, nbr of params = -1"<<std::endl;
+  //   }
+  return paramList.size();
 }
 
 
@@ -249,6 +261,7 @@ void ParameterList::readParams()
 void ParameterList::readParams_new(std::vector<std::string > subElements)
 {
   offset_value=0;
+  std::cout<<"starting to read params.."<<std::endl;
 
   int Mi=subElements.size();
   std::ifstream in(fileName.c_str());  
@@ -274,7 +287,7 @@ void ParameterList::readParams_new(std::vector<std::string > subElements)
   while(!(in.eof()))
     {
       in >> tuple_order;
-
+      
       
       //offset, zeroth cluster
       if(tuple_order==0)
@@ -304,9 +317,7 @@ void ParameterList::readParams_new(std::vector<std::string > subElements)
       //triplets
       if(tuple_order==3)
 	{
-	  in >> tempEnergy;
-	  tempTriplet.setEnergy(tempEnergy);
-	  
+
 	  in >> tempDist;
 	  tempTriplet.setDistance1(tempDist);
 
@@ -315,7 +326,13 @@ void ParameterList::readParams_new(std::vector<std::string > subElements)
 	  
 	  in >> tempDist;
 	  tempTriplet.setDistance3(tempDist);
+
+
+	  in >> tempEnergy;
+	  tempTriplet.setEnergy(tempEnergy);
 	  
+	  std::cout<<"=========+====+=++=+============++==+++=++"<<std::endl;
+	  tempTriplet.printTriplet();
 	  paramList_3.push_back(tempTriplet);	  
 	}
 
@@ -323,21 +340,64 @@ void ParameterList::readParams_new(std::vector<std::string > subElements)
 	{
 	  //need quatuplet code
 	  
-	  in >> tempEnergy;
-	  tempQ.setEnergy(tempEnergy);
 	  for(int i=0; i<5; i++)
 	    {
 	      in>>tempDist;
 	      tempQ.setDistance(i,tempDist);
 	    }
+	  in >> tempEnergy;
+	  tempQ.setEnergy(tempEnergy);
+
 	  paramList_4.push_back(tempQ);	  
 	}
       
 
     } 
+
+  std::cout<<"Done reading params. Number of pairs: "<< paramList.size()<<" Triplets: "<<paramList_3.size()<< " Quatuplets: "<< paramList_4.size()<<std::endl;
   in.close();
 }
 
+
+void ParameterList::unwrapSinglets(std::vector<Atom> singlet_list, std::vector<std::string> subelements)
+{
+  std::vector<Atom> new_list;
+  
+  Atom temp_atom = Atom();
+
+  std::vector<std::vector<std::string> > unWrapped_elements;
+  std::vector<std::vector<int> > clusterFunctions;
+  double energy;
+  for(int i=0; i<singlet_list.size(); i++)
+    {
+      std::vector<double> tomt;
+      unWrapped_elements = symmetric_cluster_function(tomt,subelements);
+      clusterFunctions = symmetric_cluster_function(tomt,subelements.size(), true);
+
+      for(int j=0; j<unWrapped_elements.size(); j++)
+	{
+	  temp_atom.setType(unWrapped_elements[j][0]);
+	  
+	  int atom1;
+	  for(int jj=0; jj<subelements.size(); jj++)
+	    {
+	      if(unWrapped_elements[j][0]==subelements[jj])
+		{
+		  atom1=jj;
+		}
+	    }
+	  energy=0;
+	  for(int k=0; k<clusterFunctions.size(); k++)
+	    {
+	      energy += clusterFunction(subelements.size(),atom1,clusterFunctions[k][0])*singlet_list[i].getProperty();
+	    }
+
+	  temp_atom.setProperty(energy);
+	  new_list.push_back(temp_atom);
+	}
+    }
+  paramList_0=new_list; //booyah
+}
 
 void ParameterList::unwrapPairs(std::vector<Pair> parList,std::vector<std::string> subelements)
 {
@@ -403,8 +463,8 @@ void ParameterList::unwrapTriplets(std::vector<Triplet> trip_list,std::vector<st
   for(int i=0; i<trip_list.size(); i++)
     {
       temp_trip.setDistance1(trip_list[i].getDistance1());
-      temp_trip.setDistance1(trip_list[i].getDistance1());
-      temp_trip.setDistance1(trip_list[i].getDistance1());
+      temp_trip.setDistance2(trip_list[i].getDistance2());
+      temp_trip.setDistance3(trip_list[i].getDistance3());
       dists[0]=trip_list[i].getDistance1();
       dists[1]=trip_list[i].getDistance2();
       dists[2]=trip_list[i].getDistance3();
@@ -549,3 +609,44 @@ void ParameterList::printPair(int i)
 }
 
 
+
+Triplet& ParameterList::getTriplet(int i)
+{
+  return paramList_3[i];
+}
+
+int ParameterList::getNbrOfTriplets()
+{
+  return paramList_3.size();
+}
+
+
+Quatuplet& ParameterList::getQuatuplet(int i)
+{
+  return paramList_4[i];
+}
+int ParameterList::getNbrOfQuatuplets()
+{
+  return paramList_4.size();
+}
+
+
+Atom& ParameterList::getSinglet(int i)
+{
+  return paramList_0[i];
+}
+
+int ParameterList::getNbrOfSinglets()
+{
+  return paramList_0.size();
+}
+
+double ParameterList::getOffsetValue()
+{
+  return offset_value;
+}
+
+std::vector<Atom> ParameterList::returnSingletVector()
+{
+  return paramList_0;
+}

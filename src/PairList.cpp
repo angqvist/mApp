@@ -4,7 +4,7 @@
 #include <string>
 #include "Pair.hpp"
 #include "LatticeList.hpp"
-
+#include "clust.hpp"
 
 PairList::PairList()
 {
@@ -52,44 +52,84 @@ int PairList::isAtomInSubElements(std::string atom, std::vector<std::string> sub
 
 void PairList::initializePairs(LatticeList ll, std::vector<std::string> subelements, double cutOff)
 {
+  ll.calculate_lookup_table();
+  std::cout<<"elements size:"<<subelements.size()<<std::endl;
+  std::cout<<"number of sites "<< ll.getNbrOfSites()<<std::endl;
+
+  for(int k=0;k<subelements.size(); k++)
+    {
+      std::cout<<subelements[k]<<std::endl;
+    }
   double dr;
   Pair tempPair=Pair();
-  for(size_t i=0; i< ll.getNbrOfSites(); i++)
+  std::vector<double> dist;
+  dist.resize(1);
+  std::vector<std::vector< std::string> > all_element_combinations;
+
+  for(int i=0; i< ll.getNbrOfSites(); i++)
     {
       if(!(isAtomInSubElements(ll.getSite(i),subelements)))
 	{
 	  continue;
 	}
-      for(size_t j=i; j<ll.getNbrOfSites(); j++)
+      for(int j=i+1; j<ll.getNbrOfSites(); j++)
 	{
-	  if(i==j)
-	    {
-	      continue;
-	    }
 	  if(!(isAtomInSubElements(ll.getSite(j),subelements)))
 	    {
 	      continue;
 	    }
-	  dr=ll.getDistance(i,j);
+	  //dr=ll.getDistance(i,j);
+	   dr=ll.fast_distance(i,j);
+	  dist[0]=dr;
+
+
+	  //  std::cout<<"ll size "<<ll.getNbrOfSites()<<std::endl;
+	  //	  std::cout<<i<<","<<j<<" =============================================="<<std::endl;
+	  // for(int ii2=0; ii2<ll.getNbrOfSites(); ii2++)
+	  //   {
+	  //     std::cout<< ll.getSite(ii2)<<std::endl;
+	  //   }
+
+
 	  if(dr>cutOff)
 	    {
 	      continue;
 	    }
-	  for(size_t k=0; k< subelements.size(); k++)
+
+	  //	  std::cout<<std::endl;
+	  // std::cout<<"pairlist element combinations"<<std::endl;
+
+
+	  all_element_combinations= symmetric_cluster_function(dist,subelements);
+	  // std::cout<<"done"<<std::endl;
+
+	  tempPair.setDistance(dr);
+	  for(int k=0; k<all_element_combinations.size(); k++)
 	    {
-	      for(size_t l=0; l<subelements.size(); l++)
-		{
-		  tempPair.setDistance(dr);
-		  tempPair.setSite1(subelements[k]);
-		  tempPair.setSite2(subelements[l]);
-		  updatePair(tempPair,true);		  
-		}//end l loop	  
-	    }//end for k loop
+
+	      // std::cout<<all_element_combinations[k].size()<<" "<<all_element_combinations[k][0]<< " "<< all_element_combinations[k][1]<<std::endl;
+	      tempPair.setSite1(all_element_combinations[k][0]);
+	      tempPair.setSite2(all_element_combinations[k][1]);
+	      updatePair(tempPair,true);
+	    }
+	  
+	  // for(size_t k=0; k< subelements.size(); k++)
+	  //   {
+	  //     for(size_t l=0; l<subelements.size(); l++)
+	  // 	{
+	  // 	  tempPair.setDistance(dr);
+	  // 	  tempPair.setSite1(subelements[k]);
+	  // 	  tempPair.setSite2(subelements[l]);
+	  // 	  updatePair(tempPair,true);		  
+	  // 	}//end l loop	  
+	  //   }//end for k loop
+
+
 	}//end for j loop
     }//end i loop
-  std::cout<<"sort pairs"<<std::endl;
+  // std::cout<<"sort pairs"<<std::endl;
   sortPairs();
-  std::cout<<"done sort pairs"<<std::endl;
+  //std::cout<<"done sort pairs"<<std::endl;
 
 }
 
@@ -194,7 +234,7 @@ std::vector<double> PairList::getClusterVector(std::vector<std::string> subEleme
   
 
 
-  std::vector<doble> dist;
+  std::vector<double> dist;
   dist.resize(1);
   std::vector<std::vector<int> > cluster_functions;
   dist[0]=uniq_dist[0];
@@ -217,13 +257,13 @@ std::vector<double> PairList::getClusterVector(std::vector<std::string> subEleme
 	      if(fabs(pairList[jj2].getDistance()-uniq_dist[i])<1e-4)
 		{
 
-		  for(int jj=0; jj<subelements.size(); jj++)
+		  for(int jj=0; jj<subElements.size(); jj++)
 		    {
-		      if(unWrapped_elements[j][0]==subelements[jj])
+		      if(pairList[jj2].getSite1()==subElements[jj])
 			{
 			  atom1=jj;
 			}
-		      if(unWrapped_elements[j][1]==subelements[jj])
+		      if(pairList[jj2].getSite2()==subElements[jj])
 			{
 			  atom2=jj;
 			}
@@ -232,8 +272,15 @@ std::vector<double> PairList::getClusterVector(std::vector<std::string> subEleme
 
 
 		  
-		  tempAverage+= clusterFunction(Mi,atom1,clusterFunctions[j][0])*
-		    clusterFunction(Mi,atom2,clusterFunctions[j][1])*pairList[jj2].getCount();
+		  tempAverage+= clusterFunction(Mi,atom1,cluster_functions[j][0])*
+		    clusterFunction(Mi,atom2,cluster_functions[j][1])*pairList[jj2].getCount();
+
+		  //std::cout<<"COUNT "<<pairList[jj2].getCount()<<std::endl;
+
+		  //	  std::cout<<clusterFunction(Mi,atom1,cluster_functions[j][0])*
+		  //  clusterFunction(Mi,atom2,cluster_functions[j][1])*pairList[jj2].getCount()<<std::endl;
+		  
+		  //  std::cout<<std::endl;
 		  totalPairs += pairList[jj2].getCount();
 		}
 	    }

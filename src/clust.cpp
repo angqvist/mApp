@@ -7,13 +7,16 @@
 double clusterFunction(int nbr_of_elements,int atom_type,int clustFunction)
 {
    //odd: use cos
-  if((clustFunction%2!=0))
+  if(((clustFunction+2)%2==0))
     {
+
+      //  std::cout<<"cos "<<clustFunction<< " "<< atom_type<< " "<< nbr_of_elements<<" "<<-cos(2.0*PI * (double)( (int)(clustFunction+2)/2 ) * (double)atom_type/((double)nbr_of_elements))<<  std::endl;
       return -cos(2.0*PI * (double)( (int)(clustFunction+2)/2 ) * (double)atom_type/((double)nbr_of_elements));
     }
   //even: use sin
   else 
     {
+      // std::cout<<"sin "<<clustFunction<< " "<< atom_type<< " "<< nbr_of_elements<<" "<<-sin(2.0*PI * (double)( (int)(clustFunction+2)/2 ) * (double)atom_type/((double)nbr_of_elements))<<std::endl;
       return -sin(2.0*PI * (double)( (int)(clustFunction+2)/2 ) * (double)atom_type/((double)nbr_of_elements));
     }
 }
@@ -25,12 +28,14 @@ std::vector<std::vector<std::string> > symmetric_cluster_function(std::vector<do
   bool reverse_sort=false;
   //N.B +1 in number of elements
   std::vector<std::vector<int> > int_base = symmetric_cluster_function(dists,subelements.size()+1,reverse_sort);
+  // std::cout<<"int base size[0] "<<int_base[0].size()<<std::endl;
   std::vector<std::vector<std::string> > ret;
   ret.resize(int_base.size());
   for(int i=0; i<int_base.size(); i++)
     {
       for(int j=0; j<int_base[i].size(); j++)
 	{
+	  //  std::cout<<int_base[i][j]<<std::endl;
 	  ret[i].push_back( subelements[ int_base[i][j] ] );
 	}
     }
@@ -48,7 +53,7 @@ std::vector<std::vector<int> > symmetric_cluster_function(std::vector<double> di
   
   int cluster_max=nbr_of_elements-2;
   
-  if(tuple_size==1)
+  if(tuple_size==0)
     {
       std::vector<int> one_ret;
       one_ret.resize(1);
@@ -58,7 +63,7 @@ std::vector<std::vector<int> > symmetric_cluster_function(std::vector<double> di
 	  returnVector.push_back(one_ret);
 	}
     }  
-  else if(tuple_size==2)
+  else if(tuple_size==1)
     {
       std::vector<int> two_ret;
       two_ret.resize(2);
@@ -206,6 +211,41 @@ void clust_sort_return_vector(std::vector<std::vector<int> > &return_vector)
 }
 
 
+void clust_sort_dists(std::vector<std::vector<double> > &dists)
+{
+  bool swapped=true;
+  bool previous_columns_equal;
+  for(int j=0; j<dists[0].size(); j++)
+    {
+
+      while(swapped)
+	{
+	  swapped=false;
+	  //sort the j:th column
+	  for(int i=0; i<dists.size()-1; i++)
+	    {
+	      previous_columns_equal=true;
+	      for(int jj= j-1; jj>=0; jj--)
+		{
+		  if(dists[i][jj] != dists[i+1][jj])
+		    {
+		      previous_columns_equal=false;
+		      
+		    }
+		}
+	      // (j==0 || return_vector[i][j-1]==return_vector[i+1][j-1]) )
+	      
+	      if(dists[i][j]>dists[i+1][j] && previous_columns_equal) 
+		{
+		  dists[i].swap(dists[i+1]);
+		  //swap
+		  swapped=true;
+		}
+	    }
+	}
+    }
+}
+
 bool add_new_cluster_controller(std::vector<std::vector<int> > bigger_vector, std::vector<int> prospect)
 {
   if(bigger_vector.size()==0)
@@ -251,7 +291,7 @@ void tuple_remodulator(std::vector<double> &dists, std::vector<std::string> &ele
     }
   int d_size = dists.size();
   
-  if(d_size==2)
+  if(d_size==1)
     {
       sortElements(elements,reverseSort);
     }
@@ -315,9 +355,20 @@ void clust_sort_quatuplet(std::vector<double> &dists, std::vector<std::string> &
   double temp_distance;
   std::string temp_element;
 
-
+  int iterera=0;
   while(swapped)
     {
+      iterera++;
+      if(iterera>10)
+	{
+	  std::cout<<"iterear: "<<iterera<<std::endl;
+	  for(int k=0; k<dists.size(); k++)
+	    {
+	      std::cout<<dists[k]<< " ";
+	    }
+	  std::cout<<std::endl;
+
+	}
       swapped=false;
       
       for(int i=0; i<2; i++)
@@ -327,6 +378,7 @@ void clust_sort_quatuplet(std::vector<double> &dists, std::vector<std::string> &
 	    {
 	      if(i==0)
 		{
+		  //  std::cout<<"i=0"<<std::endl;
 		  // r2 < r1
 		  //swap s2,s3
 		  //swap r1,r2 and r5,r6
@@ -336,6 +388,7 @@ void clust_sort_quatuplet(std::vector<double> &dists, std::vector<std::string> &
 
 	      if(i==1)
 		{
+		  // std::cout<<"i==1"<<std::endl;
 		  //r3<r2
 		  //swap s3,s4		   
 		  // swap r2,r3
@@ -352,8 +405,9 @@ void clust_sort_quatuplet(std::vector<double> &dists, std::vector<std::string> &
 	  //r2=r4
 	  //r3=r5
 	  //r6=r6
-	  if(dists[1]> dists[3] || dists[1]>dists[4])
+	  if(dists[1]> dists[3] && dists[2]>=dists[4])
 	    {
+	      //    std::cout<<"konstig swap h'r kanske"<<std::endl;
 	      clust_swap_atom(1,2,elements,dists);
 	      swapped=true;
 	    }
@@ -370,6 +424,7 @@ void clust_sort_quatuplet(std::vector<double> &dists, std::vector<std::string> &
       
       if(diff1<DISTANCE_LIMIT && diff2 < DISTANCE_LIMIT)
 	{
+	  // std::cout<<"in here?"<<std::endl;
 	  swapped = true;
 	  
 	  while(swapped)

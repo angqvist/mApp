@@ -38,6 +38,7 @@ public:
   friend int operator!=(Triplet,Triplet);
   double LIMIT;
   void sortTriplet();
+  void setAll(std::vector<double>,std::vector<std::string>);
 
 private:
   double getLimit();

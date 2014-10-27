@@ -10,19 +10,24 @@ public:
   LatticeList(int , int , int );
   LatticeList(int , int , int ,int , std::string );
   LatticeList(int,int,int,int,int,std::string,std::vector<std::string>);
+  LatticeList(int,int,int,int,int,std::string,std::vector<std::string>,std::vector<std::vector<double> >);
+
   double getDistance(int,int);
-  int getNbrOfSites();
+  int getNbrOfSites() ;
+
   void printList(); //Mostly for bug checking
   void printList(std::string); //Mostly for bug checking
   void setEnergy(double);
   void setBandGap(double);
   void setVolume(double);
   void setAverageLatticeConstant(double);
+
   double getEnergy();
   double getBandGap();
   double getVolume();
   double getAverageLatticeConstant();
   std::string getSite(int);
+
   void setSite(int,std::string);
   void setRandomSites(int, std::string, std::string);
   void setRandomSites(int,int, std::string, std::string,std::string);
@@ -37,6 +42,7 @@ public:
   double getConcentration(std::string);
   void calculate_lookup_table();
   double fast_distance(int,int);
+  std::vector<std::vector<double> > getLookupTable();
 private:
 
   bool distance_table_init;

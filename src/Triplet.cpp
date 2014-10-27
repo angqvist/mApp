@@ -252,3 +252,22 @@ void Triplet::sortStrings(std::vector< std::string> &type)
 	}
     }
 }
+
+
+void Triplet::setAll(std::vector<double> dists, std::vector<std::string> elements)
+{
+
+
+  if(dists.size() != 3 || elements.size() !=3)
+    {
+      std::cout<<"Error: size mismatch in setAll in triplet class"<<std::endl;
+      return;
+    }
+  setDistance1(dists[0]);
+  setDistance2(dists[1]);
+  setDistance3(dists[2]);
+
+  setSite1(elements[0]);
+  setSite2(elements[1]);
+  setSite3(elements[2]);
+}

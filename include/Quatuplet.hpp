@@ -1,3 +1,4 @@
+#pragma once
 #include <string>
 #include <vector>
 
@@ -28,6 +29,8 @@ public:
   double getEnergy();
   int getCount();
   
+  std::vector<double> getDists();
+  std::vector<std::string> getElements();
   void print();
   
   void setDistance1(double);
@@ -39,13 +42,13 @@ public:
   
   void setDistance(int,double);
 
-
+  void setAll(std::vector<double>, std::vector<std::string>);
 
   void setSite1(std::string);
   void setSite2(std::string);
   void setSite3(std::string);
   void setSite4(std::string);
-  
+  void setSite(int,std::string);
   void setEnergy(double);
 
   void setCount(int);
@@ -59,7 +62,8 @@ public:
   //void sortQuatuplet();
 
 private:
-  
+  std::vector<double> dists;		      
+  std::vector<std::string> elements;
   double distance1;
   double distance2;
   double distance3;

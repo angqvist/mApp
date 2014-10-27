@@ -6,7 +6,7 @@
 class ParameterList
 {
 public:
-  int getNbrOfParams();
+  int getNbrOfPairs();
   class Pair& getPair(int);
   ParameterList();
   ParameterList(std::string ,double );
@@ -14,7 +14,16 @@ public:
   ParameterList(std::string,double,std::vector<std::string >);
   void printList();
   void printPair(int);
-
+  
+  class Atom& getSinglet(int);
+  int getNbrOfSinglets();
+  
+  class Triplet& getTriplet(int);
+  int getNbrOfTriplets();  
+  class Quatuplet& getQuatuplet(int);
+  int getNbrOfQuatuplets();
+  double getOffsetValue();
+  std::vector<class Atom> returnSingletVector();
 private:
   void unwrapSinglets(std::vector<Atom>,std::vector<std::string>);
   void unwrapPairs(std::vector<Pair>, std::vector<std::string>);
@@ -30,6 +39,7 @@ private:
   std::vector<Pair> paramList;
   std::vector<Triplet> paramList_3;
   std::vector<Quatuplet> paramList_4;
+
   void readParamsWithPL(class PairList);
   void readParamsATATStyle(std::vector<std::string >);
   void readParams_new(std::vector<std::string > );
