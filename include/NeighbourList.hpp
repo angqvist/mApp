@@ -36,6 +36,11 @@ private:
   std::vector<double> singletEnergy;
   std::vector< std::string > singletType;
   double currentLocalEnergy;
+  
+  std::vector<int> pair_index;
+  std::vector<double> pair_dist;
+  std::vector<std::vector<std::string> > pair_elements;
+  std::vector<std::vector<class Pair> > pair_vector;
 
   std::vector<std::vector<int> > trip_index;
   std::vector<std::vector<double> > trip_dists;

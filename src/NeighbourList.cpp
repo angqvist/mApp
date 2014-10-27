@@ -70,10 +70,7 @@ void NeighbourList::printManyNbr(std::vector<Neighbour> nl)
     }
 }
 
-//finds singlet & pairs
-
-
-
+//finds pairs
 void NeighbourList::findNeighbours(LatticeList ll, ParameterList pl)
 {
   double tempDist;
@@ -82,17 +79,26 @@ void NeighbourList::findNeighbours(LatticeList ll, ParameterList pl)
 
   
 
-  
-  while(pl.getPair(singletIndex).getDistance()<distanceLimit)
-    {
-      //std::cout<<"index: "<<singletIndex<<" dist: "<<pl.getPair(singletIndex).getDistance()<< " type "<<pl.getPair(singletIndex).getSite1()<< " energy "<<pl.getPair(singletIndex).getEnergy()<<std::endl;
-      singletType.push_back(pl.getPair(singletIndex).getSite1());
-      singletEnergy.push_back(pl.getPair(singletIndex).getEnergy());
-      singletIndex++;
-    }
+  //commented out old singlet stuff. new is the new old.
+  // while(pl.getPair(singletIndex).getDistance()<distanceLimit)
+  //   {
+  //     //std::cout<<"index: "<<singletIndex<<" dist: "<<pl.getPair(singletIndex).getDistance()<< " type "<<pl.getPair(singletIndex).getSite1()<< " energy "<<pl.getPair(singletIndex).getEnergy()<<std::endl;
+  //     singletType.push_back(pl.getPair(singletIndex).getSite1());
+  //     singletEnergy.push_back(pl.getPair(singletIndex).getEnergy());
+  //     singletIndex++;
+  //   }
   //std::cout<<"singlet index="<<singletIndex<<std::endl;
  
+  ll.calculate_lookup_table();
+  
+  std::vector<double> temp_dist;
+  temp_dist.resize(1);
+  std::vector<std::string> ghost_atoms;
+  ghost_atoms.resize(2);
+  ghost_atoms[0]="A";
+  ghost_atoms[1]="A";
 
+  
 
   for(int i=0; i<ll.getNbrOfSites(); i++)
     {
@@ -101,35 +107,55 @@ void NeighbourList::findNeighbours(LatticeList ll, ParameterList pl)
 	{
 	  continue;
 	}
-      tempDist=ll.getDistance(i,thisIndex);
+      // tempDist=ll.getDistance(i,thisIndex);
+      tempDist[0]=ll.fast_distance(i,thisIndex);
+      
+      tuple_remodulator(temp_dist,ghost_atoms,false);      
+      std::vector<Pair> temp_pair_vector;
+      
       for(int j=0; j<pl.getNbrOfPairs(); j++)
 	{
-	  if(fabs(tempDist-pl.getPair(j).getDistance())<distanceLimit && pl.getPair(j).getDistance()>0.00001)
+	  if(fabs(tempDist-pl.getPair(j).getDistance())<distanceLimit)
 	    {
-	      Neighbour tempNbr = Neighbour(pl.getPair(j).getSite1(),pl.getPair(j).getSite2(),pl.getPair(j).getEnergy(),pl.getPair(j).getDistance());
-	      if( newNeighbour(tempNbr) )
-		{
-		  nbrList.push_back(tempNbr);
-		  paramAtIndex=true;		      
-		}
+	      paramAtIndex=true;
+	      temp_pair_vector.push_back(pl.getPair(j));
 	    }
 	}
-	
-      if(!(nbrList.empty()))
-	{
-	  manyNbrLists.push_back(nbrList);
-	}
-      nbrList.clear();
+
       if(paramAtIndex)
 	{
-	  indexList.push_back(i);
+	  pair_vector.push_back(temp_pair_vector);
+	  pair_index.push_back(i);
+	  	  
 	}
-    }// end i loop
+	      
+
+      // Neighbour tempNbr = Neighbour(pl.getPair(j).getSite1(),pl.getPair(j).getSite2(),pl.getPair(j).getEnergy(),pl.getPair(j).getDistance());
+      // if( newNeighbour(tempNbr) )
+      // 	{
+      // 	  nbrList.push_back(tempNbr);
+      // 	  paramAtIndex=true;		      
+      // 	}
+
+
+    }
+}
+	
+//   if(!(nbrList.empty()))
+// 	{
+// 	  manyNbrLists.push_back(nbrList);
+    // 	}
+    //   nbrList.clear();
+    //   if(paramAtIndex)
+    // 	{
+    // 	  indexList.push_back(i);
+    // 	}
+    // }// end i loop
 
 
 
   
-}
+
 
 
 
@@ -157,6 +183,8 @@ double  NeighbourList::getMatchingEnergy(Neighbour nbr, std::vector<Neighbour> n
 double NeighbourList::getLocalEnergy(LatticeList ll)
 {
 
+  ll.calculate_lookup_table();
+
   localEnergy=0.0;
   //add singlet Energy times two?
   std::cout<<"Getting local energy"<<std::endl;
@@ -164,30 +192,62 @@ double NeighbourList::getLocalEnergy(LatticeList ll)
   std::cout<<"Triplet index size "<<trip_index.size()<<std::endl;
   std::cout<<"Quatuplet index size "<<quat_index.size()<<std::endl;
   
-  for(int i=0; i<singletEnergy.size(); i++)
-    {
-      if(ll.getSite(thisIndex)==singletType[i])
-  	{
-  	  localEnergy+=singletEnergy[i];
-  	}
-    }
-  Neighbour tempNbr= Neighbour();
-  tempNbr.setSite1(ll.getSite(thisIndex));  
-  //TIMES A HALF since all pairs will get counted twice
-  for(size_t i=0; i < indexList.size(); i++)
-    {
-      tempNbr.setSite2(ll.getSite(indexList[i]));
-      std::cout<<"found pair with energy "<< getMatchingEnergy(tempNbr,manyNbrLists[i])*0.5<< " total energy: "<<localEnergy<<std::endl;
-      localEnergy += getMatchingEnergy(tempNbr,manyNbrLists[i])*0.5;
-    }
+  // for(int i=0; i<singletEnergy.size(); i++)
+  //   {
+  //     if(ll.getSite(thisIndex)==singletType[i])
+  // 	{
+  // 	  localEnergy+=singletEnergy[i];
+  // 	}
+  //   }
+  // Neighbour tempNbr= Neighbour();
+  // tempNbr.setSite1(ll.getSite(thisIndex));  
+  // //TIMES A HALF since all pairs will get counted twice
+  // for(size_t i=0; i < indexList.size(); i++)
+  //   {
+  //     tempNbr.setSite2(ll.getSite(indexList[i]));
+  //     std::cout<<"found pair with energy "<< getMatchingEnergy(tempNbr,manyNbrLists[i])*0.5<< " total energy: "<<localEnergy<<std::endl;
+  //     localEnergy += getMatchingEnergy(tempNbr,manyNbrLists[i])*0.5;
+  //   }
 
+  for(int i=0; i<singletList.size(); i++)
+    {
+      if(ll.getSite(thisIndex)==singletList[i].getType())
+	{
+	  localEnergy += singletList[i].getProperty();
+	  break;
+	}
+    }
+  std::vector<double> dists;
+  std::vector<std::string> sites;
+
+  
+  if(pair_vector.size()>0)
+    {
+      dists.resize(1);
+      sites.resize(2);
+      Pair temp_pair = Pair();
+      for(size_t i=0; i<pair_index.size(); i++)
+	{
+	  dists[0]=ll.fast_distance(thisIndex,pair_index[i]);
+	  sites[0]=ll.getSite(i);
+	  sites[1]=ll.getSite(thisIndex);
+	  temp_pair.setDistance(dists[0]);
+	  temp_pair.setSite1(sites[0]);
+	  temp_pair.setSite2(sites[1]);
+	  
+	  for(size_t j=0; j<pair_vector[i].size(); j++)
+	    {
+	      localEnergy ++ pair_vector[i][j].getEnergy()*0.5;
+	      break;
+	    }
+	}
+    }
+	  
+  
 
   //triplets;;; times a third since each triplet gets counted thrice
-  ll.calculate_lookup_table();
 
-  std::vector<double> dists;
   dists.resize(3);
-  std::vector<std::string> sites;
   sites.resize(3);
   Triplet temp_trip=Triplet();
   for(size_t i=0; i<trip_index.size(); i++)
@@ -262,6 +322,9 @@ double NeighbourList::getLocalEnergy(LatticeList ll)
 
 int NeighbourList::isThisMatchingNeighbour(LatticeList ll, Neighbour n1)
 {
+  std::cout<<"ERROR ERROR ERROR ERROR"<<std::endl;
+  std::cout<<" OMG IS THIS USED?!?!??! Contact Mattias"<<std::endl;
+  std::cout<<"ERROR ERROR ERROR ERROR"<<std::endl;
   Neighbour tempNbr= Neighbour();
   tempNbr.setSite1(ll.getSite(thisIndex));
   int returnNumber=0;
@@ -315,7 +378,7 @@ void NeighbourList::findTripletNeighbours(LatticeList ll,ParameterList pl)
   ghost_atoms[0]="A";
   ghost_atoms[1]="A";
   ghost_atoms[2]="A";
-  std::cout<<"3: ll.getNbrOfSites() "<<ll.getNbrOfSites()<<std::endl;
+  // std::cout<<"3: ll.getNbrOfSites() "<<ll.getNbrOfSites()<<std::endl;
   for(int i=0; i<ll.getNbrOfSites(); i++)
     {
       if(i==thisIndex)
