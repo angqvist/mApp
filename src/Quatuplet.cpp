@@ -419,6 +419,8 @@ void Quatuplet::print()
     {
       std::cout<<dists[i]<< " ";
     }
+  std::cout<<energy<< " ";
+  std::cout<<count<<" ";
   for(int i=0; i<4; i++)
     {
       std::cout<<elements[i]<< " ";

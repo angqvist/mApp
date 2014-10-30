@@ -47,9 +47,9 @@ ParameterList::ParameterList(std::string newFileName,double newCutOff,std::vecto
   unwrapQuatuplets(paramList_4,subElements);
   std::cout<<"Done unwrapping"<<std::endl;
   std::cout<<" Number of pairs: "<< paramList.size()<<" Triplets: "<<paramList_3.size()<< " Quatuplets: "<< paramList_4.size()<<std::endl;
-  for(int i=0; i<paramList.size(); i++)
+  for(int i=0; i<paramList_4.size(); i++)
     {
-      paramList[i].printPair();
+      paramList_4[i].print();
     }
 
 }
@@ -340,12 +340,13 @@ void ParameterList::readParams_new(std::vector<std::string > subElements)
 	{
 	  //need quatuplet code
 	  
-	  for(int i=0; i<5; i++)
+	  for(int i=0; i<6; i++)
 	    {
 	      in>>tempDist;
 	      tempQ.setDistance(i,tempDist);
 	    }
 	  in >> tempEnergy;
+	  std::cout<<"read param 4 energy "<<tempEnergy<<std::endl;
 	  tempQ.setEnergy(tempEnergy);
 
 	  paramList_4.push_back(tempQ);	  
@@ -418,6 +419,8 @@ void ParameterList::unwrapPairs(std::vector<Pair> parList,std::vector<std::strin
 
       for(int j=0; j<unWrapped_elements.size(); j++)
 	{
+
+	  
 	  int atom1;
 	  int atom2;
 	  for(int jj=0; jj<subelements.size(); jj++)
@@ -432,6 +435,7 @@ void ParameterList::unwrapPairs(std::vector<Pair> parList,std::vector<std::strin
 		}
 
 	    }
+	  std::cout<<j<< " "<<unWrapped_elements[j][0]<< " "<<unWrapped_elements[j][1]<< " "<< atom1<< " "<<atom2<<std::endl;
 	  energy=0;
 	  for(int k=0; k<clusterFunctions.size(); k++)
 	    {
@@ -579,6 +583,7 @@ void ParameterList::unwrapQuatuplets(std::vector<Quatuplet> quat_list, std::vect
 	  temp_quat.setSite2(unWrapped_elements[j][1]);
 	  temp_quat.setSite3(unWrapped_elements[j][2]);
 	  temp_quat.setSite4(unWrapped_elements[j][3]);
+	  std::cout<<"unwrap 4 energy "<<energy<<std::endl;
 	  temp_quat.setEnergy(energy);
 	  new_list.push_back(temp_quat);
 	}

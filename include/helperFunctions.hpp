@@ -78,3 +78,6 @@ void shuffleFittingObject(std::vector<double> &,std::vector<double> &,std::vecto
 void pushToBack(std::vector<double> &,std::vector<double> &,std::vector<std::vector<double> > &);
 
 void printInterfaceParameters(std::vector<double> ,std::vector<double>,class LatticeList ,std::string,std::vector<std::string>);
+
+
+void printVector(std::vector<double> );

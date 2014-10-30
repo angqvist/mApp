@@ -284,9 +284,13 @@ void tuple_remodulator(std::vector<double> &dists, std::vector<std::string> &ele
 { 
 
 
-  if(dists.size()<4 && dists.size() != elements.size())
+  if((dists.size()==1 && 2!= elements.size()) || 
+     (dists.size()==0 && elements.size()!=1) ||
+     (dists.size()==3 && elements.size() != 3) ||
+     (dists.size()==6 && elements.size() != 4))
     {
       std::cout<<"distance/elements mismatch in tuple_remodulator"<<std::endl;
+      std::cout<<"Dists size: "<<dists.size()<< " elements size: "<<elements.size()<<std::endl;
       return;
     }
   int d_size = dists.size();
@@ -354,8 +358,189 @@ void clust_sort_quatuplet(std::vector<double> &dists, std::vector<std::string> &
   bool swapped = true;
   double temp_distance;
   std::string temp_element;
-
+  //first loop makes sure smallest distance is first
   int iterera=0;
+
+
+  while(swapped)
+    {
+      swapped=false;
+      iterera++;
+      if(iterera>10)
+	{
+	  std::cout<<"iterear: "<<iterera<<std::endl;
+	  for(int k=0; k<dists.size(); k++)
+	    {
+	      std::cout<<dists[k]<< " ";
+	    }
+	  std::cout<<std::endl;
+
+	}
+      for(int i=1; i<6; i++)
+	{
+	  if(dists[0]>dists[i])
+	    {
+
+	      //r2<r1 swap 
+	      //swap s2,s3
+	      if(i==1)
+		{
+		  clust_swap_atom(2,3,elements,dists);
+		  swapped=true;
+		}
+
+	      //r3<r1
+	      //swap s2,s4
+	      if(i==2)
+		{
+		  clust_swap_atom(2,4,elements,dists);
+		  swapped=true;
+		}
+	      //r4<r1
+	      //swap s3,s1
+	      if(i==3)
+		{
+		  clust_swap_atom(1,3,elements,dists);
+		  swapped=true;
+		}
+	      //r5<r1
+	      //swap s1,s4
+	      if(i==4)
+		{
+		  clust_swap_atom(1,4,elements,dists);
+		  swapped=true;
+		}
+
+	      //r6<r1
+	      //swap s3,s1
+	      //swap s4,s2
+	      if(i==5)
+		{
+		  clust_swap_atom(1,3,elements,dists);
+		  clust_swap_atom(2,4,elements,dists);
+		  swapped=true;
+		}
+	    }
+	}
+
+      //rotations::
+
+      
+
+
+    }
+
+
+  iterera=0;
+
+  swapped=true;
+	      
+  std::vector<double> temp_distances;
+  while(swapped)
+    {
+      swapped=false;
+
+      for(int i=1; i<5; i++)
+  	{
+  	  for(int j=i+1; j<5; j++)
+  	    {
+	      // if(fabs(dists[i]-dists[j])<1e-4)
+	      //	{
+	      temp_distances=dists;
+	      clust_swap_atom(i,j,elements,dists);
+		  
+	      for(int k=0; k<6; k++)
+		{
+		  if(fabs(temp_distances[k]-dists[k])<1e-4)
+		    {
+		      continue;
+		    }
+
+		  else if(temp_distances[k]<dists[k])
+		    {
+		      clust_swap_atom(i,j,elements,dists);
+		      break;
+		    }
+		  else if(temp_distances[k]>dists[k])
+		    {
+		      swapped=true;
+		      break;
+		    }
+		}
+	      //	}
+  	    }
+  	}
+      //rotate
+      //-1 cw, -2=ccw
+
+       if(!swapped)
+	{
+	  //	  std::cout<<"CW"<<std::endl;
+
+	  //	  std::cout<<dists[0]<< " "<<dists[1]<< " "<<dists[2]<< " "<<dists[3]<< " "<<dists[4]<< " "<<dists[5]<< " "<<elements[0]<< " "<<elements[1]<< " "<<elements[2]<< " "<<elements[3]<<std::endl;
+
+	  temp_distances=dists;
+
+	  clust_swap_atom(-1,0,elements,dists);
+	  // 	  std::cout<<dists[0]<< " "<<dists[1]<< " "<<dists[2]<< " "<<dists[3]<< " "<<dists[4]<< " "<<dists[5]<< " "<<elements[0]<< " "<<elements[1]<< " "<<elements[2]<< " "<<elements[3]<<std::endl;
+	  for(int k=0; k<6; k++)
+	    {
+	      if(fabs(temp_distances[k]-dists[k])<1e-4)
+		{
+		  continue;
+		}
+	      else if(temp_distances[k]<dists[k])
+		{
+		  clust_swap_atom(-2,0,elements,dists);
+		  break;
+		}
+	      else if(temp_distances[k]>dists[k])
+		{
+		  //  std::cout<<"good rotate"<<std::endl;
+		  swapped=true;
+		  break;
+		}
+	    }
+	}
+      if(!swapped)
+	{
+	  // std::cout<<"CCW"<<std::endl;
+		  
+	  // std::cout<<dists[0]<< " "<<dists[1]<< " "<<dists[2]<< " "<<dists[3]<< " "<<dists[4]<< " "<<dists[5]<< " "<<elements[0]<< " "<<elements[1]<< " "<<elements[2]<< " "<<elements[3]<<std::endl;
+
+	  temp_distances=dists;
+      
+	  clust_swap_atom(-2,0,elements,dists);
+	  //  std::cout<<dists[0]<< " "<<dists[1]<< " "<<dists[2]<< " "<<dists[3]<< " "<<dists[4]<< " "<<dists[5]<< " "<<elements[0]<< " "<<elements[1]<< " "<<elements[2]<< " "<<elements[3]<<std::endl;
+
+	  for(int k=0; k<6; k++)
+	    {
+	      if(fabs(temp_distances[k]-dists[k])<1e-4)
+		{
+		  continue;
+		}
+	     else if(temp_distances[k]<dists[k])
+		{
+		  clust_swap_atom(-1,0,elements,dists);
+		  break;
+		}
+	      else if(temp_distances[k]>dists[k])
+		{
+		  //  std::cout<<"good rotate"<<std::endl;
+
+		  swapped=true;
+		  break;
+		}
+	    }
+	}
+
+    }
+	     
+	      
+	    
+
+  iterera=0;
+  swapped =false;
   while(swapped)
     {
       iterera++;
@@ -411,7 +596,36 @@ void clust_sort_quatuplet(std::vector<double> &dists, std::vector<std::string> &
 	      clust_swap_atom(1,2,elements,dists);
 	      swapped=true;
 	    }
+
+	  
 	}
+
+      for(int i=1; i<5; i++)
+	{
+	  for(int j=i+1; j<5; j++)
+	    {
+	      if(fabs(dists[i]-dists[j])<1e-4)
+		{
+		  temp_distances=dists;
+		  clust_swap_atom(i,j,elements,dists);
+		  
+		  for(int k=0; k<6; k++)
+		    {
+		      if(temp_distances[k]<dists[k])
+			{
+			  clust_swap_atom(i,j,elements,dists);
+			  break;
+			}
+		      else if(temp_distances[k]>dists[k])
+			{
+			  swapped=true;
+			  break;
+			}
+		    }
+		}
+	    }
+	}
+
 
       //second part, sort alphabetically where possible
       // if r1==r2==r3 then sort r4,r5,r6

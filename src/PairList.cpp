@@ -5,6 +5,7 @@
 #include "Pair.hpp"
 #include "LatticeList.hpp"
 #include "clust.hpp"
+#include "helperFunctions.hpp"
 
 PairList::PairList()
 {
@@ -210,10 +211,11 @@ std::vector<double> PairList::getUniqueDistances(double cutoff)
       if(addDistance)
 	uniq_dist.push_back(pairList[i].getDistance());
     }
+  std::sort (uniq_dist.begin(),uniq_dist.end());
   return uniq_dist;
 }
-int s1;
-int s2;
+//int s1;
+//int s2;
 
 
 std::vector<double> PairList::getClusterVector(std::vector<std::string> subElements, double cutoff,bool doAverage)
@@ -221,7 +223,8 @@ std::vector<double> PairList::getClusterVector(std::vector<std::string> subEleme
   const double PI = 3.1415926535897932384626;
 
   std::vector<double> uniq_dist = getUniqueDistances(cutoff);  
-  std::sort (uniq_dist.begin(),uniq_dist.end());
+  // std::sort (uniq_dist.begin(),uniq_dist.end());
+  printVector(uniq_dist);
   int Mi=subElements.size();
   std::vector<double> clusterVector;
   
@@ -269,8 +272,8 @@ std::vector<double> PairList::getClusterVector(std::vector<std::string> subEleme
 			}
 
 		    }
-
-
+		  
+	
 		  
 		  tempAverage+= clusterFunction(Mi,atom1,cluster_functions[j][0])*
 		    clusterFunction(Mi,atom2,cluster_functions[j][1])*pairList[jj2].getCount();

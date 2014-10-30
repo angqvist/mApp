@@ -470,11 +470,12 @@ std::vector<double> TripletList::getClusterVector(std::vector<std::string > subE
     {
       clusterFunctions = symmetric_cluster_function(uniq_dists[i],Mi,true);
       
-      tempAverage=0.0;
-      tempTripletCount=0;
 
       for(int ii2=0; ii2<clusterFunctions.size(); ii2++)
 	{
+	  tempAverage=0.0;
+	  tempTripletCount=0;
+
 	  for(int j=0; j<tripletList.size(); j++)
 	    {
 	      

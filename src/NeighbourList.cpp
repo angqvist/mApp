@@ -9,6 +9,8 @@
 #include "clust.hpp"
 #include "Triplet.hpp"
 #include "Quatuplet.hpp"
+#include "Atom.hpp"
+#include "helperFunctions.hpp"
 // should really not be used with empty constructor
 NeighbourList::NeighbourList()
 {
@@ -22,9 +24,20 @@ NeighbourList::NeighbourList(int i, LatticeList ll, ParameterList pl)
 {
   thisIndex=i;
   distanceLimit=1e-4;
+  readSingletList(pl);
   findNeighbours(ll,pl);
   findTripletNeighbours(ll,pl);
   findQuatupletNeighbours(ll,pl);
+  // std::cout<<"QUAT VECTOR IN NBRLIST +++++===========+"<<std::endl;
+  // for(int i=0; i<quat_vector.size(); i++)
+  //   {
+  //     std::cout<<"i= "<<i<<std::endl;
+  //     for(int j=0; j<quat_vector[i].size(); j++)
+  // 	{
+  // 	  quat_vector[i][j].print();
+  // 	}
+  //   }
+
   setOffset(pl.getOffsetValue());
 }
 void NeighbourList::addNeighbour(Neighbour nbr1)
@@ -108,22 +121,25 @@ void NeighbourList::findNeighbours(LatticeList ll, ParameterList pl)
 	  continue;
 	}
       // tempDist=ll.getDistance(i,thisIndex);
-      tempDist[0]=ll.fast_distance(i,thisIndex);
+      temp_dist[0]=ll.fast_distance(i,thisIndex);
       
-      tuple_remodulator(temp_dist,ghost_atoms,false);      
+      //  tuple_remodulator(temp_dist,ghost_atoms,false);      
       std::vector<Pair> temp_pair_vector;
       
       for(int j=0; j<pl.getNbrOfPairs(); j++)
 	{
-	  if(fabs(tempDist-pl.getPair(j).getDistance())<distanceLimit)
+	  if(fabs(temp_dist[0]-pl.getPair(j).getDistance())<distanceLimit)
 	    {
+	      //pl.getPair(j).printPair();
 	      paramAtIndex=true;
 	      temp_pair_vector.push_back(pl.getPair(j));
+
 	    }
 	}
 
       if(paramAtIndex)
 	{
+	  
 	  pair_vector.push_back(temp_pair_vector);
 	  pair_index.push_back(i);
 	  	  
@@ -139,6 +155,9 @@ void NeighbourList::findNeighbours(LatticeList ll, ParameterList pl)
 
 
     }
+  std::cout<<"--------"<<std::endl;
+  printVector(pair_index);
+  std::cout<<"----------"<<std::endl;
 }
 	
 //   if(!(nbrList.empty()))
@@ -187,10 +206,12 @@ double NeighbourList::getLocalEnergy(LatticeList ll)
 
   localEnergy=0.0;
   //add singlet Energy times two?
-  std::cout<<"Getting local energy"<<std::endl;
-  std::cout<<"pair index size: "<<indexList.size()<<std::endl;
-  std::cout<<"Triplet index size "<<trip_index.size()<<std::endl;
-  std::cout<<"Quatuplet index size "<<quat_index.size()<<std::endl;
+
+  // std::cout<<"Getting local energy"<<std::endl;
+  // std::cout<<"Singlet size "<<singletList.size()<<std::endl;
+  // std::cout<<"pair index size: "<<pair_index.size()<<std::endl;
+  // std::cout<<"Triplet index size "<<trip_index.size()<<std::endl;
+  // std::cout<<"Quatuplet index size "<<quat_index.size()<<std::endl;
   
   // for(int i=0; i<singletEnergy.size(); i++)
   //   {
@@ -213,6 +234,7 @@ double NeighbourList::getLocalEnergy(LatticeList ll)
     {
       if(ll.getSite(thisIndex)==singletList[i].getType())
 	{
+	  // std::cout<<"singlet energy "<< singletList[i].getProperty()<< " type: "<<ll.getSite(thisIndex)<<std::endl;
 	  localEnergy += singletList[i].getProperty();
 	  break;
 	}
@@ -221,7 +243,7 @@ double NeighbourList::getLocalEnergy(LatticeList ll)
   std::vector<std::string> sites;
 
   
-  if(pair_vector.size()>0)
+  if(pair_index.size()>0)
     {
       dists.resize(1);
       sites.resize(2);
@@ -235,10 +257,14 @@ double NeighbourList::getLocalEnergy(LatticeList ll)
 	  temp_pair.setSite1(sites[0]);
 	  temp_pair.setSite2(sites[1]);
 	  
+	  
 	  for(size_t j=0; j<pair_vector[i].size(); j++)
 	    {
-	      localEnergy ++ pair_vector[i][j].getEnergy()*0.5;
-	      break;
+	      if(temp_pair==pair_vector[i][j])
+		{
+		  localEnergy += pair_vector[i][j].getEnergy()*0.5;
+		  break;
+		}
 	    }
 	}
     }
@@ -280,9 +306,10 @@ double NeighbourList::getLocalEnergy(LatticeList ll)
       dists.resize(6);
       sites.resize(4);
       Quatuplet temp_quat = Quatuplet();
+      // std::cout<<"quat index size "<<quat_index.size()<<std::endl;
       for(size_t i=0; i<quat_index.size(); i++)
-	{
-	  
+	{	  
+	  //std::cout<< thisIndex<< " "<<quat_index[i][0]<< " "<<quat_index[i][1]<<" "<< quat_index[i][2]<<std::endl;
 	  dists[0]=ll.fast_distance(thisIndex,quat_index[i][0]);
 	  dists[1]=ll.fast_distance(thisIndex,quat_index[i][1]);
 	  dists[2]=ll.fast_distance(thisIndex,quat_index[i][2]);
@@ -301,19 +328,16 @@ double NeighbourList::getLocalEnergy(LatticeList ll)
 	    {
 	      if(temp_quat==quat_vector[i][j])
 		{
+		  //  std::cout<<"=====================+"<<std::endl;
+		  //  temp_quat.print();
+		  //  quat_vector[i][j].print();
+		  //  std::cout<<"=====================+"<<std::endl;
 		  localEnergy += quat_vector[i][j].getEnergy()*0.25;
 		  break;
 		}
 	    }
 	}
     }
-      
-
-
-
-
-  
-  
   return localEnergy;
 }
 
@@ -323,7 +347,7 @@ double NeighbourList::getLocalEnergy(LatticeList ll)
 int NeighbourList::isThisMatchingNeighbour(LatticeList ll, Neighbour n1)
 {
   std::cout<<"ERROR ERROR ERROR ERROR"<<std::endl;
-  std::cout<<" OMG IS THIS USED?!?!??! Contact Mattias"<<std::endl;
+  std::cout<<" WOW IS THIS USED?!?!??! Contact Mattias"<<std::endl;
   std::cout<<"ERROR ERROR ERROR ERROR"<<std::endl;
   Neighbour tempNbr= Neighbour();
   tempNbr.setSite1(ll.getSite(thisIndex));
@@ -433,7 +457,7 @@ void NeighbourList::findQuatupletNeighbours(LatticeList ll, ParameterList pl)
   std::vector<double> temp_dists;
   temp_dists.resize(6);
   std::vector<std::string> ghost_atom;
-  for(int i=0; i<6; i++)
+  for(int i=0; i<4; i++)
     {
       ghost_atom.push_back("A");
     }
@@ -479,7 +503,7 @@ void NeighbourList::findQuatupletNeighbours(LatticeList ll, ParameterList pl)
 		      somethingAtThisIndex=true;
 		      temp_quat_vec.push_back(pl.getQuatuplet(l));      
 		    }
-	      
+		}
 		  if(somethingAtThisIndex)
 		    {
 		      std::vector<int> temp_index;
@@ -489,7 +513,7 @@ void NeighbourList::findQuatupletNeighbours(LatticeList ll, ParameterList pl)
 		      quat_index.push_back(temp_index);
 		      quat_vector.push_back(temp_quat_vec);
 		    }
-		}
+		
 	    }
 	}
     }
@@ -501,12 +525,12 @@ void NeighbourList::findQuatupletNeighbours(LatticeList ll, ParameterList pl)
 
 void NeighbourList::setOffset(double newOff)
 {
-  offset_value=newOff;
+  offset=newOff;
 }
 
 double NeighbourList::getOffset()
 {
-  return offset_value;
+  return offset;
 }
 
 void NeighbourList::readSingletList(ParameterList pl)

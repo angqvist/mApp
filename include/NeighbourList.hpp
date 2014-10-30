@@ -2,6 +2,8 @@
 #include <string>
 #include "Triplet.hpp"
 #include "Quatuplet.hpp"
+#include "Atom.hpp"
+#include "Pair.hpp"
 //class Neighbour; //fishy - should work without but doesnt
 
 class NeighbourList
@@ -18,7 +20,8 @@ public:
   void setCurrentLocalEnergy(double);
   void calcCurrentLocalEnergy(class LatticeList);
   
-  
+  double getOffset();
+
 private:
   std::vector<class Atom> singletList;
   void readSingletList(class ParameterList);
@@ -53,9 +56,8 @@ private:
 
   void findTripletNeighbours(class LatticeList,class ParameterList);
   void findQuatupletNeighbours(class LatticeList,class ParameterList);
-  double offset_value;
+  double offset;
   void setOffset(double );
-  double getOffset();
 
 };
    
