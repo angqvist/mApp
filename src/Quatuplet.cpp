@@ -164,22 +164,22 @@ double Quatuplet::getDistance(int index)
 std::string Quatuplet::getSite1()
 {
   return elements[0];
-  return site1;
+  //  return site1;
 }
 std::string Quatuplet::getSite2()
 {
   return elements[1];
-  return site2;
+  //return site2;
 }
 std::string Quatuplet::getSite3()
 {
   return elements[2];
-  return site3;
+  //return site3;
 }
 std::string Quatuplet::getSite4()
 {
   return elements[3];
-  return site4;
+  //return site4;
 }
 
 std::string Quatuplet::getSite(int index)

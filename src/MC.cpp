@@ -44,7 +44,7 @@ double MC::step(int N,LatticeList &ll,std::vector<NeighbourList> nl)
 }
 
 //double MC::averageStep(int mcsteps,int averageStep,LatticeList &ll,std::vector<std::vector<NeighbourList> > nlVectors,double &stdE,double &orderP,double &c6,double &k24, double &i16,double &stdc6,double &stdk24, double &stdi16 )
-double MC::averageStep(int mcsteps,int averageStep,LatticeList &ll,std::vector<std::vector<NeighbourList> > nlVectors,std::vector<double> &data,std::string Wtype)
+double MC::averageStep(int mcsteps,int averageStep,LatticeList &ll,std::vector<std::vector<NeighbourList> > nlVectors,std::vector<double> &data,std::vector<std::string> Wtype)
 {
   std::string fileName = "dataFiles/mcConfs/binary/conf_new_bagage";
   for(int i=0; i<data.size(); i++)
@@ -107,16 +107,18 @@ double MC::averageStep(int mcsteps,int averageStep,LatticeList &ll,std::vector<s
 
 
       
-      MC_occupations(ll,tempC6,tempK24,tempI16,Wtype);
-      data[2*properties] +=tempC6;
-      data[2*properties+1] +=pow(tempC6,2.0);
+      for(int i=0; i<Wtype.size(); i++)
+	{
+	  MC_occupations(ll,tempC6,tempK24,tempI16,Wtype[i]);
+	  data[2*properties+i*5+i] +=tempC6;
+	  data[2*properties+1+i*5+i] +=pow(tempC6,2.0);
 
-      data[2*properties+2] +=tempK24;
-      data[2*properties+3] +=pow(tempK24,2.0);
+	  data[2*properties+2+i*5+i] +=tempK24;
+	  data[2*properties+3+i*5+i] +=pow(tempK24,2.0);
 
-      data[2*properties+4] +=tempI16;
-      data[2*properties+5] +=pow(tempI16,2.0);
-
+	  data[2*properties+4+i*5+i] +=tempI16;
+	  data[2*properties+5+i*5+i] +=pow(tempI16,2.0);
+	}
  
       
 

@@ -6,20 +6,102 @@
 
 double clusterFunction(int nbr_of_elements,int atom_type,int clustFunction)
 {
-   //odd: use cos
-  if(((clustFunction+2)%2==0))
-    {
+ //odd: use cos
 
-      //  std::cout<<"cos "<<clustFunction<< " "<< atom_type<< " "<< nbr_of_elements<<" "<<-cos(2.0*PI * (double)( (int)(clustFunction+2)/2 ) * (double)atom_type/((double)nbr_of_elements))<<  std::endl;
-      return -cos(2.0*PI * (double)( (int)(clustFunction+2)/2 ) * (double)atom_type/((double)nbr_of_elements));
-    }
-  //even: use sin
-  else 
+  if(nbr_of_elements==3)
     {
-      // std::cout<<"sin "<<clustFunction<< " "<< atom_type<< " "<< nbr_of_elements<<" "<<-sin(2.0*PI * (double)( (int)(clustFunction+2)/2 ) * (double)atom_type/((double)nbr_of_elements))<<std::endl;
-      return -sin(2.0*PI * (double)( (int)(clustFunction+2)/2 ) * (double)atom_type/((double)nbr_of_elements));
+      if(clustFunction==0)
+	{
+
+	  if(atom_type==0)
+	    {
+	      return 0.980580676;
+	    }
+	  else if(atom_type==1)
+	    {
+	      return -1.372812946; // -1.4; //-7*0.2;// -7.0/5.0;
+	    }
+	  else if (atom_type==2)
+	    {
+	      return 0.39223227; //.4; //2.0/5.0;
+	    }
+	}
+
+
+
+      // if(atom_type==1 || atom_type==2)
+      //   {
+      //     return 3.0/((double)sqrt(6.0));
+      //   }
+      // else
+      //   {
+      //     return -2.0*3.0/((double)sqrt(6.0));
+      //   }
+    
+      else if(clustFunction==1)
+	{
+
+	  if(atom_type==0)
+	    {
+	      return 1.019049331;  //1.5;
+	    }
+	  else if(atom_type==1)
+	    {
+	      return 0.33968311; //0.5;
+	    }
+	  else if(atom_type==2)
+	    {
+	      return -1.358732441; //-2.0;
+	    }
+	}
+    }
+  
+
+  
+	  // if(atom_type==0)
+	  //   {
+	  //     return -3.0/((double)sqrt(2));
+	  //   }
+	  // else if(atom_type==1)
+	  //   {
+	  //     return 3.0/((double)sqrt(2));
+	  //   }
+	  // else if(atom_type==2)
+	  //   {
+	  //     return 0.0;
+	  //   }
+  
+
+  else if(nbr_of_elements==2)
+    {
+      if(atom_type==0)
+	{
+	  return -1.0;
+	}
+      else if(atom_type==1)
+	{
+	  return 1.0;
+	}
+    }
+
+  else
+    {
+      
+      if(((clustFunction+2)%2==0))
+	{
+
+	  //     std::cout<<"cos "<<clustFunction<< " "<< atom_type<< " "<< nbr_of_elements<<" "<<-cos(2.0*PI * (double)( (int)(clustFunction+2)/2 ) * (double)atom_type/((double)nbr_of_elements))<<  std::endl;
+	  return -cos(2.0*PI * (double)( (int)(clustFunction+2)/2 ) * (double)atom_type/((double)nbr_of_elements));
+	}
+      //even: use sin
+      else 
+	{
+	  //    std::cout<<"sin "<<clustFunction<< " "<< atom_type<< " "<< nbr_of_elements<<" "<<-sin(2.0*PI * (double)( (int)(clustFunction+2)/2 ) * (double)atom_type/((double)nbr_of_elements))<<std::endl;
+	  return -sin(2.0*PI * (double)( (int)(clustFunction+2)/2 ) * (double)atom_type/((double)nbr_of_elements));
+	}
     }
 }
+
 
 
 
@@ -35,13 +117,13 @@ std::vector<std::vector<std::string> > symmetric_cluster_function(std::vector<do
     {
       for(int j=0; j<int_base[i].size(); j++)
 	{
-	  //  std::cout<<int_base[i][j]<<std::endl;
+	  //std::cout<<int_base[i][j]<<std::endl;
 	  ret[i].push_back( subelements[ int_base[i][j] ] );
 	}
     }
   return ret;
 }
-  
+
 
 
 std::vector<std::vector<int> > symmetric_cluster_function(std::vector<double> dists, int nbr_of_elements,bool reverse_sort)
@@ -49,6 +131,7 @@ std::vector<std::vector<int> > symmetric_cluster_function(std::vector<double> di
 
 
   int tuple_size=dists.size();
+
   std::vector<std::vector<int> >returnVector;
   
   int cluster_max=nbr_of_elements-2;
@@ -179,35 +262,102 @@ void clust_sort_return_vector(std::vector<std::vector<int> > &return_vector)
 {
   bool swapped=true;
   bool previous_columns_equal;
+  // std::cout<<"before"<<std::endl;
+  // for(int ii=0; ii<return_vector.size(); ii++)
+  //   {
+  //     for(int jj=0; jj<return_vector[0].size(); jj++)
+  // 	{
+  // 	  std::cout<<return_vector[ii][jj]<<" ";
+  // 	}
+  //     std::cout<<std::endl;
+  //   }
+
+  // while(swapped)
+  //   {
+  //     swapped=false;
+  //     for(int i=0; i<return_vector.size()-1; i++)
+  // 	{
+      
+  // 	  for(int j=0; j<return_vector[0].size(); j++)
+  // 	    {
+  // 	      if(fabs(return_vector[i][j]-return_vector[i+1][j])<1e-4)
+  // 		{
+  // 		  continue;
+  // 		}
+  // 	      else if(return_vector[i][j]>return_vector[i+1][j])
+  // 		{
+  // 		  std::cout<<i<<" "<<j<<std::endl;
+  // 		  return_vector[i].swap(return_vector[i+1]);
+  // 		  for(int ii=0; ii<return_vector.size(); ii++)
+  // 		    {
+  // 		      for(int jj=0; jj<return_vector[0].size(); jj++)
+  // 			{
+  // 			  std::cout<<return_vector[ii][jj]<<" ";
+  // 			}
+  // 		      std::cout<<std::endl;
+  // 		    }
+	      
+		  
+  // 		  //swap
+  // 		  swapped=true;
+  // 		}
+  // 	      else
+  // 		{
+  // 		  break;
+  // 		}
+  // 	    }
+  // 	}
+  //   }
+  
+
+  
   for(int j=0; j<return_vector[0].size(); j++)
     {
 
       while(swapped)
-	{
-	  swapped=false;
-	  //sort the j:th column
-	  for(int i=0; i<return_vector.size()-1; i++)
-	    {
-	      previous_columns_equal=true;
-	      for(int jj= j-1; jj>=0; jj--)
-		{
-		  if(return_vector[i][jj] != return_vector[i+1][jj])
-		    {
-		      previous_columns_equal=false;
+  	{
+  	  swapped=false;
+  	  //sort the j:th column
+  	  for(int i=0; i<return_vector.size()-1; i++)
+  	    {
+  	      previous_columns_equal=true;
+  	      for(int jj= 0; jj<j; jj++)
+  		{
+  		  if(fabs(return_vector[i][jj]-return_vector[i+1][jj])>1e-4)
+  		    {
+  		      previous_columns_equal=false;
 		      
-		    }
-		}
-	      // (j==0 || return_vector[i][j-1]==return_vector[i+1][j-1]) )
+  		    }
+  		}
+  	      // (j==0 || return_vector[i][j-1]==return_vector[i+1][j-1]) )
 	      
-	      if(return_vector[i][j]>return_vector[i+1][j] && previous_columns_equal) 
-		{
-		  return_vector[i].swap(return_vector[i+1]);
-		  //swap
-		  swapped=true;
-		}
-	    }
-	}
+  	      if(fabs(return_vector[i][j]-return_vector[i+1][j])>1e-4)
+  		{
+
+  		  if(return_vector[i][j]>return_vector[i+1][j] && previous_columns_equal) 
+  		    {
+  		      return_vector[i].swap(return_vector[i+1]);
+  		      //swap
+  		      swapped=true;
+  		    }
+		  
+  		}
+  	    }
+  	}
     }
+
+
+
+  // std::cout<< "after: "<<std::endl;
+
+  // for(int ii=0; ii<return_vector.size(); ii++)
+  //   {
+  //     for(int jj=0; jj<return_vector[0].size(); jj++)
+  // 	{
+  // 	  std::cout<<return_vector[ii][jj]<<" ";
+  // 	}
+  //     std::cout<<std::endl;
+  //   }
 }
 
 
@@ -215,34 +365,84 @@ void clust_sort_dists(std::vector<std::vector<double> > &dists)
 {
   bool swapped=true;
   bool previous_columns_equal;
+
+
+
+
+  // while(swapped)
+  //   {
+  //     swapped=false;
+  //     for(int i=0; i<dists.size()-1; i++)
+  // 	{
+      
+  // 	  for(int j=0; j<dists[0].size(); j++)
+  // 	    {
+  // 	      if(fabs(dists[i][j]-dists[i+1][j])<1e-4)
+  // 		{
+  // 		  continue;
+  // 		}
+  // 	      else if(dists[i][j]>dists[i+1][j])
+  // 		{
+  // 		  // std::cout<<i<<" "<<j<<std::endl;
+  // 		  // for(int ii=0; ii<dists.size(); ii++)
+  // 		  //   {
+  // 		  //     for(int jj=0; jj<dists[0].size(); jj++)
+  // 		  // 	{
+  // 		  // 	  std::cout<<dists[ii][jj]<<" ";
+  // 		  // 	}
+  // 		  //     std::cout<<std::endl;
+  // 		  //   }
+  // 		  dists[i].swap(dists[i+1]);
+				  
+		  
+  // 		  //swap
+  // 		  swapped=true;
+  // 		}
+  // 	      else
+  // 		{
+  // 		  break;
+  // 		}
+  // 	    }
+  // 	}
+  //   }
+  
+
+
+
+
+
+
+
+
+
   for(int j=0; j<dists[0].size(); j++)
     {
 
       while(swapped)
-	{
-	  swapped=false;
-	  //sort the j:th column
-	  for(int i=0; i<dists.size()-1; i++)
-	    {
-	      previous_columns_equal=true;
-	      for(int jj= j-1; jj>=0; jj--)
-		{
-		  if(dists[i][jj] != dists[i+1][jj])
-		    {
-		      previous_columns_equal=false;
+  	{
+  	  swapped=false;
+  	  //sort the j:th column
+  	  for(int i=0; i<dists.size()-1; i++)
+  	    {
+  	      previous_columns_equal=true;
+  	      for(int jj= j-1; jj>=0; jj--)
+  		{
+  		  if(dists[i][jj] != dists[i+1][jj])
+  		    {
+  		      previous_columns_equal=false;
 		      
-		    }
-		}
-	      // (j==0 || return_vector[i][j-1]==return_vector[i+1][j-1]) )
+  		    }
+  		}
+  	      // (j==0 || return_vector[i][j-1]==return_vector[i+1][j-1]) )
 	      
-	      if(dists[i][j]>dists[i+1][j] && previous_columns_equal) 
-		{
-		  dists[i].swap(dists[i+1]);
-		  //swap
-		  swapped=true;
-		}
-	    }
-	}
+  	      if(dists[i][j]>dists[i+1][j] && previous_columns_equal) 
+  		{
+  		  dists[i].swap(dists[i+1]);
+  		  //swap
+  		  swapped=true;
+  		}
+  	    }
+  	}
     }
 }
 
@@ -1187,6 +1387,9 @@ void clust_sort_triplet(std::vector<double> &dists, std::vector<std::string> &el
   double tempDr;
   std::string temp_element;
 
+
+  // std::cout<<"before"<<std::endl;
+  // std::cout<<dists[0]<< " "<< dists[1]<< " "<<dists[2]<< " "<< elements[0]<< " "<<elements[1]<< " "<<elements[2]<< " "<<reverseSort<<std::endl;
   //first step gives the most reduced form of the distances
   //second step consists of finding the alphabetical order of elements which are symmetric equivalent
   while(swapped)
@@ -1251,7 +1454,8 @@ void clust_sort_triplet(std::vector<double> &dists, std::vector<std::string> &el
 	  elements[2]=types[1];
 	}
 
-      
+     
+	//  std::cout<<dists[0]<< " "<< dists[1]<< " "<<dists[2]<< " "<< elements[0]<< " "<<elements[1]<< " "<<elements[2]<<std::endl;
 
 }
 	

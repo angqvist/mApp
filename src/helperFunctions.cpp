@@ -21,6 +21,7 @@
 #include<omp.h>
 #include "clust.hpp"
 #include "QuatupletList.hpp"
+#include <iomanip>      // std::setprecision
   struct minPar
   {
     gsl_matrix * parA;
@@ -650,6 +651,52 @@ PairList countPairs(LatticeList ll, PairList pl)
   return pl;
 }
 
+
+
+
+PairList countPairs(LatticeList ll, PairList pl, double cutoff)
+{
+  double dr;
+  ll.calculate_lookup_table();
+  pl.resetCounts();
+  Pair tempPair;
+  std::string site1;
+  std::string site2;
+  std::string tempSite;
+  for(size_t i=0; i<ll.getNbrOfSites(); i++)
+    {
+      for(size_t j=i+1; j<ll.getNbrOfSites(); j++)
+	{
+	  dr=ll.fast_distance(i,j); // add cutoff here?
+	  if(dr>cutoff)
+	    {
+	      continue;
+	    }
+	  
+	  site1=ll.getSite(i);
+	  site2=ll.getSite(j);
+	  if(site1.compare(site2)>0) //use tuple_remodulator instead you archaic buffoon
+	    {
+	      tempSite=site1;
+	      site1=site2;
+	      site2=tempSite;
+	    }
+	  // tempPair.printPair();
+	  
+
+	  tempPair=Pair(dr,site1,site2);
+	  pl.updatePair(tempPair,false);
+	}
+    }
+  // pl.divideCountByTwo();
+  return pl;
+}
+
+
+
+
+
+
 TripletList countTriplets(LatticeList ll, TripletList tl)
 {
   double dr1;
@@ -725,8 +772,13 @@ TripletList countTriplets(LatticeList ll, TripletList tl,double cutoff)
     {
       for(size_t j=i+1; j<ll.getNbrOfSites(); j++)
 	{
+	  if(ll.fast_distance(i,j)>cutoff)
+	    {
+	      continue;
+	    }
 	  for(size_t k=j+1; k<ll.getNbrOfSites(); k++)
 	    {
+	      
 	      if(i==k || j == k || i==j)
 		{
 		  continue;
@@ -735,6 +787,10 @@ TripletList countTriplets(LatticeList ll, TripletList tl,double cutoff)
 	      dr1=ll.fast_distance(i,j);
 	      dr2=ll.fast_distance(i,k);
 	      dr3=ll.fast_distance(j,k);
+	      if(dr2>cutoff || dr3> cutoff)
+		{
+		  continue;
+		}
 	      orderDr[0]=dr1;
 	      orderDr[1]=dr2;
 	      orderDr[2]=dr3;
@@ -1210,7 +1266,7 @@ std::vector<double> doMinimize(std::vector<double> inA, int columns,std::vector<
 	  newNorm=gsl_blas_dasum(ceParams);
 	  if(verbal)
 	    {
-	      std::cout<<"SBiter: "<<sbIter<<" initial value: :"<<initialValue<<" end value "<< endVal<<" Difference: "<< initialValue-endVal<<" New norm "<<newNorm<< " normDiff "<<fabs(newNorm-oldNorm)<<" BFGS iters "<<iter<<std::endl;
+	      std::cout<<"SBiter: "<<sbIter<<"fSB: "<< " initial value: :"<<initialValue<<" end value "<< endVal<<" Difference: "<< initialValue-endVal<<" New norm "<<newNorm<< " normDiff "<<fabs(newNorm-oldNorm)<<" BFGS iters "<<iter<<std::endl;
 	    }
 	  if(fabs(newNorm-oldNorm)<sbTol)
 	    {
@@ -1229,7 +1285,8 @@ std::vector<double> doMinimize(std::vector<double> inA, int columns,std::vector<
   std::vector<double> returnValues;
   for(int i =0; i<columns; i++)
     {
-      returnValues.push_back(gsl_vector_get(res,i));
+      //returnValues.push_back(gsl_vector_get(res,i));
+      returnValues.push_back(gsl_vector_get(ceParams,i));
     }
 
   // ======================== free memory === dont leak
@@ -1307,9 +1364,23 @@ double my_fSB(const gsl_vector * ceParams, void *params)
   gsl_vector * Ax = gsl_vector_alloc(inParams->parRows);
   gsl_blas_dgemv(CblasNoTrans,1.0,inParams->parA,ceParams,0.0,Ax);
   gsl_vector_sub(Ax,inParams->parEnergy); //Ax-y
-  double term1;
-  gsl_blas_ddot(Ax,Ax,&term1); //||ax-y||^2
-  term1=0.5*term1;
+  double term1;// = gsl_blas_dnrm2(Ax);
+  //std::cout<<"my_fsb term1 "<<term1;
+
+   gsl_blas_ddot(Ax,Ax,&term1); //||ax-y||^2
+  // std::cout<<term1<<" "<<sqrt(term1)<<std::endl;
+  // term1=sqrt(term1);
+  // if(term1<1e-5)
+  //   {
+  //     std::cout<<"printing params"<<std::endl;
+  //     for(int i=0; i<inParams->parColumns; i++)
+  // 	{
+  // 	  std::cout<<gsl_vector_get(ceParams,i)<<std::endl;
+  // 	}
+
+  //   }
+  
+  term1=0.5*(term1);
   double term2;
   gsl_vector * tempV = gsl_vector_alloc(inParams->parColumns);
   gsl_vector * tempV2= gsl_vector_alloc(inParams->parColumns);
@@ -1319,15 +1390,19 @@ double my_fSB(const gsl_vector * ceParams, void *params)
 
   gsl_vector_sub(tempV,inParams->parB); //tempV=tempV-b = d-b
   gsl_vector_sub(tempV,tempV2); // tempV=tempV-my*x =d - b - mu*x
-  gsl_blas_ddot(tempV,tempV,&term2);  // ||d-b-mu*x||^2
-  term2=term2*0.5*(inParams->parLambda);
+  // term2=gsl_blas_dnrm2(tempV);
+   gsl_blas_ddot(tempV,tempV,&term2);  // ||d-b-mu*x||^2
+  // std::cout<<term2<<" "<<sqrt(term2)<<std::endl;
+  // term2=sqrt(term2);
+   term2=(term2)*0.5*(inParams->parLambda);
   //std::cout<<term1<< " "<<term2<<std::endl;
 
   gsl_vector_free(Ax);
   gsl_vector_free(tempV);
   gsl_vector_free(tempV2);
+  // std::cout<<"term 1 "<<(term1)<< " term2 " <<(term2)<<std::endl;
 
-  return term1+term2;
+  return (term1 + term2);
 }
 
 
@@ -1335,23 +1410,72 @@ void my_dfSB(const gsl_vector * ceParams, void *params , gsl_vector * df)
 { 
   minPar *inParams = (minPar *) params;
   
-  gsl_blas_dgemv(CblasNoTrans,1.0,inParams->parAtA,ceParams,0.0,df); // N.B transpose here 
+  gsl_blas_dgemv(CblasNoTrans,1.0,inParams->parAtA,ceParams,0.0,df); // N.B no transpose here 
   gsl_vector_sub(df,inParams->parftA);
+  
+
+  // gsl_vector * Ax = gsl_vector_alloc(inParams->parRows);
+  // gsl_blas_dgemv(CblasNoTrans,1.0,inParams->parA,ceParams,0.0,Ax);
+  // gsl_vector_sub(Ax,inParams->parEnergy); //Ax-y
+  // double term1 = gsl_blas_dnrm2(Ax);  
+  // std::cout<<"dfsb term1 "<<term1<<std::endl;
+  
+  // gsl_vector_scale(df,1.0/term1);
+
+  //second part is -lambda*mu*(d-mu*x-b)/||d-b-mu*x||2
+
+  //stuff 
+
+  // double term2;
+  // gsl_vector * tempV = gsl_vector_alloc(inParams->parColumns);
+  // gsl_vector * tempV2= gsl_vector_alloc(inParams->parColumns);
+  // gsl_vector_memcpy(tempV,inParams->parD); //tempV=d
+  // gsl_vector_memcpy(tempV2,ceParams);
+  // gsl_vector_scale(tempV2,inParams->parMu); //tempV2=mu*x
+
+  // gsl_vector_sub(tempV,inParams->parB); //tempV=tempV-b = d-b
+  // gsl_vector_sub(tempV,tempV2); // tempV=tempV-my*x =d - b - mu*x
+  // term2 = gsl_blas_dnrm2(tempV);
+  // //  gsl_blas_ddot(tempV,tempV,&term2);  // ||d-b-mu*x||^2
+  // term2=1.0/(term2); //this is the thing to divide everytghin in the second part with
+  // std::cout<<"dfsb term 2 "<<term2<<std::endl;
+  
+  
+  // gsl_vector_memcpy(tempV,inParams->parD); //tempV=d
+  // gsl_vector_memcpy(tempV2,ceParams);
+  // gsl_vector_scale(tempV2,inParams->parMu); //tempV2=mu*x
+  // gsl_vector_sub(tempV,inParams->parB); //tempV=tempV-b = d-b
+  // gsl_vector_sub(tempV,tempV2); // tempV=tempV-my*x =d - b - mu*x
+  // gsl_vector_scale(tempV,-term2*inParams->parLambda*(inParams->parMu));
+
+  // gsl_vector_add(df,tempV);
+
+  /// stuff
 
  //so as not to change the paramaeters, might be superfluous because of const in argument
+
+
+  //old /working
+
   gsl_vector * tempV = gsl_vector_alloc(inParams->parColumns);
   gsl_vector * tempV2= gsl_vector_alloc(inParams->parColumns);
   gsl_vector_memcpy(tempV,inParams->parD);
   gsl_vector_memcpy(tempV2,ceParams);
   gsl_vector_scale(tempV2,inParams->parMu);
 
+
+
   gsl_vector_sub(tempV,tempV2); //d-mu*x
   gsl_vector_sub(tempV,inParams->parB); //d-mu*x-b
+  //  double term2 = 1.0/gsl_blas_dnrm2(tempV);
   double scaleTemp=(inParams->parLambda)*(inParams->parMu);
   gsl_vector_scale(tempV,scaleTemp); // lmbda*mu*(d - mu * x - b)
 
-  // AtA*x-Atf-lmbda*mu*(d - mu * x - b)
+  // AtA*x-Atf-lmbda*mu*(d - mu * x - b) 
   gsl_vector_sub(df,tempV); 
+
+  //old
+  // gsl_vector_free(Ax);
 
   gsl_vector_free(tempV);
   gsl_vector_free(tempV2);
@@ -1893,23 +2017,19 @@ std::vector<NeighbourList> getNLVector(LatticeList ll, ParameterList pl)
 
 void doClusterStuff(std::string configFolder,int numberOfConfigs, int numberOfProperties,int numberOfAtoms,std::string outputFolder,double cutoff,int tuplets,std::vector<std::string> subElements)
 {
-  std::cout<<"Do cluster stuff.."<<std::endl;
-  
+  std::cout<<"Do cluster stuff.."<<std::endl;  
   //read configs
   //generate X matrix with atat
   // write out CV from soon to be function
   // print parameters for nbr of configs with best cv score
   //profit?
-
   //std::vector<double> getAwithATAT(std::vector<LatticeList> dftPos,int numberOfConfigs,std::vector<std::string> subElements,double cutOff,std::vector<double> & dist,bool doAverage)
   std::cout<<"Reading configurations...."<<std::endl;
   std::vector<LatticeList> dftPos = readConfig(configFolder,numberOfConfigs,numberOfAtoms,numberOfProperties,subElements);
- std::vector<double> dist;
- 
+ std::vector<double> dist; 
 // std::vector<double> X = getAwithATAT(dftPos,numberOfConfigs,subElements,cutoff,dist,false);
  std::cout<<"Print CV data..."<<std::endl;
- printCVdata(dftPos,cutoff,numberOfConfigs,subElements);
- 
+ printCVdata(dftPos,cutoff,numberOfConfigs,subElements); 
 }
 
 
@@ -2111,7 +2231,7 @@ std::vector<double> getSingleClusterVector(LatticeList ll, PairList pl, TripletL
 
   // first singlets
   std::vector<double> singletVector;
-  singletVector.push_back(1); //zerolets
+  singletVector.push_back(1.0); //zerolets
   double tempAverage;
   int tempT;
   int s1;
@@ -2123,8 +2243,10 @@ std::vector<double> getSingleClusterVector(LatticeList ll, PairList pl, TripletL
       
       std::vector<std::vector<int> > clust_singlet = symmetric_cluster_function(tomt,subElements.size(),true);
       //====
+      // std::cout<<"singlets"<<std::endl;
       for(int i=0; i<clust_singlet.size(); i++)
       	{
+	  // std::cout<<clust_singlet[i][0]<<std::endl;
       	  tempAverage=0;
       	  for(int j=0; j<ll.getNbrOfSites(); j++)
       	    {
@@ -2136,7 +2258,7 @@ std::vector<double> getSingleClusterVector(LatticeList ll, PairList pl, TripletL
       		      s1=jj;
       		    }
 		}
-	      std::cout<<clust_singlet.size()<<" "<<clust_singlet[i][0]<<" "<< clusterFunction(subElements.size(),s1,clust_singlet[i][0])<<  " clust singlet "<<std::endl;
+	      //   std::cout<<clust_singlet.size()<<" "<<clust_singlet[i][0]<<" "<< clusterFunction(subElements.size(),s1,clust_singlet[i][0])<<  " clust singlet "<<std::endl;
 	      tempAverage += clusterFunction(subElements.size(),s1,clust_singlet[i][0]);
 	    }
       	    
@@ -2213,39 +2335,44 @@ std::vector<double> getSingleClusterVector(LatticeList ll, PairList pl, TripletL
 	  
 	}
     }
+  std::cout<<"singlets"<<std::endl;
 
   // std::cout<<"starting with pairs" <<std::endl;
   if(cutoffs.size() >=1)
     {
       // PairList pl = PairList();
       //pl.initializePairs(ll,subElements,cutoffs[0]);
-      pl= countPairs(ll,pl);
-      if(ATAT)
-	{
-	  //pl.getPair(2).printPair();
-      
-	  std::vector<double> pairVector = pl.getClusterVector(subElements,cutoffs[0],average);
-	  std::cout<<"Number of pairs "<<pl.getNbrOfPairs()<< " quatvector.size: "<<pairVector.size()<<std::endl;
-
-	  if(pairVector.size()>0)
-	    {
-	      singletVector.insert(singletVector.end(),pairVector.begin(), pairVector.end());
-	    }
-
-      
-	}
-      else
+      pl= countPairs(ll,pl,cutoffs[0]);
+      if(pl.getNbrOfPairs()>0)
 	{
 
-	  for(int i=0; i<pl.getNbrOfPairs(); i++)
+	  if(ATAT)
 	    {
-	      if(pl.getPair(i).getDistance()<cutoffs[0])
+	      //pl.getPair(2).printPair();
+      
+	      std::vector<double> pairVector = pl.getClusterVector(subElements,cutoffs[0],average);
+	      std::cout<<"Number of pairs "<<pl.getNbrOfPairs()<< " pairvector.size: "<<pairVector.size()<<std::endl;
+
+	      if(pairVector.size()>0)
 		{
-		  singletVector.push_back(pl.getPair(i).getCount());
+		  singletVector.insert(singletVector.end(),pairVector.begin(), pairVector.end());
+		}
+
+      
+	    }
+	  else
+	    {
+
+	      for(int i=0; i<pl.getNbrOfPairs(); i++)
+		{
+		  if(pl.getPair(i).getDistance()<cutoffs[0])
+		    {
+		      singletVector.push_back(pl.getPair(i).getCount());
+		    }
+
 		}
 
 	    }
-
 	}
     }
 
@@ -2258,33 +2385,40 @@ std::vector<double> getSingleClusterVector(LatticeList ll, PairList pl, TripletL
 
       //tl.printList();
 
-      
-      //ATAT below
-      if(ATAT)
+      if(tl.getNbrOfTriplets()>0)
 	{
-	  //	  tl.getTriplet(3).printTriplet();
+	  //ATAT below
+	  if(ATAT)
+	    {
+	      //	  tl.getTriplet(3).printTriplet();
 	  
 
-	  std::vector<double> tripletVector = tl.getClusterVector(subElements,cutoffs[1],average);
-	  std::cout<<"Number of triplets: "<<tl.getNbrOfTriplets()<< " tripvector "<<tripletVector.size()<<std::endl;
-	  if(tripletVector.size()>0)
-	    {
-	      singletVector.insert(singletVector.end(),tripletVector.begin(), tripletVector.end());
-	    }
-	}
-      else
-	{
-            
-	  for(int i=0; i<tl.getNbrOfTriplets(); i++)
-	    {
-	      if(tl.getTriplet(i).getDistance2()<cutoffs[1])
+	      std::vector<double> tripletVector = tl.getClusterVector(subElements,cutoffs[1],average);
+	      std::cout<<"Number of triplets: "<<tl.getNbrOfTriplets()<< " tripvector "<<tripletVector.size()<<std::endl;
+	      if(tripletVector.size()>0)
 		{
-		  singletVector.push_back(tl.getTriplet(i).getCount());
+		  singletVector.insert(singletVector.end(),tripletVector.begin(), tripletVector.end());
+		}
+	    }
+	  else
+	    {
+            
+	      for(int i=0; i<tl.getNbrOfTriplets(); i++)
+		{
+		  if(tl.getTriplet(i).getDistance2()<cutoffs[1])
+		    {
+		      singletVector.push_back(tl.getTriplet(i).getCount());
+		    }
 		}
 	    }
 	}
     }
 
+  for(int j=0; j<10; j++)
+    {
+      std::cout<<singletVector[j]<< " ";
+    }
+  std::cout<<std::endl;
   if(cutoffs.size() >=3)
     {
       ql.count_quatuplets(ll,cutoffs[2]);
@@ -2293,7 +2427,7 @@ std::vector<double> getSingleClusterVector(LatticeList ll, PairList pl, TripletL
       if(ATAT)
 	{
 	  std::vector<double> quatVector = ql.getClusterVector(subElements,cutoffs[2],average);
-	  ql.printList();
+	  // ql.printList();
 	  std::cout<<"NUmber of quatuplets "<<ql.getNbrOfQuatuplets()<< " quatvector.size() "<<quatVector.size()<<std::endl;
 
 	  if(quatVector.size()>0)
@@ -2349,13 +2483,13 @@ void getClusterVectors(std::vector<std::string> filenames, std::vector<double> &
 
   if(cutoffs.size() >=2)
     {
-      //      tl = TripletList(ll,subelements,cutoffs[1]);
+      //tl = TripletList(ll,subelements,cutoffs[1]);
       tl = TripletList(ll,subelements,cutoffs[1]);
       tl.sortTripletList();
-      // tl.printList();
+      //tl.printList();
     }
 
-  //  std::cout<<"doing quatupletlIst"<<std::endl;
+  //std::cout<<"doing quatupletlIst"<<std::endl;
   QuatupletList ql;// = QuatupletList();
 
   if(cutoffs.size() >=3)
@@ -2477,7 +2611,7 @@ void printInterfaceParameters(std::vector<double> parameters,std::vector<double>
   outF.open(fileName.c_str());
 
   //pritn offset
-  outF<<0<<" "<<parameters[0]; 
+  outF<<std::setprecision(16)<<0<<" "<<parameters[0]; 
   count++;
 
   for(int jj=0; jj<subelements.size()-1; jj++)
@@ -2509,7 +2643,8 @@ void printInterfaceParameters(std::vector<double> parameters,std::vector<double>
       for(int i=0; i<pair_dist.size(); i++)
 	{
 	  std::vector<double> tempPair;
-	  tempPair.push_back(pair_dist[i]);
+	  tempPair.resize(1);
+	  tempPair[0]=pair_dist[i];
 	  std::vector<std::vector<int > > cluster_func = symmetric_cluster_function(tempPair,subelements.size(),true);
 	  for(int j=0; j<cluster_func.size(); j++)
 	    {

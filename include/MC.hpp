@@ -7,7 +7,7 @@ public:
   MC();
   double step(class LatticeList &,std::vector<class NeighbourList>);
   double step(int,class LatticeList &,std::vector<class NeighbourList>);
-  double averageStep(int,int,class LatticeList &,std::vector<std::vector<class NeighbourList> >,std::vector<double> &,std::string);
+  double averageStep(int,int,class LatticeList &,std::vector<std::vector<class NeighbourList> >,std::vector<double> &,std::vector<std::string>);
   // double averageStep(int,int,class LatticeList &,std::vector<class NeighbourList>,double &,double &,double &,double &,double &,double &,double &,double &);
 
 

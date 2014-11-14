@@ -22,6 +22,8 @@ void shuffleLists(std::vector<double> &,std::vector<double> &,std::vector<class 
 
 std::vector<class LatticeList> readConfig(std::string,int,int,int,std::vector<std::string>);
 class PairList countPairs(class LatticeList,class PairList);
+class PairList countPairs(class LatticeList,class PairList,double);
+
 class TripletList countTriplets(class LatticeList,class TripletList);
 class TripletList countTriplets(class LatticeList,class TripletList,double);
 

@@ -357,6 +357,7 @@ void LatticeList::readIdealPos3(std::vector<std::string> subElements)
       	      illegalAtom=false;
       	    }
       	}
+
       if(illegalAtom)
       	{
       	  continue;
@@ -746,20 +747,20 @@ double LatticeList::getConcentration(std::string type)
 
 void LatticeList::calculate_lookup_table()
 {
-  if(!distance_table_init)
-    {
-      std::cout<<"starting to calculate lookup table..."<<std::endl;
-      distance_table.resize(nbrOfSites);
-      for(int i=0; i<nbrOfSites; i++)
-  	{
-  	  distance_table[i].resize(nbrOfSites);
-  	  for(int j=0; j<nbrOfSites; j++)
-  	    {
-  	      distance_table[i][j]=getDistance(i,j);
-  	    }
-  	}
-      std::cout<<"Done."<<std::endl;
-    }
+  // if(!distance_table_init)
+  //   {
+  //     std::cout<<"starting to calculate lookup table..."<<std::endl;
+  //     distance_table.resize(nbrOfSites);
+  //     for(int i=0; i<nbrOfSites; i++)
+  // 	{
+  // 	  distance_table[i].resize(nbrOfSites);
+  // 	  for(int j=0; j<nbrOfSites; j++)
+  // 	    {
+  // 	      distance_table[i][j]=getDistance(i,j);
+  // 	    }
+  // 	}
+  //     std::cout<<"Done."<<std::endl;
+  //   }
   distance_table_init=true;
 
 }
@@ -767,8 +768,8 @@ void LatticeList::calculate_lookup_table()
 
 double LatticeList::fast_distance(int i,int j)
 {
-  // return getDistance(i,j);
-  return distance_table[i][j];
+   return getDistance(i,j);
+   //return distance_table[i][j];
 }
 std::vector<std::vector<double> > LatticeList::getLookupTable()
 {
@@ -782,4 +783,5 @@ std::vector<std::vector<double> > LatticeList::getLookupTable()
       calculate_lookup_table();
       return distance_table;
     }
+
 }

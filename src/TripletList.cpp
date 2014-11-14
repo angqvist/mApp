@@ -291,6 +291,7 @@ std::vector<std::vector<double> > TripletList::getUniqueDistances(double cutoff)
       // tripletList[i].printTriplet();
       isTripletUnique(tripletList[i],distances,true);
     }
+  clust_sort_dists(distances);
   return distances;
 }
 
