@@ -12,7 +12,9 @@ public:
   LatticeList(int,int,int,int,int,std::string,std::vector<std::string>);
   LatticeList(int,int,int,int,int,std::string,std::vector<std::string>,std::vector<std::vector<double> >);
 
+  std::vector<double> getPeriodicDistance(int, int, double);
   double getDistance(int,int);
+  
   int getNbrOfSites() ;
 
   void printList(); //Mostly for bug checking

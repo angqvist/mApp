@@ -5,6 +5,9 @@
 #include <stdlib.h>
 #include <cmath>
 #include <string>
+#include <iomanip>      // std::setprecision
+#include "helperFunctions.hpp"
+
 using namespace std;
 
 // (A bit inelegant, nbrOfAtoms isnt really nbr of atoms but the number of atoms in the unit cell times 3)-- I think not
@@ -364,7 +367,7 @@ void LatticeList::readIdealPos3(std::vector<std::string> subElements)
       	}
 
  
-
+      // std::cout<<tempSite<< " "<<tempPos1<< " "<<tempPos2<< " "<<tempPos3<<std::endl;
       atomTypeList[loopIndex]=tempSite;
       posList2[3*loopIndex]=tempPos1;
       posList2[3*loopIndex+1]=tempPos2;
@@ -399,7 +402,7 @@ void LatticeList::readIdealPos3(std::vector<std::string> subElements)
 void LatticeList::printList()
 {
   cout<<"PasCarBen01.cif"<<endl;
-  cout<<"   "<<"10.9868239607846370"<<endl;
+  cout<<"   "<<std::setprecision(8)<<Lx<<endl;
   cout<<"    1.0000000000000000    0.0000000000000000   0.0000000000000000"<<endl;
   cout<<"    0.0000000000000000    1.0000000000000000   0.0000000000000000"<<endl;
   cout<<"    0.0000000000000000    0.0000000000000000   1.0000000000000000"<<endl;
@@ -428,32 +431,46 @@ void LatticeList::printList()
     }
   //cout<<"     8    16    30"<<endl;
   cout<<"Direct"<<endl;
-  cout<<"  0.0000000000000000  0.0000000000000000  0.0000000000000000"<<endl;
-  cout<<"  0.5000000000000000  0.5000000000000000  0.5000000000000000"<<endl;
-  cout<<"  0.2500000000000000  0.5000000000000000  0.0000000000000000"<<endl;
-  cout<<"  0.7500000000000000  0.5000000000000000  0.0000000000000000"<<endl;
-  cout<<"  0.5000000000000000  0.0000000000000000  0.2500000000000000"<<endl;
-  cout<<"  0.0000000000000000  0.2500000000000000  0.5000000000000000"<<endl;
-  cout<<"  0.5000000000000000  0.0000000000000000  0.7500000000000000"<<endl;
-  cout<<"  0.0000000000000000  0.7500000000000000  0.5000000000000000"<<endl;
+  // cout<<"  0.0000000000000000  0.0000000000000000  0.0000000000000000"<<endl;
+  // cout<<"  0.5000000000000000  0.5000000000000000  0.5000000000000000"<<endl;
+  // cout<<"  0.2500000000000000  0.5000000000000000  0.0000000000000000"<<endl;
+  // cout<<"  0.7500000000000000  0.5000000000000000  0.0000000000000000"<<endl;
+  // cout<<"  0.5000000000000000  0.0000000000000000  0.2500000000000000"<<endl;
+  // cout<<"  0.0000000000000000  0.2500000000000000  0.5000000000000000"<<endl;
+  // cout<<"  0.5000000000000000  0.0000000000000000  0.7500000000000000"<<endl;
+  // cout<<"  0.0000000000000000  0.7500000000000000  0.5000000000000000"<<endl;
 
 
-  for(int eleIndex=0; eleIndex<elements.size(); eleIndex++)
+  for(int i=0; i<nbrOfSites; i++)
     {
-  
-      for(int i=0; i<nbrOfSites; i++)
+      cout<<"  ";
+      for(int j=0; j<3;j++)
 	{
-	  if(atomTypeList[i]==elements[eleIndex])
-	    {
-	      cout<<"  ";
-	      for(int j=0; j<3;j++)
-		{
-		  cout<<posList2[i*3+j]/10.9868239607846370<< "  ";
-		}
-	      cout<<endl;
-	    }      
+	  cout<<posList2[i*3+j]/Lx<< "  ";
 	}
+      cout<<endl;
     }
+
+
+
+
+  
+  // for(int eleIndex=0; eleIndex<elements.size(); eleIndex++)
+  //   {
+  
+  //     for(int i=0; i<nbrOfSites; i++)
+  // 	{
+  // 	  if(atomTypeList[i]==elements[eleIndex])
+  // 	    {
+  // 	      cout<<"  ";
+  // 	      for(int j=0; j<3;j++)
+  // 		{
+  // 		  cout<<posList2[i*3+j]/Lx<< "  ";
+  // 		}
+  // 	      cout<<endl;
+  // 	    }
+  // 	}
+  //   }
 }
 
 
@@ -523,7 +540,127 @@ std::string LatticeList::getAtomInfo(int i,double &xpos, double &ypos, double &z
 }
 
 
+std::vector<double> LatticeList::getPeriodicDistance(int i, int j, double cutoff)
+{
 
+
+  double dx=fabs(posList2[i*3]-posList2[j*3]);
+  double dy=fabs(posList2[i*3+1]-posList2[j*3+1]);
+  double dz=fabs(posList2[i*3+2]-posList2[j*3+2]);
+  std::vector<double> ret;
+
+
+  int shell = std::max(1,(int)cutoff/(int)Lx);
+  double dist=sqrt( dx*dx + dy*dy + dz*dz );
+  if(dist<cutoff && dist>1e-5)
+    {
+      // ret.push_back(dist);
+    }
+  
+  int m=-1;
+  if(i==j)
+    {
+      m=1;
+    }
+  for( m; m<2; m+=2)
+    {
+      for(int x=-1*shell; x<=shell; x++)
+	{
+	  for(int y=-1*shell; y<=shell; y++)
+	    {
+	      for(int z=-1*shell; z<=shell; z++)
+		{		  
+		  if(x==0 && y==0 && z==0)
+		    {
+		      //  continue;
+		    }
+		  dx=(double)m*fabs(posList2[i*3]-posList2[j*3])+(double)x*Lx;
+		  dy=(double)m*fabs(posList2[i*3+1]-posList2[j*3+1])+(double)y*Ly;
+		  dz=(double)m*fabs(posList2[i*3+2]-posList2[j*3+2])+(double)z*Lz;
+		  dist = sqrt( dx*dx + dy*dy + dz*dz );
+		  if(dist>cutoff || dist<1e-5)
+		    {
+		      continue;
+		    }
+		  ret.push_back(dist);	      
+		}
+	    }
+	} 
+    }
+  // std::cout<<"================="<<i<< " "<<j<< " "<<ret.size()<<std::endl;
+  // printVector(ret);
+  // std::cout<<"=================2"<<std::endl;
+
+  return ret;
+  // double dx=fabs(posList2[i*3]-posList2[j*3]);
+  // double dy=fabs(posList2[i*3+1]-posList2[j*3+1]);
+  // double dz=fabs(posList2[i*3+2]-posList2[j*3+2]);
+  
+  
+  
+  
+  // double dist;
+  // dist=sqrt(dx*dx + dy*dy+dz*dz);
+  // if(dist<cutoff)
+  //   {
+  //     if(i != j)
+  // 	{
+  // 	  ret.push_back(dist);
+  // 	}
+  //   }
+
+  // int newDists=8;
+  // int shell=std::max(1,(int)cutoff/(int)Lx);
+  // //int shell=std::max(1,4);
+  // bool newDist;
+  // //  while(newDists !=0)
+  // // {
+
+  
+  
+  // newDists=0;
+  // for(int m=-1; m<2; m +=2)
+  //   {
+  //     if(i==j)
+  // 	{
+  // 	  m=1;
+  // 	}
+  //     for(int x=0; x<=shell; x++)
+  // 	{
+  // 	  for(int y=0; y<=shell; y++)
+  // 	    {
+  // 	      for(int z=0; z<=shell; z++)
+  // 		{
+  // 		  dist= sqrt( (dx*m+x*Lx)*(dx*m+x*Lx)+(dy*m+y*Ly)*(dy*m+y*Ly)+(dz*m+z*Lz)*(dz*m+z*Lz));
+  // 		  if(dist>cutoff || dist<1e-5)
+  // 		    {
+  // 		      continue;
+  // 		    }
+		      
+  // 		  // newDist=true;
+  // 		  // // for(int i=0; i<ret.size(); i++)
+  // 		  // // 	{
+  // 		  // // 	  if(ret[i]==dist)
+  // 		  // // 	    {
+  // 		  // // 	      newDist=false;
+  // 		  // // 	      break;
+  // 		  // // 	    }
+  // 		  // // 	}
+  // 		  // if(newDist)
+  // 		  // 	{
+  // 		  ret.push_back(dist);
+  // 		  newDists++;
+  // 		  //	}
+		  
+  // 		}
+  // 	    }
+  // 	}
+  //   }
+  // shell++;
+  // //   }
+        
+  // return ret;
+}
 
 
 
@@ -540,8 +677,10 @@ double LatticeList::getDistance(int i, int j)
     //  {
   //std::cout<<"dx= : "<<pow(dx,2.0)<< " "<<"dy= : "<<dy<<" dz = :"<<dz<<std::endl;
   //  }
-  return sqrt(pow(dx,2.0)+pow(dy,2.0)+pow(dz,2.0));
+  return sqrt(dx*dx + dy*dy + dz*dz );
 }
+
+
 
 int LatticeList::getNbrOfSites() 
 {

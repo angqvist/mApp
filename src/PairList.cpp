@@ -66,54 +66,42 @@ void PairList::initializePairs(LatticeList ll, std::vector<std::string> subeleme
   std::vector<double> dist;
   dist.resize(1);
   std::vector<std::vector< std::string> > all_element_combinations;
-
-  for(int i=0; i< ll.getNbrOfSites(); i++)
+  std::vector<double> dists;
+  for(int i=0; i < ll.getNbrOfSites(); i++)
     {
       if(!(isAtomInSubElements(ll.getSite(i),subelements)))
 	{
 	  continue;
 	}
-      for(int j=i+1; j<ll.getNbrOfSites(); j++)
+      for(int j=i; j<ll.getNbrOfSites(); j++)
 	{
 	  if(!(isAtomInSubElements(ll.getSite(j),subelements)))
 	    {
 	      continue;
 	    }
 	  //dr=ll.getDistance(i,j);
-	   dr=ll.fast_distance(i,j);
-	  dist[0]=dr;
-
-
-	  //  std::cout<<"ll size "<<ll.getNbrOfSites()<<std::endl;
-	  //	  std::cout<<i<<","<<j<<" =============================================="<<std::endl;
-	  // for(int ii2=0; ii2<ll.getNbrOfSites(); ii2++)
-	  //   {
-	  //     std::cout<< ll.getSite(ii2)<<std::endl;
-	  //   }
-
-
-	  if(dr>cutOff)
+	  //dr=ll.fast_distance(i,j);
+	  dists=ll.getPeriodicDistance(i,j,cutOff);
+	  if(dists.size() == 0)
 	    {
 	      continue;
 	    }
-
-	  //	  std::cout<<std::endl;
-	  // std::cout<<"pairlist element combinations"<<std::endl;
-
-
-	  all_element_combinations= symmetric_cluster_function(dist,subelements);
-	  // std::cout<<"done"<<std::endl;
-
-	  tempPair.setDistance(dr);
-	  for(int k=0; k<all_element_combinations.size(); k++)
-	    {
-
-	      // std::cout<<all_element_combinations[k].size()<<" "<<all_element_combinations[k][0]<< " "<< all_element_combinations[k][1]<<std::endl;
-	      tempPair.setSite1(all_element_combinations[k][0]);
-	      tempPair.setSite2(all_element_combinations[k][1]);
-	      updatePair(tempPair,true);
-	    }
+	  dist[0]=dists[0];
 	  
+	  all_element_combinations= symmetric_cluster_function(dist,subelements);
+	  
+	  for(int d=0; d<dists.size(); d++)
+	    {
+	      // std::cout<<"d= "<<d<< " distance= "<<dists[d]<<std::endl;
+	      // dist[0]=dists[d];
+	      tempPair.setDistance(dist[0]);
+	      for(int k=0; k<all_element_combinations.size(); k++)
+		{
+		  tempPair.setSite1(all_element_combinations[k][0]);
+		  tempPair.setSite2(all_element_combinations[k][1]);
+		  updatePair(tempPair,true);
+		}
+	    }
 	  // for(size_t k=0; k< subelements.size(); k++)
 	  //   {
 	  //     for(size_t l=0; l<subelements.size(); l++)
