@@ -1,3 +1,4 @@
+#pragma once
 #include <vector>
 #include <cmath>
 #include <string>
@@ -7,8 +8,10 @@ class LatticeList
 {
 public:
   LatticeList(); // default consructor
-  LatticeList(int , int , int );
-  LatticeList(int , int , int ,int , std::string );
+  LatticeList(std::vector<int>,std::vector<double>,std::vector<std::string>,int,int);
+
+  LatticeList(int,int,int);
+  LatticeList(int,int,int,int,std::string);
   LatticeList(int,int,int,int,int,std::string,std::vector<std::string>);
   LatticeList(int,int,int,int,int,std::string,std::vector<std::string>,std::vector<std::vector<double> >);
 
@@ -45,8 +48,14 @@ public:
   void calculate_lookup_table();
   double fast_distance(int,int);
   std::vector<std::vector<double> > getLookupTable();
+  void append_atom(std::string,std::vector<double>, int);
+  void clear_lookup_table();
+  int get_original_atoms_count();
+  int get_ghost_atoms_count();
+    
 private:
-
+  int number_of_original_atoms;
+  int number_of_ghost_atoms;
   bool distance_table_init;
   std::vector<std::vector<double> > distance_table;
 
@@ -54,6 +63,7 @@ private:
   void readIdealPos2(); // read positions from file  
   void readIdealPos3(std::vector<std::string>); // read positions from file  
 
+  void create_tag_list();
   std::vector<std::string> elements;
   std::vector<int> elementCounts;
   
@@ -74,4 +84,6 @@ private:
   double bandGap;
   double volume;
   double averageLatticeConstant;
+  std::vector<int> tags;
+  std::vector<std::vector<int>> tag_list;
 };

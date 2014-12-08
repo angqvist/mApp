@@ -28,12 +28,22 @@ LatticeList::LatticeList()
   Lx=cellSizeX*latticeConstant;
   Ly=cellSizeY*latticeConstant;
   Lz=cellSizeZ*latticeConstant;
-  fileName="configs/confs4/config_0";
   distance_table_init=false;
-
-  readIdealPos2();
-
 }
+
+
+LatticeList::LatticeList(std::vector<int> new_tags, std::vector<double> positions, std::vector<std::string> symbols, int original_atoms, int ghost_atoms) 
+{
+  posList2=positions;
+  tags=new_tags;
+  atomTypeList=symbols;
+  number_of_original_atoms=original_atoms;
+  number_of_ghost_atoms=ghost_atoms;
+  nbrOfSites=number_of_original_atoms+number_of_ghost_atoms;
+  create_tag_list();
+}
+
+
 
 LatticeList::LatticeList(int sizeX, int sizeY, int sizeZ)
 {
@@ -53,6 +63,9 @@ LatticeList::LatticeList(int sizeX, int sizeY, int sizeZ)
   fileName="configs/confs4/config_0";
   readIdealPos2();
 }
+
+
+
 LatticeList::LatticeList(int sizeX, int sizeY, int sizeZ, int newNbrOfAtoms, string newFileName) 
 {
   distance_table_init=false;
@@ -666,17 +679,22 @@ std::vector<double> LatticeList::getPeriodicDistance(int i, int j, double cutoff
 
 double LatticeList::getDistance(int i, int j)
 {
-  double dx=fabs(posList2[i*3]-posList2[j*3]);
-  double dy=fabs(posList2[i*3+1]-posList2[j*3+1]);
-  double dz=fabs(posList2[i*3+2]-posList2[j*3+2]);
-  // std::cout<<dx<<" "<< Lx-dx<<" "<< std::min(dx,Lx-dx) <<std::endl;
-  dx=std::min(dx,Lx-dx);
-  dy=std::min(dy,Ly-dy);
-  dz=std::min(dz,Lz-dz);
-  //if(dx<0 ||  dy<0 || dz<0)
-    //  {
-  //std::cout<<"dx= : "<<pow(dx,2.0)<< " "<<"dy= : "<<dy<<" dz = :"<<dz<<std::endl;
-  //  }
+
+
+  double dx=posList2[i*3]-posList2[j*3];
+  double dy=posList2[i*3+1]-posList2[j*3+1];
+  double dz=posList2[i*3+2]-posList2[j*3+2];
+
+
+  // double dx=fabs(posList2[i*3]-posList2[j*3]);
+  // double dy=fabs(posList2[i*3+1]-posList2[j*3+1]);
+  // double dz=fabs(posList2[i*3+2]-posList2[j*3+2]);
+ 
+  // dx=std::min(dx,Lx-dx);
+  // dy=std::min(dy,Ly-dy);
+  // dz=std::min(dz,Lz-dz);
+
+
   return sqrt(dx*dx + dy*dy + dz*dz );
 }
 
@@ -790,7 +808,17 @@ std::string LatticeList::getSite(int i)
 
 void LatticeList::setSite(int index,std::string newSite)
 {
+  if(index >= number_of_original_atoms)
+    {
+      std::cout<<"error: set site of the original atoms only... Site "<<index<<" did not get changed"<<std::endl;
+      return;
+    }
+  
   atomTypeList[index]=newSite;
+  for(int i=0; i<tag_list[index].size(); i++)
+    {
+      atomTypeList[tag_list[index][i]]=newSite;
+    }
 }
 
 void LatticeList::setEnergy(double newEnergy)
@@ -886,20 +914,20 @@ double LatticeList::getConcentration(std::string type)
 
 void LatticeList::calculate_lookup_table()
 {
-  // if(!distance_table_init)
-  //   {
-  //     std::cout<<"starting to calculate lookup table..."<<std::endl;
-  //     distance_table.resize(nbrOfSites);
-  //     for(int i=0; i<nbrOfSites; i++)
-  // 	{
-  // 	  distance_table[i].resize(nbrOfSites);
-  // 	  for(int j=0; j<nbrOfSites; j++)
-  // 	    {
-  // 	      distance_table[i][j]=getDistance(i,j);
-  // 	    }
-  // 	}
-  //     std::cout<<"Done."<<std::endl;
-  //   }
+  if(!distance_table_init)
+    {
+      std::cout<<"starting to calculate lookup table..."<<std::endl;
+      distance_table.resize(nbrOfSites);
+      for(int i=0; i<nbrOfSites; i++)
+  	{
+  	  distance_table[i].resize(nbrOfSites);
+  	  for(int j=0; j<nbrOfSites; j++)
+  	    {
+  	      distance_table[i][j]=getDistance(i,j);
+  	    }
+  	}
+      std::cout<<"Done."<<std::endl;
+    }
   distance_table_init=true;
 
 }
@@ -907,8 +935,8 @@ void LatticeList::calculate_lookup_table()
 
 double LatticeList::fast_distance(int i,int j)
 {
-   return getDistance(i,j);
-   //return distance_table[i][j];
+  //return getDistance(i,j);
+  return distance_table[i][j];
 }
 std::vector<std::vector<double> > LatticeList::getLookupTable()
 {
@@ -923,4 +951,53 @@ std::vector<std::vector<double> > LatticeList::getLookupTable()
       return distance_table;
     }
 
+}
+
+void LatticeList::append_atom(std::string type, std::vector<double> pos, int tag)
+{
+  tags.push_back(tag);
+  atomTypeList.push_back(type);
+  posList2.push_back(pos[0]);
+  posList2.push_back(pos[1]);
+  posList2.push_back(pos[2]);
+}
+
+void LatticeList::create_tag_list()
+{
+  tag_list.clear();
+  for(int i=0; i<number_of_original_atoms; i++)
+    {
+      std::vector<int> temp_tags;
+      for(int j=number_of_original_atoms; j<atomTypeList.size(); j++)
+	{
+	  if(tags[i]==tags[j])
+	    {
+	      temp_tags.push_back(j);
+	    }
+	}
+      tag_list.push_back(temp_tags);
+    }
+
+  if(tag_list.size() != number_of_original_atoms)
+    {
+      std::cout<<"ERROR: size mismatch in create_tag_list()"<<std::endl;
+    }
+}
+      
+
+
+void LatticeList::clear_lookup_table()
+{
+  distance_table.clear();
+  distance_table_init=false;
+}
+
+int LatticeList::get_original_atoms_count()
+{
+  return number_of_original_atoms;
+}
+
+int LatticeList::get_ghost_atoms_count()
+{
+  return number_of_ghost_atoms;
 }
