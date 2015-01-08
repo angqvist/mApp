@@ -90,7 +90,7 @@ void TripletList::initializeTriplets(LatticeList ll, std::vector<std::string> su
   elements.resize(3);
   std::vector<std::vector< std::string> > all_element_combinations;
 
-  for(size_t i=0; i< ll.getNbrOfSites(); i++)//first loop
+  for(size_t i=0; i< ll.get_original_atoms_count(); i++)//first loop
     {
       if(!(isAtomInSubElements(ll.getSite(i),subelements)))
 	{
@@ -183,34 +183,6 @@ void TripletList::initializeTriplets(LatticeList ll, std::vector<std::string> su
 
 		}
 		  
-	      // std::vector<std::vector<int> > clust_func= symmetric_cluster_function(orderDr,subelements.size(),false);
-	      // for(int k=0; k<clust_func.size(); k++)
-	      // 	{
-	      // 	  for(int kk=0; kk<clust_func[k].size(); kk++)
-	      // 	    {
-	      // 	      std::cout<<clust_func[k][kk]<<" ";
-	      // 	    }
-	      // 	  std::cout<<std::endl;
-	      // 	}
-	      // std::cout<<"================================="<<std::endl;
-
-	      // for(int k=0; k< subelements.size(); k++)
-	      // 	{
-	      // 	  for(int l=0; l<subelements.size(); l++)
-	      // 	    {
-	      // 	      for(int p=0; p<subelements.size(); p++)
-	      // 		{
-	      // 		  tempTriplet.setDistance1(orderDr[0]);
-	      // 		  tempTriplet.setDistance2(orderDr[1]);
-	      // 		  tempTriplet.setDistance3(orderDr[2]);
-	      // 		  tempTriplet.setSite1(subelements[k]);
-	      // 		  tempTriplet.setSite2(subelements[l]);
-	      // 		  tempTriplet.setSite3(subelements[p]);
-	      // 		  tempTriplet.sortTriplet();
-	      // 		  updateTriplet(tempTriplet,true);		  
-	      // 		}//end p loop
-	      // 	    }//end l loop	  
-	      // 	}//end for k loop..
 
 
 	    }//end j2 loop
@@ -409,42 +381,20 @@ std::vector<double> TripletList::getClusterVector(std::vector<std::string > subE
   std::vector<std::vector<double> > uniq_dists = getUniqueDistances(cutoff);
   clust_sort_dists(uniq_dists);
 
-  // for(int i=0; i<3; i++)
-  //   {
-  //     std::cout<<uniq_dists[0][i]<<" ";
-  //   }
-  // std::cout<<std::endl;
-  // for(int i=0; i<3; i++)
-  //   {
-  //     std::cout<<uniq_dists[1][i]<<" ";
-  //   }
-  // std::cout<<std::endl;
-  // for(int i=0; i<3; i++)
-  //   {
-  //     std::cout<<uniq_dists[6][i]<<" ";
-  //   }
-  // std::cout<<std::endl;
+  std::cout<<"--------------------------"<<std::endl;
+  for(int i=0; i<uniq_dists.size(); i++)
+    {
+      for(int j=0;j<3; j++)
+	{
+	  std::cout<< uniq_dists[i][j]<<" ";
+	}
+      std::cout<<std::endl;
+    }
+  std::cout<<"--------------------------"<<std::endl;
 
-  // std::cout<<std::endl;
   std::vector<double> clusterVector;
 
   int  Mi=subElements.size();
-  // if(Mi=2)
-  //   {
-  //     clusterVector.resize(4*uniq_dists.size());
-  //   }
-  // else if(Mi=3)
-  //   {
-  //     clusterVector.resize(10*uniq_dists.size());
-  //   }
-  // else if(Mi=4)
-  //   {
-  //     clusterVector.resize(20*uniq_dists.size());
-  //   }
-  // else
-  //   {
-  //     std::cout<<"Error, size of subelements is bad. Size is: "<<Mi<< " expects value between [2,4] "<<std::endl;
-  //   }
   int tripletCount;
   double tempAverage;
   int tempT=0;
@@ -455,10 +405,6 @@ std::vector<double> TripletList::getClusterVector(std::vector<std::string > subE
   int s2;
   int s3;
 
-  // for(int i=0; i<uniq_dists.size(); i++)
-  //   {
-  //     std::cout<<uniq_dists[i][0]<<" "<<uniq_dists[i][1]<< " "<<uniq_dists[i][2]<<std::endl;
-  //   }
 
 
   std::vector<double> dist;
@@ -508,7 +454,7 @@ std::vector<double> TripletList::getClusterVector(std::vector<std::string > subE
 		  tempAverage += clusterFunction(Mi,s1,clusterFunctions[ii2][0])*
 		    clusterFunction(Mi,s2,clusterFunctions[ii2][1])*
 		    clusterFunction(Mi,s3,clusterFunctions[ii2][2])*tripletList[j].getCount();
-		  tempTripletCount+= tripletList[j].getCount();
+		  tempTripletCount += tripletList[j].getCount();
 		}
 	    }
 	  if(average)
@@ -524,105 +470,6 @@ std::vector<double> TripletList::getClusterVector(std::vector<std::string > subE
 
     }//end new stuff  
 
-
-  //old blergh herd nerfer, nerf herder. both. even.
-  // for(int i=0; i<uniq_dists.size(); i++)
-  //   {
-
-  //     for(int m=2; m<=Mi; m++)
-  // 	{
-  // 	  for(int t=0; t<m-1; t++)
-  // 	    {
-  // 	      for(int l=0; l<=t; l++)
-  // 		{
-  // 		  tempVal=0.0;
-  // 		  tempAverage=0.0;
-
-  // 		  tempTripletCount=0;
-  // 		  for(int j=0; j<tripletList.size(); j++)
-  // 		    {
-		   		      
-  // 		      if( fabs(tripletList[j].getDistance1()-uniq_dists[i][0])<1e-4
-  // 			  && fabs(tripletList[j].getDistance2()-uniq_dists[i][1])<1e-4
-  // 			  && fabs(tripletList[j].getDistance3()-uniq_dists[i][2])<1e-4)
-  // 			{
-  // 			  //  tripletList[j].printTriplet();
-  // 			  tempVal=0.0;
-  // 			  bool founds1=false;
-  // 			  bool founds2=false;
-  // 			  bool founds3=false;
-
-  // 			  for(int ii=0; ii<subElements.size(); ii++)
-  // 			    {
-  // 			      if(subElements[ii]==tripletList[j].getSite1())
-  // 				{
-  // 				  s1=ii;
-  // 				  founds1=true;
-  // 				}
-  // 			      if(subElements[ii]==tripletList[j].getSite2())
-  // 				{
-  // 				  s2=ii;
-  // 				  founds2=true;
-  // 				}
-  // 			      if(subElements[ii]==tripletList[j].getSite3())
-  // 				{
-  // 				  s3=ii;
-  // 				  founds3=true;
-  // 				}
-  // 			    }
-  // 			  if(!founds1 || !founds2 || !founds3)
-  // 			    {
-  // 			      std::cout<<"did not found atoms.. tripletlist clyuster vectors"<<std::endl;
-  // 			    }
-
-  // 			  tempT=(m/2);
-  // 			  if(((m-2)%2==0))
-  // 			    {
-  // 			      tempVal =-cos(2.0*PI*s1*(double)tempT/((double)Mi));
-  // 			    }
-  // 			  else
-  // 			    {
-  // 			      tempVal =-sin(2.0*PI*s1*(double)tempT/((double)Mi));
-  // 			    }
-  // 			  tempT=((t+2)/2); //round down aye
-				  
-  // 			  if((t%2==0))
-  // 			    {
-  // 			      tempVal *=-cos(2.0*PI*s2*(double)tempT/((double)Mi));
-  // 			    }
-  // 			  else
-  // 			    {
-  // 			      tempVal *=-sin(2.0*PI*s2*(double)tempT/((double)Mi));
-  // 			    }	
-  // 			  tempT=((l+2)/2);
-  // 			  if((l%2==0))
-  // 			    {
-  // 			      tempVal *=-cos(2.0*PI*s3*(double)tempT/((double)Mi));
-  // 			    }
-  // 			  else
-  // 			    {
-  // 			      tempVal *=-sin(2.0*PI*s3*(double)tempT/((double)Mi));
-  // 			    }	
-
-			  
-  // 			  //std::cout<<tempVal<<" "<<m<<" "<<t<< " "<<l<<std::endl;
-  // 			  //	  std::cout<<tempVal<<" "<<tripletList[i].std::endl;
-  // 			  tempTripletCount += tripletList[j].getCount();
-  // 			  tempAverage +=tripletList[j].getCount()*tempVal;
-  // 			}
-  // 		    }//end tripletlist loop
-  // 		  if(average)
-  // 		    {		  
-  // 			  clusterVector.push_back(tempAverage/(double)tempTripletCount);
-  // 		    }
-  // 		  else
-  // 		    {
-  // 		      clusterVector.push_back(tempAverage);
-  // 		    }
-  // 		}//end l loop
-  // 	    }//en t loop
-  // 	}//end m loop
-  //   }//end uniq dist loop
 
   return clusterVector;
 }		  

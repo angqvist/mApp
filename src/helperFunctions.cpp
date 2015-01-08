@@ -664,16 +664,23 @@ PairList countPairs(LatticeList ll, PairList pl, double cutoff)
   std::string site2;
   std::string tempSite;
   std::vector<double> dists;
-  for(size_t i=0; i<ll.getNbrOfSites(); i++)
+  dists.resize(1);
+  for(size_t i=0; i<ll.get_original_atoms_count(); i++)
     {
-      for(size_t j=i; j<ll.getNbrOfSites(); j++)
+      for(size_t j=0; j<ll.getNbrOfSites(); j++)
 	{
-	  dists=ll.getPeriodicDistance(i,j,cutoff);
-	  if(dists.size()==0)
+	  if(i==j)
 	    {
 	      continue;
 	    }
-
+	 
+	  dr=ll.fast_distance(i,j);
+	  if(dr>cutoff)
+	    {
+	      continue;
+	    }
+	 
+	  dists[0]=dr;
 	  site1=ll.getSite(i);
 	  site2=ll.getSite(j);
 	  if(site1.compare(site2)>0) //use tuple_remodulator instead you archaic buffoon
@@ -682,20 +689,22 @@ PairList countPairs(LatticeList ll, PairList pl, double cutoff)
 	      site1=site2;
 	      site2=tempSite;
 	    }
-	  for(int d=0; d<dists.size(); d++)
+	  //dr=dists[d];
+	  //dr=ll.fast_distance(i,j); // add cutoff here?
+	  // tempPair.printPair();
+	  tempPair=Pair(dists[0],site1,site2);
+	  if(pl.updatePair(tempPair,false))
 	    {
-	      //dr=dists[d];
-	      //dr=ll.fast_distance(i,j); // add cutoff here?
-	      // tempPair.printPair();
-	      tempPair=Pair(dists[d],site1,site2);
-	      pl.updatePair(tempPair,false);
+	      std::cout<<"found a new pair while counting..."<<std::endl;
+	      tempPair.printPair();
 	    }
+	      
 	}
     }
   // std::cout<<"counting pairs1"<<std::endl;
   // pl.printList();
   // std::cout<<"counting pairs2"<<std::endl;
-   pl.divideCountByTwo();
+  //pl.divideCountByTwo();
   return pl;
 }
 
@@ -759,7 +768,7 @@ TripletList countTriplets(LatticeList ll, TripletList tl)
 }
 
 
-TripletList countTriplets(LatticeList ll, TripletList tl,double cutoff)
+TripletList countTriplets(LatticeList ll, TripletList tl, double cutoff)
 {
   double dr1;
   double dr2;
@@ -775,18 +784,22 @@ TripletList countTriplets(LatticeList ll, TripletList tl,double cutoff)
   elements.resize(3);
 
   //#pragma omp parallel for private(dr1,dr2,dr3,orderDr,orderIndex,tempTriplet,tl) shared(ll)
-  for(size_t i=0; i<ll.getNbrOfSites(); i++)
+  for(size_t i=0; i<ll.get_original_atoms_count(); i++)
     {
-      for(size_t j=i+1; j<ll.getNbrOfSites(); j++)
+      for(size_t j=0; j<ll.getNbrOfSites(); j++)
 	{
+	  if(i==j)
+	    {
+	      continue;
+	    }
 	  if(ll.fast_distance(i,j)>cutoff)
 	    {
 	      continue;
 	    }
-	  for(size_t k=j+1; k<ll.getNbrOfSites(); k++)
+	  for(size_t k=0; k<ll.getNbrOfSites(); k++)
 	    {
 	      
-	      if(i==k || j == k || i==j)
+	      if(i==k || j == k)
 		{
 		  continue;
 		}
@@ -794,7 +807,7 @@ TripletList countTriplets(LatticeList ll, TripletList tl,double cutoff)
 	      dr1=ll.fast_distance(i,j);
 	      dr2=ll.fast_distance(i,k);
 	      dr3=ll.fast_distance(j,k);
-	      if(dr2>cutoff || dr3> cutoff)
+	      if( dr1>cutoff || dr2>cutoff || dr3> cutoff)
 		{
 		  continue;
 		}
@@ -819,10 +832,9 @@ TripletList countTriplets(LatticeList ll, TripletList tl,double cutoff)
 		  tempTriplet.printTriplet();
 		  
 		   std::cout<<" not found in tripletList whikle counting"<<std::endl;
-		   tl.printList();
+		   // tl.printList();
 		}
 	    }		
-	    
 	}
     }
   return tl;
@@ -1367,7 +1379,7 @@ void shrink(const gsl_vector * ceParams, void *params)
 	  gsl_vector_set(tmpY,i,-1.0*temp);
 	}
     }  
-gsl_vector_memcpy(inParams->parD,tmpY); // does this change d?  yes.
+  gsl_vector_memcpy(inParams->parD,tmpY); // does this change d?  yes.
 
   gsl_vector_free(tmpX);
   gsl_vector_free(tmpY);
@@ -2021,13 +2033,12 @@ std::vector<NeighbourList> getNLVector(LatticeList ll, ParameterList pl)
 {
   std::vector<NeighbourList> ret;
   //std::cout<<" int get NL "<<std::endl;
-  for(int i=0; i<ll.getNbrOfSites(); i++)
+  for(int i=0; i<ll.get_original_atoms_count(); i++)
     {
       NeighbourList nl = NeighbourList(i,ll,pl);
       //nl.printList();
       ret.push_back(nl);
     }
-  //std::cout<<"returning with size "<<ret.size()<<std::endl;
   return ret;
 }
 
@@ -2171,7 +2182,7 @@ std::vector<double> getSingleClusterVector(std::string fileName,std::vector<doub
   
   const double PI = 3.1415926535897932384626;
 
-  LatticeList ll= LatticeList(1,1,1,atoms,properties,fileName,subElements);
+  LatticeList ll = LatticeList(1,1,1,atoms,properties,fileName,subElements);
 
   // first singlets
   std::vector<double> singletVector;
@@ -2241,8 +2252,36 @@ std::vector<double> getSingleClusterVector(std::string fileName,std::vector<doub
 
 
 //version 2 OVERLOADED
-std::vector<double> getSingleClusterVector(LatticeList ll, PairList pl, TripletList tl,QuatupletList ql,std::vector<double> cutoffs,std::vector<std::string> subElements, int properties, int atoms,bool average,bool ATAT)
+std::vector<double> getSingleClusterVector(LatticeList ll, std::vector<double> cutoffs,std::vector<std::string> subElements,bool average,bool ATAT)
 {
+  std::cout<<"calculating lookup table"<<std::endl;
+  ll.calculate_lookup_table();
+  std::cout<<"initializing pairs"<<std::endl;
+  PairList pl = PairList();
+  std::cout<<"initializing pairs2"<<std::endl;
+
+
+
+  pl.initializePairs(ll,subElements,cutoffs[0]);
+  // std::cout<<"number of pairs "<<pl.getNbrOfPairs<<std::endl;
+  // for(int i=0; i<pl.getNbrOfPairs(); i++)
+  //   {
+  //     pl.getPair(i).printPair();
+  //   }
+  TripletList tl;
+  if(cutoffs.size() >=2)
+    {
+      tl = TripletList(ll,subElements,cutoffs[1]);
+      tl.sortTripletList();
+    }
+  QuatupletList ql;// = QuatupletList();
+
+  if(cutoffs.size() >=3)
+    {
+      ql.initializeQuatuplets(ll,subElements,cutoffs[2]);
+    }
+
+  std::cout<<"done initializing tuplelists"<<std::endl;
   
   const double PI = 3.1415926535897932384626;
 
@@ -2250,12 +2289,12 @@ std::vector<double> getSingleClusterVector(LatticeList ll, PairList pl, TripletL
 
   // first singlets
   std::vector<double> singletVector;
-  singletVector.push_back(1.0); //zerolets
+  singletVector.push_back(ll.get_original_atoms_count()); //zerolets
   double tempAverage;
   int tempT;
   int s1;
   double tempVal;
-  //  std::cout<<"do singlets"<<std::endl;
+  std::cout<<"do singlets"<<std::endl;
   if(ATAT)
     {
       std::vector<double> tomt;
@@ -2267,7 +2306,7 @@ std::vector<double> getSingleClusterVector(LatticeList ll, PairList pl, TripletL
       	{
 	  // std::cout<<clust_singlet[i][0]<<std::endl;
       	  tempAverage=0;
-      	  for(int j=0; j<ll.getNbrOfSites(); j++)
+      	  for(int j=0; j<ll.get_original_atoms_count(); j++)
       	    {
       	      int s1;
       	      for(int jj=0; jj<subElements.size(); jj++)
@@ -2284,59 +2323,21 @@ std::vector<double> getSingleClusterVector(LatticeList ll, PairList pl, TripletL
 
       	  if(average)
       	    {
-      	      singletVector.push_back(tempAverage/((double)ll.getNbrOfSites()));
+      	      singletVector.push_back(tempAverage/((double)ll.get_original_atoms_count()));
       	    }
       	  else
-      	    {
-	      
+      	    { 
 	      singletVector.push_back(tempAverage);
       	    }
       	}
     }
-      //====
-
-    //   for(int m=2; m<=subElements.size(); m++)
-    // 	{
-    // 	  tempAverage=0;
-    // 	  for(int i=0; i<ll.getNbrOfSites(); i++)
-    // 	    {
-    // 	      for(int ii=0; ii<subElements.size(); ii++)
-    // 		{
-    // 		  if(ll.getSite(i)==subElements[ii])
-    // 		    {
-    // 		      s1=ii;
-    // 		    }
-    // 		}
-	  
-    // 	      tempT=(m/2); //round down aye
-    // 	      if(((m-2)%2==0))
-    // 		{
-    // 		  tempVal=-cos(2.0*PI*s1*tempT/(subElements.size()));
-    // 		}
-    // 	      else
-    // 		{
-    // 		  tempVal=-sin(2.0*PI*s1*tempT/(subElements.size()));
-    // 		}
-    // 	      tempAverage +=tempVal;
-    // 	    }
-    // 	  if(average)
-    // 	    {
-    // 	      singletVector.push_back(tempAverage/(double)ll.getNbrOfSites());
-    // 	    }
-    // 	  else
-    // 	    {
-    // 	      singletVector.push_back(tempAverage);
-    // 	    }
-	  
-    // 	}
-    // }
-
+  
   else
     {
       for(int m=0; m<subElements.size(); m++)
 	{
 	  tempAverage=0;
-	  for(int i=0; i<ll.getNbrOfSites(); i++)
+	  for(int i=0; i<ll.get_original_atoms_count(); i++)
 	    {
 	      if(ll.getSite(i)==subElements[m])
 		{
@@ -2346,7 +2347,7 @@ std::vector<double> getSingleClusterVector(LatticeList ll, PairList pl, TripletL
 	    }
 	  if(average)
 	    {
-	      singletVector.push_back(tempAverage/(double)ll.getNbrOfSites());
+	      singletVector.push_back(tempAverage/(double)ll.get_original_atoms_count());
 	    }
 	  else
 	    {
@@ -2357,17 +2358,21 @@ std::vector<double> getSingleClusterVector(LatticeList ll, PairList pl, TripletL
     }
   //std::cout<<"singlets"<<std::endl;
 
-  // std::cout<<"starting with pairs" <<std::endl;
+  std::cout<<"starting with pairs" <<std::endl;
   if(cutoffs.size() >=1)
     {
       // PairList pl = PairList();
       //pl.initializePairs(ll,subElements,cutoffs[0]);
+      std::cout<<"counting pairs"<<std::endl;
       pl= countPairs(ll,pl,cutoffs[0]);
+      std::cout<<"done counting pairs"<<std::endl;
       if(pl.getNbrOfPairs()>0)
 	{
 
 	  if(ATAT)
 	    {
+	      // pl.printList();
+      
 	      //pl.getPair(2).printPair();      
 	      std::vector<double> pairVector = pl.getClusterVector(subElements,cutoffs[0],average);
 	      std::cout<<"pairvector size "<<pairVector.size()<<std::endl;
@@ -2408,7 +2413,9 @@ std::vector<double> getSingleClusterVector(LatticeList ll, PairList pl, TripletL
 	  if(ATAT)
 	    {
 	      //	  tl.getTriplet(3).printTriplet();
-	  
+	      // tl.printList();
+	      // std::cout<<"-------------------------"<<std::endl;
+      
 
 	      std::vector<double> tripletVector = tl.getClusterVector(subElements,cutoffs[1],average);
 	      // std::cout<<"Number of triplets: "<<tl.getNbrOfTriplets()<< " tripvector "<<tripletVector.size()<<std::endl;
@@ -2418,8 +2425,7 @@ std::vector<double> getSingleClusterVector(LatticeList ll, PairList pl, TripletL
 		}
 	    }
 	  else
-	    {
-            
+	    {            
 	      for(int i=0; i<tl.getNbrOfTriplets(); i++)
 		{
 		  if(tl.getTriplet(i).getDistance2()<cutoffs[1])
@@ -2431,11 +2437,6 @@ std::vector<double> getSingleClusterVector(LatticeList ll, PairList pl, TripletL
 	}
     }
 
-  // for(int j=0; j<10; j++)
-  //   {
-  //     std::cout<<singletVector[j]<< " ";
-  //   }
-  // std::cout<<std::endl;
   if(cutoffs.size() >=3)
     {
       ql.count_quatuplets(ll,cutoffs[2]);
@@ -2444,7 +2445,7 @@ std::vector<double> getSingleClusterVector(LatticeList ll, PairList pl, TripletL
       if(ATAT)
 	{
 	  std::vector<double> quatVector = ql.getClusterVector(subElements,cutoffs[2],average);
-	  // ql.printList();
+	  //ql.printList();
 	  //  std::cout<<"NUmber of quatuplets "<<ql.getNbrOfQuatuplets()<< " quatvector.size() "<<quatVector.size()<<std::endl;
 
 	  if(quatVector.size()>0)
@@ -2456,8 +2457,7 @@ std::vector<double> getSingleClusterVector(LatticeList ll, PairList pl, TripletL
 	{
 	  for(int i=0; i<ql.getNbrOfQuatuplets(); i++)
 	    {
-	      //ql.getQuatuplets.getDis no distance should be over cutoff
-	      
+	      //ql.getQuatuplets.getDis no distance should be over cutoff	      
 	      singletVector.push_back(ql.getQuatuplet(i).getCount());
 	    }
 	}
@@ -2465,15 +2465,28 @@ std::vector<double> getSingleClusterVector(LatticeList ll, PairList pl, TripletL
 
   
 
-  if(true)
+  // if(false)
+  //   {
+  //     std::cout<<std::setprecision(6)<<ll.getConcentration(subElements[0])<<" "<<singletVector.size()<<" ";
+  //     for(int i=0; i<singletVector.size(); i++)
+  // 	{
+  // 	  std::cout<<singletVector[i]<< " ";
+  // 	}
+  //     std::cout<<std::endl;
+  //   }
+  std::cout<<"normalizing"<<std::endl;
+  if(!average)
     {
-      std::cout<<std::setprecision(6)<<ll.getConcentration(subElements[0])<<" "<<singletVector.size()<<" ";
       for(int i=0; i<singletVector.size(); i++)
 	{
-	  std::cout<<singletVector[i]<< " ";
+	  singletVector[i]= singletVector[i]/((double)ll.get_original_atoms_count());
 	}
-      std::cout<<std::endl;
+      
     }
+  
+
+
+
 
   return singletVector;
 }
@@ -2484,58 +2497,58 @@ std::vector<double> getSingleClusterVector(LatticeList ll, PairList pl, TripletL
 //getSingleClusterVector(std::string fileName,std::vector<double> cutoffs,std::vector<std::string> subElements, int properties, int atoms,bool average)
 
 
-void getClusterVectors(std::vector<std::string> filenames, std::vector<double> &X, std::vector<double> &X_avg,std::vector<std::vector<double> > &properties,std::vector<double> cutoffs, std::vector<std::string> subelements,int nbrOfproperties,int atoms,bool verbal,bool ATAT)
+void getClusterVectors(std::vector<LatticeList> lattice_list, std::vector<double> &X, std::vector<double> &X_avg,std::vector<std::vector<double> > &properties,std::vector<double> cutoffs, std::vector<std::string> subelements,int nbrOfproperties,int atoms,bool verbal,bool ATAT)
 {
   std::vector<double> temp;
   //std::vector<double> X_avg;
   if(verbal)
     {
-      std::cout<<"Starting to parse "<<filenames.size()<<" structures "<<std::endl;
+      std::cout<<"Starting to parse "<<lattice_list.size()<<" structures "<<std::endl;
     }
   
-  LatticeList ll= LatticeList(1,1,1,atoms,nbrOfproperties,filenames[0],subelements);
+  // LatticeList ll= LatticeList(1,1,1,atoms,nbrOfproperties,filenames[0],subelements);
 
 
-  //ll.printList();
-  PairList pl = PairList();
-  pl.initializePairs(ll,subelements,cutoffs[0]);
+  // //ll.printList();
+  // PairList pl = PairList();
+  // pl.initializePairs(ll,subelements,cutoffs[0]);
   
-  pl.printList();
-  //std::cout<<"done initialize pairs"<<std::endl;
+  // pl.printList();
+  // //std::cout<<"done initialize pairs"<<std::endl;
 
-  TripletList tl;
-  // std::cout<<"starting initialize triplets"<<std::endl;
+  // TripletList tl;
+  // // std::cout<<"starting initialize triplets"<<std::endl;
 
-  if(cutoffs.size() >=2)
-    {
-      //tl = TripletList(ll,subelements,cutoffs[1]);
-      tl = TripletList(ll,subelements,cutoffs[1]);
-      tl.sortTripletList();
-      //tl.printList();
-    }
+  // if(cutoffs.size() >=2)
+  //   {
+  //     //tl = TripletList(ll,subelements,cutoffs[1]);
+  //     tl = TripletList(ll,subelements,cutoffs[1]);
+  //     tl.sortTripletList();
+  //     //tl.printList();
+  //   }
 
-  //std::cout<<"doing quatupletlIst"<<std::endl;
-  QuatupletList ql;// = QuatupletList();
+  // //std::cout<<"doing quatupletlIst"<<std::endl;
+  // QuatupletList ql;// = QuatupletList();
 
-  if(cutoffs.size() >=3)
-    {
-      //ql=QuatupletList
-      ql.initializeQuatuplets(ll,subelements,cutoffs[2]);
-    }
-  LatticeList ll2;
+  // if(cutoffs.size() >=3)
+  //   {
+  //     //ql=QuatupletList
+  //     ql.initializeQuatuplets(ll,subelements,cutoffs[2]);
+  //   }
+  // LatticeList ll2;
   std::cout<<"starting to count cluster vectors"<<std::endl;
-  for(int i=0; i<filenames.size(); i++)
+  for(int i=0; i<lattice_list.size(); i++)
     {
       std::cout<<i<<std::endl;
-      ll= LatticeList(1,1,1,atoms,nbrOfproperties,filenames[i],subelements,ll.getLookupTable());
+      //ll= LatticeList(1,1,1,atoms,nbrOfproperties,filenames[i],subelements,ll.getLookupTable());
       //   std::cout<<"Get clustervector: "<<std::endl;
-      temp=getSingleClusterVector(ll,pl,tl,ql,cutoffs,subelements,nbrOfproperties,atoms,false,ATAT);
+      temp=getSingleClusterVector(lattice_list[i],cutoffs,subelements,false,ATAT);
       X.insert(X.end(),temp.begin(),temp.end());
-      temp=getSingleClusterVector(ll,pl,tl,ql,cutoffs,subelements,nbrOfproperties,atoms,true,ATAT);
+      temp=getSingleClusterVector(lattice_list[i],cutoffs,subelements,true,ATAT);
       X_avg.insert(X_avg.end(),temp.begin(),temp.end());
       for(int j=0; j<nbrOfproperties; j++)
 	{
-	  properties[j].push_back(ll.getProperty(j));
+	  properties[j].push_back(lattice_list[i].getProperty(j));
 	}
     }
   //  std::vector<double> cvCorr = getCVCorrection(X,numberOfConfigs,distances.size());
@@ -2611,6 +2624,7 @@ void printInterfaceParameters(std::vector<double> parameters,std::vector<double>
   //format is:
   //tuple_order dist0...distn energy
   // tuple order 0 is zerolet, 1 is singlet, 2 is pair, 3 is triplets, 4 is quatuplets
+  std::cout<<"parameter length: "<<parameters.size()<<std::endl;
   PairList pl = PairList();
   pl.initializePairs(ll,subelements,cutoffs[0]);
   TripletList tl;
@@ -2618,7 +2632,6 @@ void printInterfaceParameters(std::vector<double> parameters,std::vector<double>
     {
       tl = TripletList(ll,subelements,cutoffs[1]);
       tl.sortTripletList();
-      // tl.printList();
     }
 
   QuatupletList ql;
@@ -2629,8 +2642,8 @@ void printInterfaceParameters(std::vector<double> parameters,std::vector<double>
 
   int count=0;
   std::vector<double> pair_dist=pl.getUniqueDistances(cutoffs[0]);
-    std::sort (pair_dist.begin(),pair_dist.end());
-
+  std::sort (pair_dist.begin(),pair_dist.end());
+  std::cout<<"number of pairs "<< pair_dist.size()<<std::endl;
   std::ofstream outF;
 
   outF.open(fileName.c_str());
@@ -2736,16 +2749,12 @@ void printInterfaceParameters(std::vector<double> parameters,std::vector<double>
 	    }
 	}
     }
-
-
-
-
-
+  
   if(parameters.size() != count)
     {
       std::cout<<"ERROR: doesnt write out parameters correctly...."<<std::endl;
     }
-
+  std::cout<<"done writing parameters"<<std::endl;
 }
 
       

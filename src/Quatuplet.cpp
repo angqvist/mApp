@@ -361,6 +361,10 @@ void Quatuplet::incrementCount()
 {
   count++;
 }
+void Quatuplet::increaseCountBy(int addThisToCount)
+{
+  count += addThisToCount;
+}
 void Quatuplet::decrementCount()
 {
   count--;

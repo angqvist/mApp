@@ -511,15 +511,427 @@ void tuple_remodulator(std::vector<double> &dists, std::vector<std::string> &ele
 }
 
 
+//this routine assumes that sites 1 and 2 are ordered and thus dists[0]
+//it will then order site 3 and 4
+//swapping site 3 and 4 will result in:
+// old dist --> new dist
+// r2 --> r3
+// r4 -->r5
+// r5--r4
+// r6 -->r6
+// so if r2 != r3 it is obvious what to do, else you have to compare higher order distances
 
-void clust_sort_quatuplet(std::vector<double> &dists, std::vector<std::string> &elements,bool reverseSort)
+void clust_sort_quatuplet_part2(std::vector<double>  &dists, std::vector<std::string> &elements,bool reverseSort)
 {
 
-  double reverseInt =1.0;
+  double reverseInt=1.0;
   if(reverseSort)
     {
       reverseInt=-1.0;
     }
+
+  
+  if(fabs(dists[1]-dists[2])<1e-3)
+    {
+      //r2==r3, check higher order
+      //
+      if(fabs(dists[3]-dists[4])<1e-3)
+	{
+	  // doesnt matter
+	  //swap sites yo
+	  if(reverseInt*elements[2].compare(elements[3])>0)
+	    {
+	      clust_swap_atom(3,4,elements,dists);
+	    }
+	  return;
+	}
+      else if(dists[3]<dists[4])
+	{
+	  //do not swap its oki doki
+	  return;
+	}
+      else
+	{
+	  //swap it
+	  clust_swap_atom(3,4,elements,dists);
+	  return;
+	}
+    }
+  else if(dists[1]<dists[2])
+    {
+      // do not swap, its oki doki
+      return;
+    }
+  else
+    {
+      clust_swap_atom(3,4,elements,dists);
+      return;
+    }
+  
+}
+//return true/false if dists1 is smaller/larger where first distances are compared first and if they are equal check higher order distance
+//returns 2 if they are equal
+
+int is_first_dist_smaller(std::vector<double> dists1, std::vector<double> dists2)
+{
+  if(dists1.size() != dists2.size())
+    {
+      std::cout<<"Error: dists1 and dists2 size doesn't match in 'is_first_dist_smaller' in clust.cpp"<<std::endl;
+      exit(1);
+    }
+  int equal_count=0;
+  int m=dists1.size();
+  for(int i=0; i<m; i++)
+    {
+      if( fabs(dists1[i]-dists2[i])<1e-3 )
+	{
+	  equal_count++;
+	}
+      else if(dists1[i]-dists2[i]<1e-3)
+	{
+	  return true;
+	}
+      else if(dists1[i]-dists2[i]>1e-3)
+	{
+	  return false;
+	}
+
+    }
+
+  if(equal_count==m)
+    {
+      return 2;
+    }
+  return false;
+}
+  
+int trial_swap(std::vector<int> swap_order, std::vector<double> &temp_dists, std::vector<double> &min_dists, std::vector<std::string> &min_elements, std::vector<std::string> &temp_elements,bool reverseSort)
+{
+  if(swap_order.size()%2 !=0)
+    {
+      std::cout<<"Error: Swap order.size() is not a multiple of two in trial_swap in clust.cpp"<<std::endl;
+      exit(1);
+    }
+  int smaller_dist_variable;
+
+  for(int i=0; i<swap_order.size()/2; i++)
+    {
+      clust_swap_atom(swap_order[i*2],swap_order[i*2+1],temp_elements,temp_dists);
+    }
+  clust_sort_quatuplet_part2(temp_dists,temp_elements,reverseSort);
+
+  smaller_dist_variable=is_first_dist_smaller(temp_dists,min_dists);
+  
+  if(smaller_dist_variable == true)
+    {
+      min_dists=temp_dists;
+      min_elements=temp_elements;
+      return true;
+    }
+  else if(smaller_dist_variable == 2)
+    {
+      if(is_elements_in_lower_order(temp_elements,min_elements,reverseSort))
+	{
+	  min_dists=temp_dists;
+	  min_elements=temp_elements;
+	  return true;
+	}
+      //check if elements get swapped
+    }
+  
+  return false;
+}
+
+
+int is_elements_in_lower_order(std::vector<std::string> str1, std::vector<std::string> str2,bool reverseSort)
+{
+  
+  if(str1.size() != str2.size())
+    {
+      std::cout<<"Error: str1 size and str2 size is not equal in is_elements_in_lower_order in clust.cpp"<<std::endl;
+      exit(1);
+    }
+
+  double reverseInt=1.0;
+  if(reverseSort)
+    {
+      reverseInt=-1.0;
+    }
+  int m= str1.size();
+  for(int i=0; i<m; i++)
+    {
+      if(reverseInt*str1[i].compare(str2[i])<0)
+	{
+	  return true;
+	}
+      else if(reverseInt*str1[i].compare(str2[i])>0)
+	{
+	  return false;
+	}
+    }
+  return 2;
+  
+}
+  
+
+  
+  
+  
+
+
+void clust_sort_quatuplet(std::vector<double> &dists, std::vector<std::string> &elements,bool reverseSort)
+{
+
+  //new -more thought out stuff
+  double min_dist=1e10; //==INTMAX or something
+  
+  std::vector<int> index_of_minimum_distances;
+  std::vector<int> number_of_min_dists;
+  for(int i=0; i<dists.size(); i++)
+    {
+      if(dists[i]<min_dist)
+	{
+	  min_dist=dists[i];
+	}      
+    }
+  for(int i=0; i<dists.size(); i++)
+    {
+      if(fabs(dists[i]-min_dist)<1e-3)
+	{
+	  number_of_min_dists.push_back(i);
+	}
+    }
+
+  //do part one which consists of finding site one, site two and also r1=dists[0]
+  // number of candidates.
+  //note that if m=1 there are two candidates for site1 either one of the ones involved in 
+  int m=number_of_min_dists.size();
+  // std::cout<<"================================+"<<std::endl;
+  // for(int i=0; i<dists.size(); i++)
+  //   {
+  //     std::cout<<dists[i]<< " ";
+  //   }
+  //std::cout<<std::endl;
+  std::vector<int> min_indices;
+  min_indices.push_back(1);
+  min_indices.push_back(2);
+  std::vector<double> min_dists=dists;
+  std::vector<std::string> min_elements=elements;
+  std::vector<double> temp_dists=dists;
+
+  std::vector<std::string> temp_elements=elements;
+  for(int i=0; i<m; i++)
+    {
+      int j = number_of_min_dists[i];
+      std::vector<int> swap_atom_order;
+      temp_elements=elements;
+      temp_dists=dists;
+      
+      if(j==0)
+	{
+
+	  //first try no swaps
+	  // and then try 1,2 swap
+	  swap_atom_order.clear();
+	  if(trial_swap(swap_atom_order,temp_dists,min_dists,min_elements,temp_elements,reverseSort))
+	    {
+	      min_indices[0]=1;
+	      min_indices[1]=2;
+	    }
+
+	  swap_atom_order.clear();
+	  swap_atom_order.push_back(1);
+	  swap_atom_order.push_back(2);
+	  
+	  if(trial_swap(swap_atom_order,temp_dists,min_dists,min_elements,temp_elements,reverseSort))
+	    {
+	      min_indices[0]=2;
+	      min_indices[1]=1;
+	    }
+	}
+      //if j==1, r2 is minimum candidate, meaning s1 is s1 and s2 is s3 or s1 is s3 and s2 is s1
+      else if(j==1)
+	{
+	  // first case swap 2,3
+	  swap_atom_order.clear();
+	  swap_atom_order.push_back(2);
+	  swap_atom_order.push_back(3);
+
+	  if(trial_swap(swap_atom_order,temp_dists,min_dists,min_elements,temp_elements,reverseSort))
+	    {
+	      min_indices[0]=1;
+	      min_indices[1]=3;
+	    }	  
+	  //------------------------------------
+	  //now test swapping 1,2 (which is like putting s3 to s1 and s1 to s2 in the original configuration
+	  swap_atom_order.clear();
+	  swap_atom_order.push_back(2);
+	  swap_atom_order.push_back(1);
+	  
+	  if(trial_swap(swap_atom_order,temp_dists,min_dists,min_elements,temp_elements,reverseSort))
+	    {
+	      min_indices[0]=3;
+	      min_indices[1]=1;
+	    }
+	}
+      //if j==2 it is either swapping 2,4 or swapping 2,4 and 1,2. That is site 1 and site 4 need to occupy either site 1 or 2.
+      else if(j==2)
+	{
+	  //first swap 2,4
+
+	  swap_atom_order.clear();
+	  swap_atom_order.push_back(2);
+	  swap_atom_order.push_back(4);
+
+
+	  if(trial_swap(swap_atom_order,temp_dists,min_dists,min_elements,temp_elements,reverseSort))
+	    {
+	      min_indices[0]=1;
+	      min_indices[1]=4;
+	    }	   
+
+	  //----------------------
+	  //now swap 1,2 that is put s4,s1 in s1,s2
+	  swap_atom_order.clear();
+	  swap_atom_order.push_back(1);
+	  swap_atom_order.push_back(2);
+	  
+	  if(trial_swap(swap_atom_order,temp_dists,min_dists,min_elements,temp_elements,reverseSort))
+	    {
+	      min_indices[0]=4;
+	      min_indices[1]=1;
+	    }	  
+	  
+	}
+
+      //if j==3 s2 and s3 is candidates
+      //first put s3 on s1
+      //then swap s1,s2
+      
+      else if(j==3)
+	{
+
+	  
+	  swap_atom_order.clear();
+	  swap_atom_order.push_back(1);
+	  swap_atom_order.push_back(3);
+
+
+	  if(trial_swap(swap_atom_order,temp_dists,min_dists,min_elements,temp_elements,reverseSort))
+	    {
+	      min_indices[0]=3;
+	      min_indices[1]=2;
+	    }	   
+
+	  //----------------------
+	  //now swap 1,2 that is put s4,s1 in s1,s2
+	  swap_atom_order.clear();
+	  swap_atom_order.push_back(1);
+	  swap_atom_order.push_back(2);
+	  
+	  if(trial_swap(swap_atom_order,temp_dists,min_dists,min_elements,temp_elements,reverseSort))
+	    {
+	      min_indices[0]=2;
+	      min_indices[1]=3;
+	    }
+	}
+
+      //s2 and s4 are candidates
+      //first trial_swap s1,s4 and then s1,s2
+      else if(j==4)
+	{
+	  swap_atom_order.clear();
+	  swap_atom_order.push_back(1);
+	  swap_atom_order.push_back(4);
+
+
+	  if(trial_swap(swap_atom_order,temp_dists,min_dists,min_elements,temp_elements,reverseSort))
+	    {
+	      min_indices[0]=4;
+	      min_indices[1]=2;
+	    }	   
+
+	  //----------------------
+	  //now swap 1,2 that is put s4,s1 in s1,s2
+	  swap_atom_order.clear();
+
+	  swap_atom_order.push_back(1);
+	  swap_atom_order.push_back(2);
+	  
+	  if(trial_swap(swap_atom_order,temp_dists,min_dists,min_elements,temp_elements,reverseSort))
+	    {
+	      min_indices[0]=2;
+	      min_indices[1]=4;
+	    }
+
+
+	}
+      //s3 and s4 are candidates
+      //first swap s3,s1 and s2,s4 (dual swap action)
+      //and then the usual s1,s2 swap
+      else if(j==5)
+	{
+
+	  
+	  swap_atom_order.clear();
+	  swap_atom_order.push_back(3);
+	  swap_atom_order.push_back(1);
+	  
+	  swap_atom_order.push_back(4);
+	  swap_atom_order.push_back(2);
+
+
+	  if(trial_swap(swap_atom_order,temp_dists,min_dists,min_elements,temp_elements,reverseSort))
+	    {
+	      min_indices[0]=3;
+	      min_indices[1]=4;
+	    }	   
+
+	  //----------------------
+	  //now swap 1,2 that is put s4,s1 in s1,s2
+	  swap_atom_order.clear();
+	  swap_atom_order.push_back(1);
+	  swap_atom_order.push_back(2);
+	  
+	  if(trial_swap(swap_atom_order,temp_dists,min_dists,min_elements,temp_elements,reverseSort))
+	    {
+	      min_indices[0]=4;
+	      min_indices[1]=3;
+	    }
+	}
+      
+    }
+  
+  dists=min_dists;
+  elements=min_elements;
+  //do part 2, final part..
+
+  // for(int i=0; i<6; i++)
+  //   {
+  //     std::cout<<dists[i]<< " ";
+  //   }
+  // std::cout<<std::endl;
+
+  clust_sort_quatuplet_part2(dists,elements,reverseSort);
+  
+  // for(int i=0; i<dists.size(); i++)
+  //   {
+  //     std::cout<<dists[i]<< " ";
+  //   }
+  // std::cout<<std::endl;
+  // std::cout<<"================================+"<<std::endl;
+
+  
+  
+  
+  //end new .more thought out stuff
+  
+  
+  
+  
+  
+  
+  
   /*
     a quatuplet is equal to [r1,r2,r3,r4,r5,r6] and [s1,s2,s3,s4]
     r1 = s1,s2
@@ -552,7 +964,10 @@ void clust_sort_quatuplet(std::vector<double> &dists, std::vector<std::string> &
 
     if r2 < r1
     swap s2,s3
+
+
    */
+  /*
   double DISTANCE_LIMIT=1e-4;
 
   bool swapped = true;
@@ -1228,7 +1643,7 @@ void clust_sort_quatuplet(std::vector<double> &dists, std::vector<std::string> &
   // 	}
   // }
       
-
+  */
 		      
 }
 
@@ -1367,7 +1782,6 @@ void clust_swap_dist(int index1,int index2,std::vector<double> &dists)
 
 void clust_swap_element(int index1, int index2, std::vector<std::string> &elements)
 {
-
   std::string temp_element=elements[index1];
   elements[index1]=elements[index2];
   elements[index2]=temp_element;
@@ -1386,7 +1800,7 @@ void clust_sort_triplet(std::vector<double> &dists, std::vector<std::string> &el
   bool swapped=true;
   double tempDr;
   std::string temp_element;
-
+  
 
   // std::cout<<"before"<<std::endl;
   // std::cout<<dists[0]<< " "<< dists[1]<< " "<<dists[2]<< " "<< elements[0]<< " "<<elements[1]<< " "<<elements[2]<< " "<<reverseSort<<std::endl;

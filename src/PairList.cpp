@@ -67,60 +67,45 @@ void PairList::initializePairs(LatticeList ll, std::vector<std::string> subeleme
   dist.resize(1);
   std::vector<std::vector< std::string> > all_element_combinations;
   std::vector<double> dists;
-  for(int i=0; i < ll.getNbrOfSites(); i++)
+  for(int i=0; i < ll.get_original_atoms_count(); i++)
     {
       if(!(isAtomInSubElements(ll.getSite(i),subelements)))
 	{
 	  continue;
 	}
-      for(int j=i; j<ll.getNbrOfSites(); j++)
+      for(int j=i+1; j<ll.getNbrOfSites(); j++)
 	{
+	  
 	  if(!(isAtomInSubElements(ll.getSite(j),subelements)))
 	    {
 	      continue;
 	    }
 	  //dr=ll.getDistance(i,j);
-	  //dr=ll.fast_distance(i,j);
-	  dists=ll.getPeriodicDistance(i,j,cutOff);
-	  if(dists.size() == 0)
+	  dr=ll.fast_distance(i,j);
+	  if(dr>cutOff)
 	    {
 	      continue;
 	    }
-	  dist[0]=dists[0];
+	  //dists=ll.getPeriodicDistance(i,j,cutOff);
+	 
+	  dist[0]=dr;
 	  
-	  all_element_combinations= symmetric_cluster_function(dist,subelements);
+	  all_element_combinations = symmetric_cluster_function(dist,subelements);
 	  
-	  for(int d=0; d<dists.size(); d++)
-	    {
-	      // std::cout<<"d= "<<d<< " distance= "<<dists[d]<<std::endl;
-	      // dist[0]=dists[d];
-	      tempPair.setDistance(dist[0]);
-	      for(int k=0; k<all_element_combinations.size(); k++)
-		{
-		  tempPair.setSite1(all_element_combinations[k][0]);
-		  tempPair.setSite2(all_element_combinations[k][1]);
-		  updatePair(tempPair,true);
-		}
-	    }
-	  // for(size_t k=0; k< subelements.size(); k++)
-	  //   {
-	  //     for(size_t l=0; l<subelements.size(); l++)
-	  // 	{
-	  // 	  tempPair.setDistance(dr);
-	  // 	  tempPair.setSite1(subelements[k]);
-	  // 	  tempPair.setSite2(subelements[l]);
-	  // 	  updatePair(tempPair,true);		  
-	  // 	}//end l loop	  
-	  //   }//end for k loop
 
+	  // std::cout<<"d= "<<d<< " distance= "<<dists[d]<<std::endl;
+	  // dist[0]=dists[d];
+	  tempPair.setDistance(dist[0]);
+	  for(int k=0; k<all_element_combinations.size(); k++)
+	    {
+	      tempPair.setSite1(all_element_combinations[k][0]);
+	      tempPair.setSite2(all_element_combinations[k][1]);
+	      updatePair(tempPair,true);
+	    }
 
 	}//end for j loop
     }//end i loop
-  // std::cout<<"sort pairs"<<std::endl;
-  //  printList();
   sortPairs();
-  //std::cout<<"done sort pairs"<<std::endl;
-
 }
 
 
@@ -207,7 +192,7 @@ std::vector<double> PairList::getUniqueDistances(double cutoff)
 //int s2;
 
 
-std::vector<double> PairList::getClusterVector(std::vector<std::string> subElements, double cutoff,bool doAverage)
+std::vector<double> PairList::getClusterVector(std::vector<std::string> subElements, double cutoff, bool doAverage)
 {
   const double PI = 3.1415926535897932384626;
 
@@ -216,7 +201,6 @@ std::vector<double> PairList::getClusterVector(std::vector<std::string> subEleme
   int Mi=subElements.size();
   std::vector<double> clusterVector;
   
-  //first do singlets---  no! do it somewhere else... you need latticeList for it. Whiner..
 
   int tempT=0;
   double tempVal=0;
@@ -235,16 +219,6 @@ std::vector<double> PairList::getClusterVector(std::vector<std::string> subEleme
   int atom2;
   cluster_functions = symmetric_cluster_function(dist,Mi,true);
   std::vector<std::vector<std::string > > all_element_combinations= symmetric_cluster_function(dist,subElements);
-  // for(int i=0; i<all_element_combinations.size(); i++)
-  //   {
-  //     std::cout<<all_element_combinations[i][0]<< " "<<all_element_combinations[i][1]<<std::endl;
-  //   }
-  // //std::cout<<cluster_functions.size()<< " SIZE SIZE SIZE "<<std::endl;
-  
-  // for(int j=0; j<cluster_functions.size(); j++)
-  //   {
-  //     std::cout<< cluster_functions[j][0]<< " "<<cluster_functions[j][1]<<std::endl;
-  //   }
   
   for(int i=0; i<uniq_dist.size(); i++)
     {
@@ -258,11 +232,6 @@ std::vector<double> PairList::getClusterVector(std::vector<std::string> subEleme
 	      
 	      if(fabs(pairList[jj2].getDistance()-uniq_dist[i])<1e-4)
 		{
-		  if(j==0)
-		    {
-		      // std::cout<<i<<std::endl;
-		      //pairList[jj2].printPair();
-		    }
 		  for(int jj=0; jj<subElements.size(); jj++)
 		    {
 		      if(pairList[jj2].getSite1()==subElements[jj])
@@ -305,69 +274,8 @@ std::vector<double> PairList::getClusterVector(std::vector<std::string> subEleme
 	    }
 	}
     
-    }//end real stuff
+    }
 
 
-
-  //here is the old stuff urgh hurgh blaaruugg
-  // for(int i=0; i<uniq_dist.size(); i++)
-  //   {
-  //     for(int m=2; m<=Mi; m++)
-  // 	{	  
-  // 	  for(int t=0; t<m-1; t++)
-  // 	    {
-  // 	      tempAverage=0;
-  // 	      totalPairs=0;
-  // 	      for(int j=0; j<pairList.size(); j++)
-  // 		{		  
-  // 		  if(fabs(pairList[j].getDistance()-uniq_dist[i])<1e-4)
-  // 		    {
-		      
-  // 		      for(int ii=0; ii<Mi; ii++)
-  // 			{
-  // 			  if(subElements[ii]==pairList[j].getSite1())
-  // 			    {
-  // 			      s1=ii;
-  // 			    }
-		   
-  // 			  if(subElements[ii]==pairList[j].getSite2())
-  // 			    {
-  // 			      s2=ii;
-  // 			    }
-  // 			}
-  // 		      tempT=(m/2); //round down aye
-  // 		      if(((m-2)%2==0))
-  // 			{
-  // 			  tempVal=-cos(2*PI*s1*tempT/(subElements.size()));
-  // 			}
-  // 		      else
-  // 			{
-  // 			  tempVal=-sin(2*PI*s1*tempT/(subElements.size()));
-  // 			}
-  // 		      tempT=((t+2)/2); //round down aye
-				  
-  // 		      if((t%2==0))
-  // 			{
-  // 			  tempVal*=-cos(2*PI*s2*tempT/(subElements.size()));
-  // 			}
-  // 		      else
-  // 			{
-  // 			  tempVal*=-sin(2*PI*s2*tempT/(subElements.size()));
-  // 			}	
-  // 		      totalPairs += pairList[j].getCount();
-  // 		      tempAverage +=pairList[j].getCount()*tempVal;
-  // 		    }
-  // 		}
-  // 	      if( !doAverage )
-  // 		{
-  // 		  clusterVector.push_back(tempAverage);
-  // 		}
-  // 	      else
-  // 		{
-  // 		  clusterVector.push_back(tempAverage/(double)totalPairs);
-  // 		}
-  // 	    }
-  // 	}
-  //   }
   return clusterVector;
 }

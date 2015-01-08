@@ -17,7 +17,7 @@ NeighbourList::NeighbourList()
   thisIndex=0;
   distanceLimit=1e-4;
   offset=0;
-  // empty
+  //empty
 }
 //check up if you should send references to latticeList or something like that
 NeighbourList::NeighbourList(int i, LatticeList ll, ParameterList pl)
@@ -36,8 +36,7 @@ NeighbourList::NeighbourList(int i, LatticeList ll, ParameterList pl)
   // 	{
   // 	  quat_vector[i][j].print();
   // 	}
-  //   }
-
+  //   }  
   setOffset(pl.getOffsetValue());
 }
 void NeighbourList::addNeighbour(Neighbour nbr1)
@@ -57,6 +56,7 @@ int NeighbourList::newNeighbour(Neighbour nbr1)
 	// std::cout<<"Tried to add neighbour which already existed in neighbourList."<<std::endl<<"Neighbour tried to add: ";
 	// nbr1.print();
 	// std::cout<<"Index: "<<i<<std::endl;
+
 	return false;
       }
     }
@@ -133,25 +133,16 @@ void NeighbourList::findNeighbours(LatticeList ll, ParameterList pl)
 	      //pl.getPair(j).printPair();
 	      paramAtIndex=true;
 	      temp_pair_vector.push_back(pl.getPair(j));
-
 	    }
 	}
 
       if(paramAtIndex)
-	{
-	  
+	{	  
 	  pair_vector.push_back(temp_pair_vector);
-	  pair_index.push_back(i);
-	  	  
+	  pair_index.push_back(i);	  	  
 	}
 	      
 
-      // Neighbour tempNbr = Neighbour(pl.getPair(j).getSite1(),pl.getPair(j).getSite2(),pl.getPair(j).getEnergy(),pl.getPair(j).getDistance());
-      // if( newNeighbour(tempNbr) )
-      // 	{
-      // 	  nbrList.push_back(tempNbr);
-      // 	  paramAtIndex=true;		      
-      // 	}
 
 
     }
@@ -275,7 +266,7 @@ double NeighbourList::getLocalEnergy(LatticeList ll)
 		  // pair_vector[i][j].printPair();
 		  //  std::cout<<"localenergy: "<<localEnergy<<std::endl;
 		  
-		  localEnergy += pair_vector[i][j].getEnergy()*0.5000;
+		  localEnergy += pair_vector[i][j].getEnergy();
 		  break;
 		}
 	    }
@@ -304,7 +295,7 @@ double NeighbourList::getLocalEnergy(LatticeList ll)
 	{
 	  if(temp_trip==trip_vector[i][j])
 	    {
-	      localEnergy +=trip_vector[i][j].getEnergy()*(1.0/3.0);
+	      localEnergy +=trip_vector[i][j].getEnergy()*2.0;
 	      // std::cout<<"found triplet with energy: "<<trip_vector[i][j].getEnergy()*0.333333333333<< " "<<"current total energy "<<localEnergy<<std::endl;
 	      break;
 	    }
@@ -345,7 +336,7 @@ double NeighbourList::getLocalEnergy(LatticeList ll)
 		  //  temp_quat.print();
 		  //  quat_vector[i][j].print();
 		  //  std::cout<<"=====================+"<<std::endl;
-		  localEnergy += quat_vector[i][j].getEnergy()*0.25000;
+		  localEnergy += quat_vector[i][j].getEnergy()*6.0;
 		  break;
 		}
 	    }

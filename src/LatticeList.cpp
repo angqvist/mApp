@@ -40,6 +40,7 @@ LatticeList::LatticeList(std::vector<int> new_tags, std::vector<double> position
   number_of_original_atoms=original_atoms;
   number_of_ghost_atoms=ghost_atoms;
   nbrOfSites=number_of_original_atoms+number_of_ghost_atoms;
+  distance_table_init=false;
   create_tag_list();
 }
 
@@ -805,6 +806,11 @@ std::string LatticeList::getSite(int i)
   return atomTypeList[i];
 }
 
+void LatticeList::set_property(std::vector<double> prop)
+{
+  properties=prop;
+}
+
 
 void LatticeList::setSite(int index,std::string newSite)
 {
@@ -901,14 +907,17 @@ double LatticeList::getProperty(int index)
 
 double LatticeList::getConcentration(std::string type)
 {
-  for(int i=0; i<elements.size(); i++)
+  double count=0;
+  for(int i=0; i<number_of_original_atoms; i++)
     {
-      if(type==elements[i])
+      if(type==atomTypeList[i])
 	{
-	  return (double)elementCounts[i]/(double)nbrOfAtoms;
+	  count +=1;
+	  //return (double)elementCounts[i]/(double)nbrOfAtoms;
 	}
     }
-  return 0;
+  return count/((double)number_of_original_atoms);
+
 }
 
 
@@ -916,7 +925,10 @@ void LatticeList::calculate_lookup_table()
 {
   if(!distance_table_init)
     {
-      std::cout<<"starting to calculate lookup table..."<<std::endl;
+      // std::cout<<"starting to calculate lookup table..."<<std::endl;
+      // std::cout<<"original atoms "<< number_of_original_atoms<<std::endl;
+      // std::cout<<"number of ghost atoms "<< number_of_ghost_atoms<<std::endl;
+      // std::cout<<"number of sites "<<nbrOfSites<<std::endl;
       distance_table.resize(nbrOfSites);
       for(int i=0; i<nbrOfSites; i++)
   	{

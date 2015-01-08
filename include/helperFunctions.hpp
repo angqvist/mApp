@@ -12,15 +12,20 @@
   //   int parRows;
   // };
   
-
+//remove
 void printData(int,int,int,int,std::string,std::string,double,std::string,std::string,bool,int,bool,bool,double,double,bool,bool,bool,bool,std::string,std::string,std::string,std::string,std::string,
 	       std::vector<std::string>,bool,bool,int,bool);
 
+
+//remove
 std::vector<double> readEnergies(std::string,int);
 void shuffleLists(std::vector<double> &,std::vector<class LatticeList> &);
 void shuffleLists(std::vector<double> &,std::vector<double> &,std::vector<class LatticeList> &);
 
+
 std::vector<class LatticeList> readConfig(std::string,int,int,int,std::vector<std::string>);
+
+//add all counting into respective classes
 class PairList countPairs(class LatticeList,class PairList);
 class PairList countPairs(class LatticeList,class PairList,double);
 
@@ -31,14 +36,18 @@ std::vector<int> getPairCounts(class PairList);
 // from the pairlist, get the rows of pairs you got, int is the number of configs you want to take from ll vector
 std::vector<double> getAMatrix(class PairList,std::vector<class LatticeList>,int);
 std::vector<double> getAMatrixFromExistingOne(std::vector<double>,int,int);
-std::vector<double> getAMatrixWith1(class PairList,std::vector<class LatticeList>,int);
 
+std::vector<double> getAMatrixWith1(class PairList,std::vector<class LatticeList>,int);
+//remove
 std::vector<double> getAMatrixWTriplets(class PairList,class TripletList, std::vector<class LatticeList>,int);
 void sortOrder(std::vector<double> &,std::vector<int> &);
-
+//probably remove
 std::vector<double> getA2Matrix(std::vector<double>,int,int);
+
 void transformToGSLMatrix(std::vector<double>,gsl_matrix,int,int); 
 std::vector<double> getCVCorrection(std::vector<double>,int,int);
+
+//consider adding the minimizer into separate file
 std::vector<double> doMinimize(std::vector<double>,int,std::vector<double>,double,double,double,bool,int,double,int,bool,double);
 double my_f(const gsl_vector *, void*);
 void my_df(const gsl_vector * , void*,gsl_vector *);
@@ -61,6 +70,7 @@ void getFileNames(int , std::string &, std::string &,std::string &,std::string &
 
 std::vector<class NeighbourList> getNLVector(class LatticeList,class ParameterList);
 
+//probably remove
 void doClusterStuff(std::string,int,int,int,std::string,double,int,std::vector<std::string>);
 
 
@@ -68,13 +78,16 @@ void printCVdata(std::vector<class LatticeList>, double,int,std::vector<std::str
 void shuffleXMatrix(std::vector<double> &,std::vector<double> &,std::vector<double> &);
 
 
+
 std::vector<double> standardParameters(std::vector<double>,std::vector<double>,int,bool);
 
+
+
 std::vector<double> getSingleClusterVector(std::string,std::vector<double>,std::vector<std::string>,int,int,bool);
-std::vector<double> getSingleClusterVector(class LatticeList , class PairList ,class TripletList , class QuatupletList,std::vector<double> ,std::vector<std::string> , int , int ,bool,bool );
+std::vector<double> getSingleClusterVector(class LatticeList , std::vector<double> ,std::vector<std::string>,bool,bool);
 
 
-void getClusterVectors(std::vector<std::string>, std::vector<double> &,std::vector<double> &,std::vector<std::vector<double> > &,std::vector<double>, std::vector<std::string>, int, int,bool,bool);
+void getClusterVectors(std::vector<class LatticeList>, std::vector<double> &,std::vector<double> &,std::vector<std::vector<double> > &,std::vector<double>, std::vector<std::string>, int, int,bool,bool);
 
 void shuffleFittingObject(std::vector<double> &,std::vector<double> &,std::vector<std::vector<double> > &,int);
 void pushToBack(std::vector<double> &,std::vector<double> &,std::vector<std::vector<double> > &);
