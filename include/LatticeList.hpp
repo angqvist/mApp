@@ -9,11 +9,15 @@ class LatticeList
 public:
   LatticeList(); // default consructor
   LatticeList(std::vector<int>,std::vector<double>,std::vector<std::string>,int,int);
+  LatticeList(std::vector<std::string>,std::vector<double>,std::vector<std::string>,std::vector<double>);
 
   LatticeList(int,int,int);
   LatticeList(int,int,int,int,std::string);
   LatticeList(int,int,int,int,int,std::string,std::vector<std::string>);
   LatticeList(int,int,int,int,int,std::string,std::vector<std::string>,std::vector<std::vector<double> >);
+  LatticeList(std::vector<std::string> , std::vector<double> , std::vector<double>);
+
+  //LatticeList(std::vector<std::string> , std::vector<double> , std::vector<std::string>,std::vector<double> );
 
   std::vector<double> getPeriodicDistance(int, int, double);
   double getDistance(int,int);
@@ -26,7 +30,8 @@ public:
   void setBandGap(double);
   void setVolume(double);
   void setAverageLatticeConstant(double);
-
+  
+  std::vector<double> getWyckoffOccupancy(std::vector<std::string>,std::string);
   double getEnergy();
   double getBandGap();
   double getVolume();
@@ -53,12 +58,13 @@ public:
   int get_ghost_atoms_count();
     
 private:
+  std::vector<double> cellMatrix;
   int number_of_original_atoms;
   int number_of_ghost_atoms;
   bool distance_table_init;
   std::vector<std::vector<double> > distance_table;
   std::vector<double> properties;
-
+  std::vector<std::string> wyckoffSite;
   void readIdealPos(); // read positions from file  
   void readIdealPos2(); // read positions from file  
   void readIdealPos3(std::vector<std::string>); // read positions from file  

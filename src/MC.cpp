@@ -82,7 +82,11 @@ double MC::averageStep(int mcsteps,int averageStep,LatticeList &ll,std::vector<s
   double tempI16;
   double fastEnergy = MC_totalEnergy(ll,nlVectors[0]);
   
-
+  std::vector<double> occupationVector;
+  std::vector<std::string> wykSites;
+  wykSites.push_back("6c");
+  wykSites.push_back("24k");
+  wykSites.push_back("16i");
   double tempVal;
   // i16 = 0;
   //  k24 = 0;
@@ -109,7 +113,13 @@ double MC::averageStep(int mcsteps,int averageStep,LatticeList &ll,std::vector<s
       
       for(int i=0; i<Wtype.size(); i++)
 	{
-	  MC_occupations(ll,tempC6,tempK24,tempI16,Wtype[i]);
+	  occupationVector=ll.getWyckoffOccupancy(wykSites,Wtype[i]);
+	  tempC6=occupationVector[0];
+	  tempK24=occupationVector[1];
+	  tempI16=occupationVector[2];
+
+	  
+	  //MC_occupations(ll,tempC6,tempK24,tempI16,Wtype[i]);
 	  data[2*properties+i*5+i] +=tempC6;
 	  data[2*properties+1+i*5+i] +=pow(tempC6,2.0);
 
@@ -184,16 +194,16 @@ double MC::stepSGC(LatticeList &ll,std::vector<NeighbourList> nl)
   double energyAfter2;
 
 
-  int k=rand()%(ll.getNbrOfSites());
-  int l=rand()%(ll.getNbrOfSites());
+  int k=rand()%(ll.get_original_atoms_count());
+  int l=rand()%(ll.get_original_atoms_count());
   while(ll.getSite(l) == ll.getSite(k))
     {
-      l=rand()%(ll.getNbrOfSites());
+      l=rand()%(ll.get_original_atoms_count());
     }
   // energyBefore1=nl[k].getCurrentLocalEnergy();
   // energyBefore2=nl[l].getCurrentLocalEnergy();
 
-  nrgyBefore=nl[k].getLocalEnergy(ll)+nl[l].getLocalEnergy(ll);
+  nrgyBefore=nl[k].getLocalEnergyForMC(ll)+nl[l].getLocalEnergyForMC(ll);
   //nrgyBefore= nl[k].getCurrentLocalEnergy() + nl[l].getCurrentLocalEnergy();
   std::string tempSite1= ll.getSite(k);
   std::string tempSite2= ll.getSite(l);
@@ -203,7 +213,7 @@ double MC::stepSGC(LatticeList &ll,std::vector<NeighbourList> nl)
   // energyAfter2=nl[l].getLocalEnergy(ll);
   // nrgyAfter=energyAfter1 + energyAfter2;
 
-  nrgyAfter=nl[k].getLocalEnergy(ll)+nl[l].getLocalEnergy(ll);
+  nrgyAfter=nl[k].getLocalEnergyForMC(ll)+nl[l].getLocalEnergyForMC(ll);
   energyDiff=nrgyAfter-nrgyBefore;
   //std::cout<<energyDiff<<std::endl;
 
@@ -280,7 +290,7 @@ void MC::printInfo(std::string fileName,LatticeList ll, double minDist, double m
 
  
 
-   for(int i=0; i<ll.getNbrOfSites(); i++)
+   for(int i=0; i<ll.get_original_atoms_count(); i++)
      {
        type=ll.getAtomInfo(i,xpos,ypos,zpos);
        outF<<type<< " "<<xpos<< " "<<ypos<< " "<<zpos<<" ";

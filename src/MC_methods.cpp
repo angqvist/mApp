@@ -6,14 +6,21 @@
 #include "MC.hpp"
 #include <iostream>
 #include <string>
+
+
 double MC_totalEnergy(LatticeList ll, std::vector<NeighbourList> nl)
 {
   //  double ret=0;
-  double ret=nl[0].getOffset();
+  double ret=nl[0].getOffset()*(double)ll.get_original_atoms_count();
   
+  std::vector<double> energies;
   for(int i=0; i<ll.get_original_atoms_count(); i++)
     {
-      ret += nl[i].getLocalEnergy(ll)/((double)ll.get_original_atoms_count());
+      //energies=nl[i].getLocalEnergy(ll);
+      
+      //ret += energies[1]+ energies[2]+energies[3]+energies[4];
+      ret += nl[i].getLocalEnergyForTotal(ll);
+      //nl[i].getLocalEnergy(ll);///((double)ll.get_original_atoms_count());
     }
   return ret;
 }
@@ -63,7 +70,7 @@ void MC_occupations(LatticeList ll, double &c6, double &k24, double &i16,std::st
   k24=0;
   i16=0;
 
-  for(int i=0; i<ll.getNbrOfSites(); i++)
+  for(int i=0; i<ll.get_original_atoms_count(); i++)
     {
 
       if(ll.getSite(i)==type)
@@ -83,7 +90,7 @@ void MC_occupations(LatticeList ll, double &c6, double &k24, double &i16,std::st
 	}
     }
 
-  int nbrOfCells=ll.getNbrOfSites()/46;
+  int nbrOfCells=ll.get_original_atoms_count()/46;
   c6 = c6/(6.0*nbrOfCells);
   i16 = i16/(16.0*nbrOfCells);
   k24 = k24/(24.0*nbrOfCells);

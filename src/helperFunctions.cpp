@@ -712,9 +712,10 @@ PairList countPairs(LatticeList ll, PairList pl, double cutoff)
 
 
 
-
+//this function should be removed and always use the cutoff version
 TripletList countTriplets(LatticeList ll, TripletList tl)
 {
+  std::cout<<"Error: using archaic version of tripletlist soon to be removed..."<<std::endl;
   double dr1;
   double dr2;
   double dr3;
@@ -727,7 +728,6 @@ TripletList countTriplets(LatticeList ll, TripletList tl)
   tl.resetCounts(); 
   std::vector<std::string> elements;
   elements.resize(3);
-
   Triplet tempTriplet;
   //#pragma omp parallel for private(dr1,dr2,dr3,orderDr,orderIndex,tempTriplet,tl) shared(ll)
   for(size_t i=0; i<ll.getNbrOfSites(); i++)
@@ -740,6 +740,7 @@ TripletList countTriplets(LatticeList ll, TripletList tl)
 		{
 		  continue;
 		}
+
 	      dr1=ll.fast_distance(i,j);
 	      dr2=ll.fast_distance(i,k);
 	      dr3=ll.fast_distance(j,k);
@@ -759,7 +760,7 @@ TripletList countTriplets(LatticeList ll, TripletList tl)
 	      // sortOrder(orderDr,orderIndex);
 	      
 	      tempTriplet=Triplet( orderDr[0],orderDr[1],orderDr[2],elements[0],elements[1],elements[2] );
-	      tl.updateTriplet(tempTriplet,false);
+	      tl.updateTriplet(tempTriplet,false,1);
 	    }		
 	    
 	}
@@ -782,35 +783,46 @@ TripletList countTriplets(LatticeList ll, TripletList tl, double cutoff)
   Triplet tempTriplet;
   std::vector<std::string> elements;
   elements.resize(3);
-
+  int multiplicity;
   //#pragma omp parallel for private(dr1,dr2,dr3,orderDr,orderIndex,tempTriplet,tl) shared(ll)
   for(size_t i=0; i<ll.get_original_atoms_count(); i++)
     {
-      for(size_t j=0; j<ll.getNbrOfSites(); j++)
+      for(size_t j=i+1; j<ll.getNbrOfSites(); j++)
 	{
-	  if(i==j)
-	    {
-	      continue;
-	    }
+	  
 	  if(ll.fast_distance(i,j)>cutoff)
 	    {
 	      continue;
 	    }
-	  for(size_t k=0; k<ll.getNbrOfSites(); k++)
+	  for(size_t k=j+1; k<ll.getNbrOfSites(); k++)
 	    {
 	      
-	      if(i==k || j == k)
-		{
-		  continue;
-		}
 
+	      
 	      dr1=ll.fast_distance(i,j);
 	      dr2=ll.fast_distance(i,k);
 	      dr3=ll.fast_distance(j,k);
-	      if( dr1>cutoff || dr2>cutoff || dr3> cutoff)
+
+	      
+	      if(dr2>cutoff || dr3 > cutoff)
 		{
 		  continue;
 		}
+	      
+	      multiplicity=1;
+	      
+	      if(j<ll.get_original_atoms_count())
+		{
+		  multiplicity++;
+		}
+	      
+	      if(k<ll.get_original_atoms_count())
+		{
+		  multiplicity++;
+		}
+
+
+	      
 	      orderDr[0]=dr1;
 	      orderDr[1]=dr2;
 	      orderDr[2]=dr3;
@@ -820,14 +832,10 @@ TripletList countTriplets(LatticeList ll, TripletList tl, double cutoff)
 	      //false for sorting alphabetically
 	      tuple_remodulator(orderDr,elements,false);
 
-	      if(orderDr[2]>cutoff)
-		{
-		  continue;
-		}
 	      tempTriplet=Triplet(orderDr[0],orderDr[1],orderDr[2],elements[0],elements[1],elements[2]);
 
 	      
-	      if(tl.updateTriplet(tempTriplet,false))
+	      if(tl.updateTriplet(tempTriplet,false,multiplicity))
 		{
 		  tempTriplet.printTriplet();
 		  
@@ -1075,7 +1083,24 @@ void printTheCV()
 
 std::vector<double> getCVCorrection(std::vector<double> X,int rows, int columns)
 {
-
+  for(int i=0; i<rows; i++)
+    {
+      for(int j=i+1; j<rows; j++)
+	{
+	  int equal=0;
+	  for(int k=0; k<columns; k++)
+	    {
+	      if(fabs(X[i*columns+k]-X[j*columns+k])<1e-9)
+		{
+		  equal++;
+		}
+	    }
+	  if(equal==columns)
+	    {
+	      std::cout<<"Error: two rows equal: rows"<<i<<", "<<j<<std::endl;
+	    }
+	}
+    }
   std::vector<double> ret;
 
   if(X.size() != rows*columns)
@@ -1096,14 +1121,14 @@ std::vector<double> getCVCorrection(std::vector<double> X,int rows, int columns)
   int s; //signum for LU decompos (yeeees....)  
   std::cout<<"LU DECOMP"<<std::endl;
   gsl_linalg_LU_decomp(C,perm,&s);
-  for(int i=0; i<columns; i++)
-    {
-      std::cout<<std::endl;
-      for(int j=0; j<columns; j++)
-	{
-	  std::cout<<gsl_matrix_get(C,i,j)<< " ";
-	}
-    }
+  // for(int i=0; i<columns; i++)
+  //   {
+  //     std::cout<<std::endl;
+  //     for(int j=0; j<columns; j++)
+  // 	{
+  // 	  std::cout<<gsl_matrix_get(C,i,j)<< " ";
+  // 	}
+  //   }
   
   std::cout<<"LU DECOMP DONE1"<<std::endl;
   gsl_linalg_LU_invert(C,perm,inverse);
@@ -1591,20 +1616,20 @@ void printCVCorr(std::string confDirectory,int numberOfConfigs,std::vector<std::
 
   std::vector<double> X = getAMatrixWith1(pl,dftPos,numberOfConfigs);
   //std::vector<double> X = getAMatrix(pl,dftPos,numberOfConfigs);
-  for(int i= 0; i<numberOfConfigs; i++)
-    {
-      for(int j=0; j<pl.getNbrOfPairs()+1; j++)
-	{
-	  std::cout<<X[i*(pl.getNbrOfPairs()+1)+j]<<" ";
-	}
-      std::cout<<"\n";
-    }
+  // for(int i= 0; i<numberOfConfigs; i++)
+  //   {
+  //     for(int j=0; j<pl.getNbrOfPairs()+1; j++)
+  // 	{
+  // 	  std::cout<<X[i*(pl.getNbrOfPairs()+1)+j]<<" ";
+  // 	}
+  //     std::cout<<"\n";
+  //   }
   std::vector<double> corrs = getCVCorrection(X,numberOfConfigs,pl.getNbrOfPairs()+1);
 
-  for(int i = 0; i<numberOfConfigs; i++)
-    {
-      std::cout<<corrs[i]<<std::endl;
-    }
+  // for(int i = 0; i<numberOfConfigs; i++)
+  //   {
+  //     std::cout<<corrs[i]<<std::endl;
+  //   }
 }
 
 
@@ -2163,7 +2188,7 @@ void shuffleXMatrix(std::vector<double> &X, std::vector<double> &cvCorr, std::ve
 std::vector<double> standardParameters(std::vector<double> X,std::vector<double> property,int columns,bool newVerbal)
 {
   const double alpha=0.1;
-  const double mu=0.65;
+  const double mu=0.0065;
   //const double mu=0.65;
   const double lambda=100;
   const bool doSB=true;
@@ -2263,6 +2288,7 @@ std::vector<double> getSingleClusterVector(LatticeList ll, std::vector<double> c
 
 
   pl.initializePairs(ll,subElements,cutoffs[0]);
+  //pl.printList();
   // std::cout<<"number of pairs "<<pl.getNbrOfPairs<<std::endl;
   // for(int i=0; i<pl.getNbrOfPairs(); i++)
   //   {
@@ -2371,7 +2397,7 @@ std::vector<double> getSingleClusterVector(LatticeList ll, std::vector<double> c
 
 	  if(ATAT)
 	    {
-	      // pl.printList();
+	      pl.printList();
       
 	      //pl.getPair(2).printPair();      
 	      std::vector<double> pairVector = pl.getClusterVector(subElements,cutoffs[0],average);
@@ -2413,7 +2439,7 @@ std::vector<double> getSingleClusterVector(LatticeList ll, std::vector<double> c
 	  if(ATAT)
 	    {
 	      //	  tl.getTriplet(3).printTriplet();
-	      // tl.printList();
+	      tl.printList();
 	      // std::cout<<"-------------------------"<<std::endl;
       
 
@@ -2445,9 +2471,9 @@ std::vector<double> getSingleClusterVector(LatticeList ll, std::vector<double> c
       if(ATAT)
 	{
 	  std::vector<double> quatVector = ql.getClusterVector(subElements,cutoffs[2],average);
-	  //ql.printList();
-	  //  std::cout<<"NUmber of quatuplets "<<ql.getNbrOfQuatuplets()<< " quatvector.size() "<<quatVector.size()<<std::endl;
-
+	  ql.printList();
+	  std::cout<<"NUmber of quatuplets "<<ql.getNbrOfQuatuplets()<< " quatvector.size() "<<quatVector.size()<<std::endl;
+	  
 	  if(quatVector.size()>0)
 	    {
 	      singletVector.insert(singletVector.end(),quatVector.begin(),quatVector.end());
@@ -2475,19 +2501,16 @@ std::vector<double> getSingleClusterVector(LatticeList ll, std::vector<double> c
   //     std::cout<<std::endl;
   //   }
   std::cout<<"normalizing"<<std::endl;
+  
   if(!average)
     {
       for(int i=0; i<singletVector.size(); i++)
-	{
-	  singletVector[i]= singletVector[i]/((double)ll.get_original_atoms_count());
-	}
+  	{
+  	  singletVector[i]= singletVector[i]/((double)ll.get_original_atoms_count());
+  	}
       
     }
   
-
-
-
-
   return singletVector;
 }
 

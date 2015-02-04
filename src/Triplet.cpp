@@ -115,6 +115,10 @@ void Triplet::incrementCount()
 {
   count++;
 }
+void Triplet::increaseCountBy(int addThisToCount)
+{
+  count += addThisToCount;
+}
 
 void Triplet::decrementCount()
 {

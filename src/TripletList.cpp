@@ -28,14 +28,14 @@ int TripletList::getNbrOfTriplets()
   return nbrOfTriplets;
 }
 
-int TripletList::updateTriplet(Triplet newTriplet,bool add)
+int TripletList::updateTriplet(Triplet newTriplet,bool add,int multiplicity)
 {
   //newTriplet.sortTriplet();
   for (size_t i=0; i< tripletList.size(); i++)
     {	
       if(tripletList[i]==newTriplet) 
 	{
-	  tripletList[i].incrementCount();
+	  tripletList[i].increaseCountBy(multiplicity);
 	  return false;
 	}
     }
@@ -179,7 +179,7 @@ void TripletList::initializeTriplets(LatticeList ll, std::vector<std::string> su
 		  tempTriplet.setSite1(all_element_combinations[k][0]);
 		  tempTriplet.setSite2(all_element_combinations[k][1]);
 		  tempTriplet.setSite3(all_element_combinations[k][2]);
-		  updateTriplet(tempTriplet,true);		  
+		  updateTriplet(tempTriplet,true,1);		  
 
 		}
 		  

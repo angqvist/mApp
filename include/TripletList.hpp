@@ -8,7 +8,7 @@ public:
   TripletList(class LatticeList, std::vector<std::string>,double);
   int getNbrOfTriplets();
   class Triplet& getTriplet(int);
-  int updateTriplet(class Triplet,bool);
+  int updateTriplet(class Triplet,bool,int);
   // string with possible elements
   void initializeTriplets(class LatticeList, std::vector<std::string>,double);
   void printList();

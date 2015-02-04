@@ -31,6 +31,6 @@ public:
 private:
   double stepSGC(class LatticeList &,std::vector<class NeighbourList>);
   void printInfo(std::string,class LatticeList, double, double);
-
+  std::vector<double> localEnergies;
 };
   

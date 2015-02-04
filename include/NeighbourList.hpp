@@ -14,18 +14,19 @@ public:
   NeighbourList(int,class LatticeList,class ParameterList);
   void addNeighbour(class Neighbour);
   void printList();
-  double getLocalEnergy(class LatticeList);
   int isThisMatchingNeighbour(class LatticeList, class Neighbour);
-  double getCurrentLocalEnergy();
+  //  double getCurrentLocalEnergy();
   void setCurrentLocalEnergy(double);
   void calcCurrentLocalEnergy(class LatticeList);
-  
+  double getLocalEnergyForMC(class LatticeList);
+  double getLocalEnergyForTotal(class LatticeList);
   double getOffset();
 
 private:
   std::vector<class Atom> singletList;
   void readSingletList(class ParameterList);
-  
+  std::vector<double> getLocalEnergy(class LatticeList);
+
   double getMatchingEnergy(class Neighbour, std::vector< class Neighbour>);
   double localEnergy;
   double distanceLimit;

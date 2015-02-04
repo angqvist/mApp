@@ -55,6 +55,7 @@ public:
 
   void incrementCount();
   void decrementCount();
+  void increaseCountBy(int);
 
   friend int operator ==(Quatuplet,Quatuplet);
   friend int operator !=(Quatuplet,Quatuplet);

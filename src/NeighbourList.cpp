@@ -26,8 +26,14 @@ NeighbourList::NeighbourList(int i, LatticeList ll, ParameterList pl)
   distanceLimit=1e-4;
   readSingletList(pl);
   findNeighbours(ll,pl);
-  findTripletNeighbours(ll,pl);
-  findQuatupletNeighbours(ll,pl);
+  if(pl.getNbrOfTriplets()>0)
+    {
+      findTripletNeighbours(ll,pl);
+    }
+  if(pl.getNbrOfQuatuplets()>0)
+    {
+      findQuatupletNeighbours(ll,pl);
+    }
   // std::cout<<"QUAT VECTOR IN NBRLIST +++++===========+"<<std::endl;
   // for(int i=0; i<quat_vector.size(); i++)
   //   {
@@ -84,6 +90,12 @@ void NeighbourList::printManyNbr(std::vector<Neighbour> nl)
 }
 
 //finds pairs
+
+
+
+
+
+
 void NeighbourList::findNeighbours(LatticeList ll, ParameterList pl)
 {
   double tempDist;
@@ -125,11 +137,14 @@ void NeighbourList::findNeighbours(LatticeList ll, ParameterList pl)
       
       //  tuple_remodulator(temp_dist,ghost_atoms,false);      
       std::vector<Pair> temp_pair_vector;
-      
+      // std::cout<<pl.getNbrOfPairs()<<" hohohoh"<<std::endl;
       for(int j=0; j<pl.getNbrOfPairs(); j++)
 	{
+	  //pl.getPair(j).printPair();
+	  //std::cout<<"distance "<<temp_dist[0]<<std::endl;
 	  if(fabs(temp_dist[0]-pl.getPair(j).getDistance())<distanceLimit)
 	    {
+	      //std::cout<<"found pair"<<std::endl;
 	      //pl.getPair(j).printPair();
 	      paramAtIndex=true;
 	      temp_pair_vector.push_back(pl.getPair(j));
@@ -141,10 +156,6 @@ void NeighbourList::findNeighbours(LatticeList ll, ParameterList pl)
 	  pair_vector.push_back(temp_pair_vector);
 	  pair_index.push_back(i);	  	  
 	}
-	      
-
-
-
     }
   // std::cout<<"--------"<<std::endl;
   // for(int i=0; i<pair_index.size(); i++)
@@ -168,7 +179,17 @@ void NeighbourList::findNeighbours(LatticeList ll, ParameterList pl)
 
 
   
+double NeighbourList::getLocalEnergyForMC(LatticeList ll)
+{
+  std::vector<double> energies = getLocalEnergy( ll);
+  return energies[0];
+}
 
+double NeighbourList::getLocalEnergyForTotal(LatticeList ll)
+{
+  std::vector<double> energies = getLocalEnergy(ll);
+  return energies[1]+energies[2]+energies[3]+energies[4];
+}
 
 
 
@@ -193,11 +214,12 @@ double  NeighbourList::getMatchingEnergy(Neighbour nbr, std::vector<Neighbour> n
   return 0;
 }
 
-double NeighbourList::getLocalEnergy(LatticeList ll)
+
+std::vector<double> NeighbourList::getLocalEnergy(LatticeList ll)
 {
-
   ll.calculate_lookup_table();
-
+  std::vector<double> ret(5,0); //5 doubles with value 0
+  
   localEnergy=0.0;
   //add singlet Energy times two?
 
@@ -234,8 +256,11 @@ double NeighbourList::getLocalEnergy(LatticeList ll)
     {
       if(ll.getSite(thisIndex)==singletList[i].getType())
 	{
-	  // std::cout<<"singlet energy "<< singletList[i].getProperty()<< " type: "<<ll.getSite(thisIndex)<<std::endl;
-	  localEnergy += singletList[i].getProperty();
+	  //std::cout<<"singlet energy "<< singletList[i].getProperty()<< " type: "<<ll.getSite(thisIndex)<<std::endl;
+	  // std::cout<<"size of pairs "<<pair_index.size()<<std::endl;
+	  ret[1]+=singletList[i].getProperty();
+	  
+	  // localEnergy += singletList[i].getProperty();
 	  break;
 	}
     }
@@ -263,18 +288,18 @@ double NeighbourList::getLocalEnergy(LatticeList ll)
 		{
 		  //  std::cout<<"index "<<pair_index[i]<<std::endl;
 		  //  temp_pair.printPair();
-		  // pair_vector[i][j].printPair();
-		  //  std::cout<<"localenergy: "<<localEnergy<<std::endl;
-		  
-		  localEnergy += pair_vector[i][j].getEnergy();
+		  //pair_vector[i][j].printPair();
+		  //std::cout<<"localenergy: "<<localEnergy<<std::endl;
+		  ret[2]+=pair_vector[i][j].getEnergy();
+		  //localEnergy += pair_vector[i][j].getEnergy();
 		  break;
 		}
 	    }
 	}
     }
-	  
   
-
+  
+  
   //triplets;;; times a third since each triplet gets counted thrice
 
   dists.resize(3);
@@ -295,7 +320,8 @@ double NeighbourList::getLocalEnergy(LatticeList ll)
 	{
 	  if(temp_trip==trip_vector[i][j])
 	    {
-	      localEnergy +=trip_vector[i][j].getEnergy()*2.0;
+	      ret[3] += trip_vector[i][j].getEnergy();
+	      //calEnergy +=trip_vector[i][j].getEnergy()*3.0;
 	      // std::cout<<"found triplet with energy: "<<trip_vector[i][j].getEnergy()*0.333333333333<< " "<<"current total energy "<<localEnergy<<std::endl;
 	      break;
 	    }
@@ -336,13 +362,16 @@ double NeighbourList::getLocalEnergy(LatticeList ll)
 		  //  temp_quat.print();
 		  //  quat_vector[i][j].print();
 		  //  std::cout<<"=====================+"<<std::endl;
-		  localEnergy += quat_vector[i][j].getEnergy()*6.0;
+		  ret[4]+=quat_vector[i][j].getEnergy();
+		  //calEnergy += quat_vector[i][j].getEnergy()*4;
 		  break;
 		}
 	    }
 	}
     }
-  return localEnergy;
+  ret[0] = ret[1]+ 2.0*ret[2]+3.0*ret[3] + 4.0*ret[4];
+  return ret;
+  //turn localEnergy;
 }
 
 
@@ -372,20 +401,20 @@ int NeighbourList::isThisMatchingNeighbour(LatticeList ll, Neighbour n1)
 }
       
       
-double NeighbourList::getCurrentLocalEnergy()
-{
-  return currentLocalEnergy;
-}
+// double NeighbourList::getCurrentLocalEnergy()
+// {
+//   return currentLocalEnergy;
+// }
 
-void NeighbourList::setCurrentLocalEnergy(double newEnergy)
-{
- currentLocalEnergy=newEnergy;
-}
+// void NeighbourList::setCurrentLocalEnergy(double newEnergy)
+// {
+//  currentLocalEnergy=newEnergy;
+// }
 
-void NeighbourList::calcCurrentLocalEnergy(LatticeList ll)
-{
-  currentLocalEnergy = getLocalEnergy(ll);
-}
+// void NeighbourList::calcCurrentLocalEnergy(LatticeList ll)
+// {
+//   currentLocalEnergy = getLocalEnergy(ll);
+// }
 
 
 /*
@@ -436,11 +465,11 @@ void NeighbourList::findTripletNeighbours(LatticeList ll,ParameterList pl)
 		 fabs(pl.getTriplet(k).getDistance2()-temp_dist[1])<1e-4 &&
 		 fabs(pl.getTriplet(k).getDistance3()-temp_dist[2])<1e-4)
 		{
-		  //  std::cout<<"Found something triplety in find triplets"<<std::endl;
+		  //std::cout<<"Found something triplety in find triplets"<<std::endl;
 		  somethingAtThisIndex=true;
 		  tempTripVector.push_back(pl.getTriplet(k));		  
 		}
-	    } 
+	    }
 	  if(somethingAtThisIndex)
 	    {
 	      std::vector<int> temp_index;

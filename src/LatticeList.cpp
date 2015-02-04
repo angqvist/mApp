@@ -34,14 +34,57 @@ LatticeList::LatticeList()
 
 LatticeList::LatticeList(std::vector<int> new_tags, std::vector<double> positions, std::vector<std::string> symbols, int original_atoms, int ghost_atoms) 
 {
+  cellSizeX=1;
+  cellSizeY=1;
+  cellSizeZ=1;
   posList2=positions;
   tags=new_tags;
   atomTypeList=symbols;
   number_of_original_atoms=original_atoms;
   number_of_ghost_atoms=ghost_atoms;
   nbrOfSites=number_of_original_atoms+number_of_ghost_atoms;
+  nbrOfAtoms=nbrOfSites;
   distance_table_init=false;
   create_tag_list();
+}
+
+///MC lattice, no ghost atoms twice the size.
+LatticeList::LatticeList(std::vector<std::string> wykSites, std::vector<double> positions, std::vector<std::string> symbols,std::vector<double> boxSize) 
+{
+  cellSizeX=1;
+  cellSizeY=1;
+  cellSizeZ=1;
+  Lx=boxSize[0];
+  Ly=boxSize[1];
+  Lz=boxSize[2];
+  number_of_ghost_atoms=0;
+  wyckoffSite=wykSites;
+  posList2=positions;
+  
+  atomTypeList=symbols;
+  number_of_original_atoms=symbols.size();
+  nbrOfSites=symbols.size();
+  nbrOfAtoms=nbrOfSites;
+  distance_table_init=false;
+}
+
+///this constructor is hopefully the last one. It should input ase atoms
+///no ghost atoms... 
+///it should have a big enough size so that the size of lattice is twice the cutoff. The increase in size is done with repeat(x,y,z) in python
+
+LatticeList::LatticeList(std::vector<std::string> elements, std::vector<double> positions, std::vector<double> cell_matrix)
+{
+
+  cellSizeX=1;
+  cellSizeY=1;
+  cellSizeZ=1;
+  cellMatrix=cell_matrix;
+  number_of_ghost_atoms=0;
+  number_of_original_atoms=elements.size();
+  nbrOfSites=number_of_original_atoms;
+  posList2=positions;
+  atomTypeList=elements;
+  distance_table_init=false;
 }
 
 
@@ -681,20 +724,78 @@ std::vector<double> LatticeList::getPeriodicDistance(int i, int j, double cutoff
 double LatticeList::getDistance(int i, int j)
 {
 
+  double dx,dy,dz;
 
-  double dx=posList2[i*3]-posList2[j*3];
-  double dy=posList2[i*3+1]-posList2[j*3+1];
-  double dz=posList2[i*3+2]-posList2[j*3+2];
+    if(number_of_ghost_atoms>0)
+      {
+	dx=posList2[i*3]-posList2[j*3];
+	dy=posList2[i*3+1]-posList2[j*3+1];
+	dz=posList2[i*3+2]-posList2[j*3+2];
+      }
+    else if(cellMatrix.size()>0)
+      {
+	double dist=1e16;
+	double dist1;
+	double dist2;
+	double x,y,z,x2,y2,z2;
+	x=posList2[i*3];
+	y=posList2[i*3+1];
+	z=posList2[i*3+2];
+	x2=posList2[j*3];
+	y2=posList2[j*3+1];
+	z2=posList2[j*3+2];
+	
+	for(double ii=-1; ii<2; ii++)
+	  {
+	    for(double jj=-1; jj<2; jj++)
+	      {
+		for(double kk=-1; kk<2; kk++)
+		  {
+		    dx=ii*cellMatrix[0]+jj*cellMatrix[3]+kk*cellMatrix[6];
+		    dy=ii*cellMatrix[1]+jj*cellMatrix[4]+kk*cellMatrix[7];
+		    dz=ii*cellMatrix[2]+jj*cellMatrix[5]+kk*cellMatrix[8];
+		    
+		    // dx=i*cellMatrix[0]+j*cellMatrix[1]+k*cellMatrix[2];
+		    // dy=i*cellMatrix[3]+j*cellMatrix[4]+k*cellMatrix[5];
+		    // dy=i*cellMatrix[6]+j*cellMatrix[7]+k*cellMatrix[8];
 
+		    
+		    
+		    dist1= ((x+dx)-x2)*((x+dx)-x2)+((y+dy)-y2)*((y+dy)-y2)+((z+dz)-z2)*((z+dz)-z2);
+		    dist2= ((x2+dx)-x)*((x2+dx)-x)+((y2+dy)-y)*((y2+dy)-y)+((z2+dz)-z)*((z2+dz)-z);
 
-  // double dx=fabs(posList2[i*3]-posList2[j*3]);
-  // double dy=fabs(posList2[i*3+1]-posList2[j*3+1]);
-  // double dz=fabs(posList2[i*3+2]-posList2[j*3+2]);
- 
-  // dx=std::min(dx,Lx-dx);
-  // dy=std::min(dy,Ly-dy);
-  // dz=std::min(dz,Lz-dz);
+		    
+		    dist=std::min(dist,dist1);
+		    dist=std::min(dist,dist2);
+		    if(dist<1e-4)
+		      {
+			std::cout<<"===================="<<std::endl;
+			std::cout<< cellMatrix[0]<< " "<<cellMatrix[1]<<" "<<cellMatrix[2]<<std::endl;
+			std::cout<< cellMatrix[3]<< " "<<cellMatrix[4]<<" "<<cellMatrix[5]<<std::endl;
+			std::cout<< cellMatrix[6]<< " "<<cellMatrix[7]<<" "<<cellMatrix[8]<<std::endl;
+			
+		    	std::cout<<x<< " "<<y<< " "<<z<< " "<<i<<std::endl;
+		    	std::cout<<x2<< " "<<y2<< " "<<z2<<" "<<j<<std::endl;
+			std::cout<<ii<< " "<<jj<< " "<<kk<<std::endl;
+			std::cout<<dx<< " "<<dy<< " "<<dz<<std::endl;
+			std::cout<<"======================"<<std::endl;
+		      }
+		  }
+	      }
+	  }
+	return sqrt(dist);	    
 
+      }
+
+    else
+      {
+	dx=fabs(posList2[i*3]-posList2[j*3]);
+	dy=fabs(posList2[i*3+1]-posList2[j*3+1]);
+	dz=fabs(posList2[i*3+2]-posList2[j*3+2]); 
+	dx=std::min(dx,Lx-dx);
+	dy=std::min(dy,Ly-dy);
+	dz=std::min(dz,Lz-dz);
+      }
 
   return sqrt(dx*dx + dy*dy + dz*dz );
 }
@@ -710,17 +811,21 @@ void LatticeList::setRandomSites(int nbrA, std::string type1, std::string type2)
 {
   int k;
   int countA=0;
-  for(size_t i=0; i<nbrOfSites; i++)
+  for(size_t i=0; i<number_of_original_atoms; i++)
     {
-      atomTypeList[i]=type2;
+      setSite(i,type2);
+      //atomTypeList[i]=type2;
     }
 
   while(nbrA*cellSizeX*cellSizeY*cellSizeZ>countA)
     {
-      k = rand()%nbrOfSites;
+      
+      k = rand()%number_of_original_atoms;
+
       if(atomTypeList[k]==type2)
 	{
-	  atomTypeList[k]=type1;
+	  setSite(k,type1);
+	  //atomTypeList[k]=type1;
 	  countA++;
 	}
     }
@@ -731,25 +836,29 @@ void LatticeList::setRandomSites(int nbrA,int nbrB, std::string type1, std::stri
   int k;
   int countA=0;
   int countB=0;
-  for(size_t i=0; i<nbrOfSites; i++)
+  for(size_t i=0; i<number_of_original_atoms; i++)
     {
-      atomTypeList[i]=type3;
+      setSite(i,type3);
+      //atomTypeList[i]=type3;
     }
   while(nbrA*cellSizeX*cellSizeY*cellSizeZ>countA)
     {
-      k = rand()%nbrOfSites;
+      k = rand()%number_of_original_atoms;
       if(atomTypeList[k]==type3)
 	{
-	  atomTypeList[k]=type1;
+	  setSite(k,type1);
+	  //atomTypeList[k]=type1;
 	  countA++;
 	}
     }
   while(nbrB*cellSizeX*cellSizeY*cellSizeZ>countB)
     {
-      k = rand()%nbrOfSites;
+      k = rand()%number_of_original_atoms;
+      
       if(atomTypeList[k]==type3)
 	{
-	  atomTypeList[k]=type2;
+	  setSite(k,type2);
+	  //atomTypeList[k]=type2;
 	  countB++;
 	}
     }
@@ -762,34 +871,39 @@ void LatticeList::setRandomSites(int nbrA,int nbrB, int nbrC, std::string type1,
   int countA=0;
   int countB=0;
   int countC=0;
-  for(size_t i=0; i<nbrOfSites; i++)
+  for(size_t i=0; i<number_of_original_atoms; i++)
     {
-      atomTypeList[i]=type4;
+      setSite(i,type4);
+      //atomTypeList[i]=type4;
     }
   while(nbrA*cellSizeX*cellSizeY*cellSizeZ>countA)
     {
-      k = rand()%nbrOfSites;
+      k = rand()%number_of_original_atoms;
       if(atomTypeList[k]==type4)
 	{
-	  atomTypeList[k]=type1;
+	  setSite(k,type1);
+	  //atomTypeList[k]=type1;
 	  countA++;
 	}
     }
   while(nbrB*cellSizeX*cellSizeY*cellSizeZ>countB)
     {
-      k = rand()%nbrOfSites;
+      k = rand()%number_of_original_atoms;
+
       if(atomTypeList[k]==type4)
 	{
-	  atomTypeList[k]=type2;
+	  setSite(k,type2);
+	  //atomTypeList[k]=type2;
 	  countB++;
 	}
     }
   while(nbrC*cellSizeX*cellSizeY*cellSizeZ>countC)
     {
-      k = rand()%nbrOfSites;
+      k = rand()%number_of_original_atoms;
       if(atomTypeList[k]==type4)
 	{
-	  atomTypeList[k]=type3;
+	  setSite(k,type3);
+	  //atomTypeList[k]=type3;
 	  countC++;
 	}
     }
@@ -821,9 +935,12 @@ void LatticeList::setSite(int index,std::string newSite)
     }
   
   atomTypeList[index]=newSite;
-  for(int i=0; i<tag_list[index].size(); i++)
+  if(number_of_ghost_atoms>0)
     {
-      atomTypeList[tag_list[index][i]]=newSite;
+      for(int i=0; i<tag_list[index].size(); i++)
+	{
+	  atomTypeList[tag_list[index][i]]=newSite;
+	}
     }
 }
 
@@ -925,20 +1042,21 @@ void LatticeList::calculate_lookup_table()
 {
   if(!distance_table_init)
     {
+      
       // std::cout<<"starting to calculate lookup table..."<<std::endl;
       // std::cout<<"original atoms "<< number_of_original_atoms<<std::endl;
       // std::cout<<"number of ghost atoms "<< number_of_ghost_atoms<<std::endl;
       // std::cout<<"number of sites "<<nbrOfSites<<std::endl;
+      
       distance_table.resize(nbrOfSites);
       for(int i=0; i<nbrOfSites; i++)
   	{
   	  distance_table[i].resize(nbrOfSites);
-  	  for(int j=0; j<nbrOfSites; j++)
+  	  for(int j=i+1; j<nbrOfSites; j++)
   	    {
   	      distance_table[i][j]=getDistance(i,j);
   	    }
   	}
-      std::cout<<"Done."<<std::endl;
     }
   distance_table_init=true;
 
@@ -948,7 +1066,13 @@ void LatticeList::calculate_lookup_table()
 double LatticeList::fast_distance(int i,int j)
 {
   //return getDistance(i,j);
-  return distance_table[i][j];
+  
+  if(j>=i)
+    {
+      return distance_table[i][j];
+    }
+  
+  return distance_table[j][i];
 }
 std::vector<std::vector<double> > LatticeList::getLookupTable()
 {
@@ -1013,3 +1137,54 @@ int LatticeList::get_ghost_atoms_count()
 {
   return number_of_ghost_atoms;
 }
+
+
+std::vector<double> LatticeList::getWyckoffOccupancy(std::vector<std::string> wykSites, std::string atomSymbol)
+{
+  std::vector<double> ret;
+  ret.resize(wykSites.size());
+  std::vector<int> counts;
+  counts.resize(ret.size());
+  for(int i=0; i<ret.size(); i++)
+    {
+      ret[i]=0;
+      counts[i]=0;
+    }
+
+  // for(int j=0; j<wykSites.size(); j++)
+  //   {
+  //     for(int i=0; i<wyckoffSite.size(); i++)
+  // 	{
+  // 	  if(wyckoffSite[i]==wykSites[j])
+  // 	    {
+  // 	      counts[j]++;
+  // 	    }
+  // 	}
+  //   }
+	  
+  
+  for(int i=0; i<nbrOfSites; i++)
+    {
+      for(int j=0; j<wykSites.size(); j++)
+	{
+	  if(wyckoffSite[i]==wykSites[j])
+	    {
+	      counts[j]++;
+	      if(getSite(i)==atomSymbol)
+		{
+		  ret[j]++;
+		}
+	    }
+	}
+    }
+  
+  for(int i=0; i<ret.size(); i++)
+    {
+      ret[i]=ret[i]/((double)counts[i]);
+    }
+  return ret;
+}
+      
+
+
+ 

@@ -33,6 +33,7 @@ public:
 
   void incrementCount();
   void decrementCount();
+  void increaseCountBy(int);
 
   friend int operator==(Triplet,Triplet);
   friend int operator!=(Triplet,Triplet);

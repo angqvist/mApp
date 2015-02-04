@@ -43,6 +43,7 @@ ParameterList::ParameterList(std::string newFileName,double newCutOff,std::vecto
   readParams_new(subElements);
   unwrapSinglets(paramList_0,subElements);
   unwrapPairs(paramList,subElements);
+  //std::cout<<"hoho size of paramList in parameterList is "<<paramList.size()<<std::endl;
   unwrapTriplets(paramList_3,subElements);
   unwrapQuatuplets(paramList_4,subElements);
   //std::cout<<"Done unwrapping"<<std::endl;
@@ -528,8 +529,8 @@ void ParameterList::unwrapPairs(std::vector<Pair> parList,std::vector<std::strin
   while(i<parList.size())
     //  for(int i=0; i<parList.size(); i++)
     {
-      //  std::cout<<"wrapped pair "<<std::endl;
-      //  parList[i].printPair();
+      ///std::cout<<"wrapped pair "<<std::endl;
+      //parList[i].printPair();
       temp_pair.setDistance(parList[i].getDistance());
       dists[0]=parList[i].getDistance();
       unWrapped_elements = symmetric_cluster_function(dists,subelements);
