@@ -19,29 +19,29 @@ public:
 
   //LatticeList(std::vector<std::string> , std::vector<double> , std::vector<std::string>,std::vector<double> );
 
-  std::vector<double> getPeriodicDistance(int, int, double);
-  double getDistance(int,int);
+  std::vector<double> getPeriodicDistance(int &, int &,  double &);
+  double getDistance(const int &,const int &);
   
   int getNbrOfSites() ;
 
   void printList(); //Mostly for bug checking
   void printList(std::string); //Mostly for bug checking
-  void setEnergy(double);
+  void setEnergy(double &);
   void setBandGap(double);
   void setVolume(double);
   void setAverageLatticeConstant(double);
   
-  std::vector<double> getWyckoffOccupancy(std::vector<std::string>,std::string);
+  std::vector<double> getWyckoffOccupancy(const std::vector<std::string> &, const std::string &);
   double getEnergy();
   double getBandGap();
   double getVolume();
   double getAverageLatticeConstant();
-  std::string getSite(int);
-  void set_property(std::vector<double>);
-  void setSite(int,std::string);
-  void setRandomSites(int, std::string, std::string);
-  void setRandomSites(int,int, std::string, std::string,std::string);
-  void setRandomSites(int,int,int, std::string, std::string,std::string,std::string);
+  std::string getSite(int &);
+  void set_property(std::vector<double> &);
+  void setSite(int &,std::string &);
+  void setRandomSites(int &, std::string &, std::string &);
+  void setRandomSites(int &,int &, std::string &, std::string &,std::string &);
+  void setRandomSites(int &,int &,int &, std::string &, std::string &,std::string &,std::string &);
   double getLx();
   double getLy();
   double getLz();
@@ -50,7 +50,7 @@ public:
   int getNumberOfProperties();
   double getConcentration(std::string);
   void calculate_lookup_table();
-  double fast_distance(int,int);
+  double fast_distance( int &,  int &) const;
   std::vector<std::vector<double> > getLookupTable();
   void append_atom(std::string,std::vector<double>, int);
   void clear_lookup_table();

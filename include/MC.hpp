@@ -1,13 +1,13 @@
 #include <vector>
 #include <string>
-
+#include <random>
 class MC
 {
 public:
   MC();
-  double step(class LatticeList &,std::vector<class NeighbourList>);
-  double step(int,class LatticeList &,std::vector<class NeighbourList>);
-  double averageStep(int,int,class LatticeList &,std::vector<std::vector<class NeighbourList> >,std::vector<double> &,std::vector<std::string>);
+  double step(class LatticeList &, std::vector<class NeighbourList> &);
+  double step(int ,class LatticeList &, std::vector<class NeighbourList> &);
+  double averageStep(int,int,class LatticeList &,std::vector<std::vector<class NeighbourList> > &,std::vector<double> &,std::vector<std::string> &);
   // double averageStep(int,int,class LatticeList &,std::vector<class NeighbourList>,double &,double &,double &,double &,double &,double &,double &,double &);
 
 
@@ -29,7 +29,8 @@ public:
   int totalSwaps;
 
 private:
-  double stepSGC(class LatticeList &,std::vector<class NeighbourList>);
+
+  double stepSGC(class LatticeList &, std::vector<class NeighbourList> &);
   void printInfo(std::string,class LatticeList, double, double);
   std::vector<double> localEnergies;
 };

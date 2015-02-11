@@ -17,7 +17,7 @@ Triplet::Triplet()
   count=0;
 }
 
-Triplet::Triplet(double dr1 ,double dr2,double dr3, std::string s1, std::string s2,std::string s3)
+Triplet::Triplet(double &dr1 ,double &dr2,double &dr3, std::string &s1, std::string &s2,std::string &s3)
 {
   energy=0;
   LIMIT=1e-4;
@@ -89,7 +89,7 @@ void Triplet::setDistance3(double newDistance)
 }
 
 
-void Triplet::setSite1(std::string newSite)
+void Triplet::setSite1(std::string newSite )
 {
   site1=newSite;
 }
@@ -115,7 +115,7 @@ void Triplet::incrementCount()
 {
   count++;
 }
-void Triplet::increaseCountBy(int addThisToCount)
+void Triplet::increaseCountBy(int &addThisToCount)
 {
   count += addThisToCount;
 }
@@ -130,7 +130,7 @@ double Triplet::getLimit()
 }
 
 
-int operator==(Triplet t1 ,Triplet t2)
+int operator==(Triplet &t1 ,Triplet &t2)
 {
   if(fabs(t1.getDistance1()-t2.getDistance1())> t1.getLimit())
     {
@@ -165,7 +165,7 @@ int operator==(Triplet t1 ,Triplet t2)
       return true;
 }
 
-int operator!=(Triplet t1, Triplet t2)
+int operator!=(Triplet &t1, Triplet &t2)
 {
   return !(t1==t2);
 }
@@ -258,7 +258,7 @@ void Triplet::sortStrings(std::vector< std::string> &type)
 }
 
 
-void Triplet::setAll(std::vector<double> dists, std::vector<std::string> elements)
+void Triplet::setAll(std::vector<double> &dists, std::vector<std::string> &elements)
 {
 
 

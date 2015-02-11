@@ -4,7 +4,7 @@
 #include <string>
 #define PI 3.14159265
 
-double clusterFunction(int nbr_of_elements,int atom_type,int clustFunction)
+double clusterFunction(int &nbr_of_elements,int &atom_type,int &clustFunction)
 {
  //odd: use cos
 
@@ -105,11 +105,12 @@ double clusterFunction(int nbr_of_elements,int atom_type,int clustFunction)
 
 
 
-std::vector<std::vector<std::string> > symmetric_cluster_function(std::vector<double> dists,std::vector<std::string> subelements)
+std::vector<std::vector<std::string> > symmetric_cluster_function(std::vector<double> &dists,std::vector<std::string> &subelements)
 {
   bool reverse_sort=false;
   //N.B +1 in number of elements
-  std::vector<std::vector<int> > int_base = symmetric_cluster_function(dists,subelements.size()+1,reverse_sort);
+  int size1=subelements.size()+1;
+  std::vector<std::vector<int> > int_base = symmetric_cluster_function(dists,size1,reverse_sort);
   // std::cout<<"int base size[0] "<<int_base[0].size()<<std::endl;
   std::vector<std::vector<std::string> > ret;
   ret.resize(int_base.size());
@@ -126,7 +127,7 @@ std::vector<std::vector<std::string> > symmetric_cluster_function(std::vector<do
 
 
 
-std::vector<std::vector<int> > symmetric_cluster_function(std::vector<double> dists, int nbr_of_elements,bool reverse_sort)
+std::vector<std::vector<int> > symmetric_cluster_function(std::vector<double> &dists, int &nbr_of_elements,bool &reverse_sort)
 {
 
 
@@ -446,7 +447,7 @@ void clust_sort_dists(std::vector<std::vector<double> > &dists)
     }
 }
 
-bool add_new_cluster_controller(std::vector<std::vector<int> > bigger_vector, std::vector<int> prospect)
+bool add_new_cluster_controller(std::vector<std::vector<int> > &bigger_vector, std::vector<int> &prospect)
 {
   if(bigger_vector.size()==0)
     {
@@ -480,7 +481,7 @@ bool add_new_cluster_controller(std::vector<std::vector<int> > bigger_vector, st
 
 //this function takes distances and elements and make it into a symmetric equivalent reduced form if possible
 // the distances and elements will be smallest first and alphabetical order
-void tuple_remodulator(std::vector<double> &dists, std::vector<std::string> &elements,bool reverseSort)
+void tuple_remodulator(std::vector<double> &dists, std::vector<std::string> &elements,bool &reverseSort)
 { 
 
 
@@ -521,7 +522,7 @@ void tuple_remodulator(std::vector<double> &dists, std::vector<std::string> &ele
 // r6 -->r6
 // so if r2 != r3 it is obvious what to do, else you have to compare higher order distances
 
-void clust_sort_quatuplet_part2(std::vector<double>  &dists, std::vector<std::string> &elements,bool reverseSort)
+void clust_sort_quatuplet_part2(std::vector<double>  &dists, std::vector<std::string> &elements,bool &reverseSort)
 {
 
   double reverseInt=1.0;
@@ -572,7 +573,7 @@ void clust_sort_quatuplet_part2(std::vector<double>  &dists, std::vector<std::st
 //return true/false if dists1 is smaller/larger where first distances are compared first and if they are equal check higher order distance
 //returns 2 if they are equal
 
-int is_first_dist_smaller(std::vector<double> dists1, std::vector<double> dists2)
+int is_first_dist_smaller(std::vector<double> &dists1, std::vector<double> &dists2)
 {
   if(dists1.size() != dists2.size())
     {
@@ -605,7 +606,7 @@ int is_first_dist_smaller(std::vector<double> dists1, std::vector<double> dists2
   return false;
 }
   
-int trial_swap(std::vector<int> swap_order, std::vector<double> &temp_dists, std::vector<double> &min_dists, std::vector<std::string> &min_elements, std::vector<std::string> &temp_elements,bool reverseSort)
+int trial_swap(std::vector<int> &swap_order, std::vector<double> &temp_dists, std::vector<double> &min_dists, std::vector<std::string> &min_elements, std::vector<std::string> &temp_elements,bool &reverseSort)
 {
   if(swap_order.size()%2 !=0)
     {
@@ -643,7 +644,7 @@ int trial_swap(std::vector<int> swap_order, std::vector<double> &temp_dists, std
 }
 
 
-int is_elements_in_lower_order(std::vector<std::string> str1, std::vector<std::string> str2,bool reverseSort)
+int is_elements_in_lower_order(std::vector<std::string> &str1, std::vector<std::string> &str2,bool &reverseSort)
 {
   
   if(str1.size() != str2.size())
@@ -679,7 +680,7 @@ int is_elements_in_lower_order(std::vector<std::string> str1, std::vector<std::s
   
 
 
-void clust_sort_quatuplet(std::vector<double> &dists, std::vector<std::string> &elements,bool reverseSort)
+void clust_sort_quatuplet(std::vector<double> &dists, std::vector<std::string> &elements,bool &reverseSort)
 {
 
   //new -more thought out stuff
@@ -1795,7 +1796,7 @@ void clust_swap_element(int index1, int index2, std::vector<std::string> &elemen
 
 
 
-void clust_sort_triplet(std::vector<double> &dists, std::vector<std::string> &elements,bool reverseSort)
+void clust_sort_triplet(std::vector<double> &dists, std::vector<std::string> &elements,bool &reverseSort)
 {
   bool swapped=true;
   double tempDr;
@@ -1875,7 +1876,7 @@ void clust_sort_triplet(std::vector<double> &dists, std::vector<std::string> &el
 	
 
 
-void sortElements (std::vector<std::string> &elements,bool reverseSort)
+void sortElements (std::vector<std::string> &elements,bool &reverseSort)
 {
 
   double reverse_int=1;

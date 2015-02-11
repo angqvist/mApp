@@ -12,7 +12,7 @@ Pair::Pair()
   count=0;
 }
 
-Pair::Pair(double newDistance, std::string newSite1, std::string newSite2, int newCount)
+Pair::Pair(double &newDistance, std::string &newSite1, std::string &newSite2, int &newCount)
 {
   energy=0;
   LIMIT=1e-4;
@@ -22,7 +22,7 @@ Pair::Pair(double newDistance, std::string newSite1, std::string newSite2, int n
   count=newCount;
 }
 
-Pair::Pair(double newDistance, std::string newSite1, std::string newSite2)
+Pair::Pair(double &newDistance, std::string &newSite1, std::string &newSite2)
 {
   energy=0;
   LIMIT=1e-4;
@@ -70,7 +70,7 @@ void Pair::setSite2(std::string newSite)
 {
    site2=newSite;
 }
-void Pair::setCount(int newCount)
+void Pair::setCount(int &newCount)
 {
    count=newCount;
 }
@@ -96,7 +96,7 @@ double Pair::getLimit()
   return LIMIT;
 }
 
-int operator==(Pair p1, Pair p2)
+int operator==(Pair &p1, Pair &p2)
 {
   if(fabs(p1.getDistance() - p2.getDistance())>p1.getLimit())
     {
@@ -110,7 +110,7 @@ int operator==(Pair p1, Pair p2)
 }
 
 //Keep it simple
-int operator!=(Pair p1, Pair p2)
+int operator!=(Pair &p1, Pair &p2)
 {
   return !(p1==p2);
 }

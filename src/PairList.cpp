@@ -17,9 +17,9 @@ int PairList::getNbrOfPairs()
   return nbrOfPairs;
 }
 
-int PairList::updatePair(Pair newPair,bool add)
+int PairList::updatePair(Pair &newPair,bool &add)
 {
-  for (size_t i=0; i< pairList.size(); i++)
+  for (int i=0; i< pairList.size(); i++)
     {
       if(pairList[i]==newPair)
 	{
@@ -36,9 +36,9 @@ int PairList::updatePair(Pair newPair,bool add)
 }
   
 
-int PairList::isAtomInSubElements(std::string atom, std::vector<std::string> subelements)
+int PairList::isAtomInSubElements(std::string atom, std::vector<std::string> &subelements)
 {
-  for(size_t i=0; i< subelements.size(); i++)
+  for(int i=0; i< subelements.size(); i++)
     {
       if(atom==subelements[i])
 	{
@@ -51,7 +51,7 @@ int PairList::isAtomInSubElements(std::string atom, std::vector<std::string> sub
 
 
 
-void PairList::initializePairs(LatticeList ll, std::vector<std::string> subelements, double cutOff)
+void PairList::initializePairs(LatticeList &ll, std::vector<std::string> &subelements, double &cutOff)
 {
   ll.calculate_lookup_table();
   std::cout<<"elements size:"<<subelements.size()<<std::endl;
@@ -62,6 +62,7 @@ void PairList::initializePairs(LatticeList ll, std::vector<std::string> subeleme
       std::cout<<subelements[k]<<std::endl;
     }
   double dr;
+  bool addPairWhileUpdating=true;
   Pair tempPair=Pair();
   std::vector<double> dist;
   dist.resize(1);
@@ -100,7 +101,7 @@ void PairList::initializePairs(LatticeList ll, std::vector<std::string> subeleme
 	    {
 	      tempPair.setSite1(all_element_combinations[k][0]);
 	      tempPair.setSite2(all_element_combinations[k][1]);
-	      updatePair(tempPair,true);
+	      updatePair(tempPair,addPairWhileUpdating);
 	    }
 
 	}//end for j loop
@@ -144,26 +145,30 @@ void PairList::printList()
 
 void PairList::resetCounts()
 {
+  //death by reference
+  int zero = 0;
   for(size_t i=0; i< pairList.size(); i++)
     {
-      pairList[i].setCount(0);
+      pairList[i].setCount(zero);
     }
 }
 
-Pair& PairList::getPair(int index)
+Pair& PairList::getPair(int &index)
 {
   return pairList[index];
 }
 
 void PairList::divideCountByTwo()
 {
-    for(size_t i=0; i< pairList.size(); i++)
+  int count;
+    for(int i=0; i< pairList.size(); i++)
     {
-      pairList[i].setCount(pairList[i].getCount()/2);
+      count = pairList[i].getCount()/2;
+      pairList[i].setCount( count);
     }
 }
 
-std::vector<double> PairList::getUniqueDistances(double cutoff)
+std::vector<double> PairList::getUniqueDistances(double &cutoff)
 {
   std::vector<double> uniq_dist;
   bool addDistance;
@@ -192,7 +197,7 @@ std::vector<double> PairList::getUniqueDistances(double cutoff)
 //int s2;
 
 
-std::vector<double> PairList::getClusterVector(std::vector<std::string> subElements, double cutoff, bool doAverage)
+std::vector<double> PairList::getClusterVector(std::vector<std::string> &subElements, double &cutoff, bool &doAverage)
 {
   const double PI = 3.1415926535897932384626;
 
@@ -206,7 +211,7 @@ std::vector<double> PairList::getClusterVector(std::vector<std::string> subEleme
   double tempVal=0;
   int totalPairs;
   double tempAverage;
-  
+  bool lexicalSort=true;
 
 
   std::vector<double> dist;
@@ -217,7 +222,7 @@ std::vector<double> PairList::getClusterVector(std::vector<std::string> subEleme
   //same cluster_function for all pairs so can take it out of loop, note that it is not true for triplets and so on
   int atom1;
   int atom2;
-  cluster_functions = symmetric_cluster_function(dist,Mi,true);
+  cluster_functions = symmetric_cluster_function(dist,Mi,lexicalSort);
   std::vector<std::vector<std::string > > all_element_combinations= symmetric_cluster_function(dist,subElements);
   
   for(int i=0; i<uniq_dist.size(); i++)

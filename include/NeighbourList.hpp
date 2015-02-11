@@ -10,29 +10,27 @@ class NeighbourList
 {
 public:
   NeighbourList();
-  NeighbourList(int);
-  NeighbourList(int,class LatticeList,class ParameterList);
+  //NeighbourList(int &);
+  NeighbourList(int,class LatticeList &, class ParameterList &);
   void addNeighbour(class Neighbour);
   void printList();
-  int isThisMatchingNeighbour(class LatticeList, class Neighbour);
   //  double getCurrentLocalEnergy();
-  void setCurrentLocalEnergy(double);
-  void calcCurrentLocalEnergy(class LatticeList);
-  double getLocalEnergyForMC(class LatticeList);
-  double getLocalEnergyForTotal(class LatticeList);
+  // void setCurrentLocalEnergy(double);
+  // void calcCurrentLocalEnergy(class LatticeList);
+  double getLocalEnergyForMC(class LatticeList &) ;
+  double getLocalEnergyForTotal(class LatticeList &) ;
   double getOffset();
 
 private:
   std::vector<class Atom> singletList;
-  void readSingletList(class ParameterList);
-  std::vector<double> getLocalEnergy(class LatticeList);
+  void readSingletList(class ParameterList &);
+  std::vector<double> getLocalEnergy( class LatticeList &) ;
 
-  double getMatchingEnergy(class Neighbour, std::vector< class Neighbour>);
   double localEnergy;
   double distanceLimit;
   int thisIndex;
   int newNeighbour(class Neighbour);
-  void findNeighbours(class LatticeList,class ParameterList);
+  void findNeighbours( class LatticeList &, class ParameterList &);
   std::vector<class Neighbour> nbrList;
   std::vector<std::vector< class Neighbour> > manyNbrLists;
   std::vector<int> indexList;  
@@ -55,10 +53,10 @@ private:
   
   std::vector<std::vector<class Quatuplet> > quat_vector;
 
-  void findTripletNeighbours(class LatticeList,class ParameterList);
-  void findQuatupletNeighbours(class LatticeList,class ParameterList);
+  void findTripletNeighbours(class LatticeList &,class ParameterList &);
+  void findQuatupletNeighbours(class LatticeList &,class ParameterList &);
   double offset;
-  void setOffset(double );
+  void setOffset(double &);
 
 };
    

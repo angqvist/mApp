@@ -6,8 +6,8 @@ class Quatuplet
 {
 public:
   Quatuplet();
-  Quatuplet(double,double,double,double,double,double,std::string,std::string,std::string,std::string);
-  Quatuplet(std::vector<double>,std::vector<std::string>);
+  Quatuplet(double &,double &,double &,double &,double &,double &,std::string &,std::string &,std::string &,std::string &);
+  Quatuplet(std::vector<double> &,std::vector<std::string> &);
 
   double getDistance1();
   double getDistance2();
@@ -16,7 +16,7 @@ public:
   double getDistance5();
   double getDistance6();
 
-  double getDistance(int);
+  double getDistance(int &);
   
 
 
@@ -25,7 +25,7 @@ public:
   std::string getSite3();
   std::string getSite4();
 
-  std::string getSite(int);
+  std::string getSite(int &);
   double getEnergy();
   int getCount();
   
@@ -33,32 +33,32 @@ public:
   std::vector<std::string> getElements();
   void print();
   
-  void setDistance1(double);
-  void setDistance2(double);
-  void setDistance3(double);
-  void setDistance4(double);
-  void setDistance5(double);
-  void setDistance6(double);
+  void setDistance1(double );
+  void setDistance2(double );
+  void setDistance3(double );
+  void setDistance4(double );
+  void setDistance5(double );
+  void setDistance6(double );
   
-  void setDistance(int,double);
+  void setDistance(int &,double &);
 
-  void setAll(std::vector<double>, std::vector<std::string>);
+  void setAll(std::vector<double> &, std::vector<std::string> &);
 
-  void setSite1(std::string);
-  void setSite2(std::string);
-  void setSite3(std::string);
-  void setSite4(std::string);
-  void setSite(int,std::string);
-  void setEnergy(double);
+  void setSite1(std::string &);
+  void setSite2(std::string &);
+  void setSite3(std::string &);
+  void setSite4(std::string &);
+  void setSite(int &,std::string &);
+  void setEnergy(double &);
 
-  void setCount(int);
+  void setCount(int &);
 
   void incrementCount();
   void decrementCount();
-  void increaseCountBy(int);
+  void increaseCountBy(int &);
 
-  friend int operator ==(Quatuplet,Quatuplet);
-  friend int operator !=(Quatuplet,Quatuplet);
+  friend int operator ==(Quatuplet &,Quatuplet &);
+  friend int operator !=(Quatuplet &,Quatuplet &);
 
   //void sortQuatuplet();
 

@@ -597,7 +597,7 @@ std::string LatticeList::getAtomInfo(int i,double &xpos, double &ypos, double &z
 }
 
 
-std::vector<double> LatticeList::getPeriodicDistance(int i, int j, double cutoff)
+std::vector<double> LatticeList::getPeriodicDistance(int &i, int &j, double &cutoff)
 {
 
 
@@ -721,7 +721,7 @@ std::vector<double> LatticeList::getPeriodicDistance(int i, int j, double cutoff
 
 
 
-double LatticeList::getDistance(int i, int j)
+double LatticeList::getDistance(const int &i, const int &j)
 {
 
   double dx,dy,dz;
@@ -807,11 +807,11 @@ int LatticeList::getNbrOfSites()
   return nbrOfSites;
 }
 
-void LatticeList::setRandomSites(int nbrA, std::string type1, std::string type2)
+void LatticeList::setRandomSites(int &nbrA, std::string &type1, std::string &type2)
 {
   int k;
   int countA=0;
-  for(size_t i=0; i<number_of_original_atoms; i++)
+  for(int i=0; i<number_of_original_atoms; i++)
     {
       setSite(i,type2);
       //atomTypeList[i]=type2;
@@ -831,12 +831,12 @@ void LatticeList::setRandomSites(int nbrA, std::string type1, std::string type2)
     }
 }
 
-void LatticeList::setRandomSites(int nbrA,int nbrB, std::string type1, std::string type2,std::string type3)
+void LatticeList::setRandomSites(int &nbrA,int &nbrB, std::string &type1, std::string &type2,std::string &type3)
 {
   int k;
   int countA=0;
   int countB=0;
-  for(size_t i=0; i<number_of_original_atoms; i++)
+  for(int i=0; i<number_of_original_atoms; i++)
     {
       setSite(i,type3);
       //atomTypeList[i]=type3;
@@ -865,13 +865,13 @@ void LatticeList::setRandomSites(int nbrA,int nbrB, std::string type1, std::stri
 }
 
 
-void LatticeList::setRandomSites(int nbrA,int nbrB, int nbrC, std::string type1, std::string type2,std::string type3,std::string type4)
+void LatticeList::setRandomSites(int &nbrA,int &nbrB, int &nbrC, std::string &type1, std::string &type2,std::string &type3,std::string &type4)
 {
   int k;
   int countA=0;
   int countB=0;
   int countC=0;
-  for(size_t i=0; i<number_of_original_atoms; i++)
+  for(int i=0; i<number_of_original_atoms; i++)
     {
       setSite(i,type4);
       //atomTypeList[i]=type4;
@@ -915,18 +915,18 @@ void LatticeList::setRandomSites(int nbrA,int nbrB, int nbrC, std::string type1,
 
 
 
-std::string LatticeList::getSite(int i)
+std::string LatticeList::getSite(int &i)
 {
   return atomTypeList[i];
 }
 
-void LatticeList::set_property(std::vector<double> prop)
+void LatticeList::set_property(std::vector<double> &prop)
 {
   properties=prop;
 }
 
 
-void LatticeList::setSite(int index,std::string newSite)
+void LatticeList::setSite(int &index,std::string &newSite)
 {
   if(index >= number_of_original_atoms)
     {
@@ -944,7 +944,7 @@ void LatticeList::setSite(int index,std::string newSite)
     }
 }
 
-void LatticeList::setEnergy(double newEnergy)
+void LatticeList::setEnergy(double &newEnergy)
 {
   energy=newEnergy;
 }
@@ -1063,7 +1063,7 @@ void LatticeList::calculate_lookup_table()
 }
 
 
-double LatticeList::fast_distance(int i,int j)
+double LatticeList::fast_distance(int &i, int &j) const
 {
   //return getDistance(i,j);
   
@@ -1139,7 +1139,7 @@ int LatticeList::get_ghost_atoms_count()
 }
 
 
-std::vector<double> LatticeList::getWyckoffOccupancy(std::vector<std::string> wykSites, std::string atomSymbol)
+std::vector<double> LatticeList::getWyckoffOccupancy(const std::vector<std::string> &wykSites, const std::string &atomSymbol)
 {
   std::vector<double> ret;
   ret.resize(wykSites.size());

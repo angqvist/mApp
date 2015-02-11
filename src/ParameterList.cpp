@@ -406,7 +406,8 @@ void ParameterList::unwrapSinglets(std::vector<Atom> singlet_list, std::vector<s
   std::vector<Atom> new_list;
   
   Atom temp_atom = Atom();
-
+  bool reverseSort=true;
+  int numberOfElements=subelements.size();
   std::vector<std::vector<std::string> > unWrapped_elements;
   std::vector<std::vector<int> > clusterFunctions;
   double energy;
@@ -414,7 +415,7 @@ void ParameterList::unwrapSinglets(std::vector<Atom> singlet_list, std::vector<s
     {
       std::vector<double> tomt;
       unWrapped_elements = symmetric_cluster_function(tomt,subelements);
-      clusterFunctions = symmetric_cluster_function(tomt,subelements.size(), true);
+      clusterFunctions = symmetric_cluster_function(tomt,numberOfElements, reverseSort);
       if( (i+clusterFunctions.size()-1)>= singlet_list.size())
 	{
 	  break;
@@ -436,7 +437,7 @@ void ParameterList::unwrapSinglets(std::vector<Atom> singlet_list, std::vector<s
 	  for(int k=0; k<clusterFunctions.size(); k++)
 	    {
 	      temporary_i =i+ k;
-	      energy += clusterFunction(subelements.size(),atom1,clusterFunctions[k][0])*singlet_list[temporary_i].getProperty();
+	      energy += clusterFunction(numberOfElements,atom1,clusterFunctions[k][0])*singlet_list[temporary_i].getProperty();
 	    }
 
 	  temp_atom.setProperty(energy);
@@ -520,6 +521,8 @@ void ParameterList::unwrapPairs(std::vector<Pair> parList,std::vector<std::strin
 {
   std::vector<Pair> new_list;
   Pair temp_pair = Pair();
+  bool reverseSort=true;
+  int numberOfElements=subelements.size();
   std::vector<std::vector<std::string> > unWrapped_elements;
   std::vector<std::vector<int> > clusterFunctions;
   std::vector<double> dists;
@@ -535,7 +538,7 @@ void ParameterList::unwrapPairs(std::vector<Pair> parList,std::vector<std::strin
       dists[0]=parList[i].getDistance();
       unWrapped_elements = symmetric_cluster_function(dists,subelements);
       //true for reverse_sort
-      clusterFunctions = symmetric_cluster_function(dists,subelements.size(),true);
+      clusterFunctions = symmetric_cluster_function(dists,numberOfElements,reverseSort);
       if( (i+clusterFunctions.size()) > parList.size())
 	{
 	  break;
@@ -568,8 +571,8 @@ void ParameterList::unwrapPairs(std::vector<Pair> parList,std::vector<std::strin
 	      tempindex_i = i+k;
 	      
 	      
-	      energy += clusterFunction(subelements.size(),atom1,clusterFunctions[k][0])*
-		clusterFunction(subelements.size(),atom2,clusterFunctions[k][1])*parList[tempindex_i].getEnergy();
+	      energy += clusterFunction(numberOfElements,atom1,clusterFunctions[k][0])*
+		clusterFunction(numberOfElements,atom2,clusterFunctions[k][1])*parList[tempindex_i].getEnergy();
 	      
 	    }
 	  temp_pair.setSite1(unWrapped_elements[j][0]);
@@ -602,6 +605,8 @@ void ParameterList::unwrapTriplets(std::vector<Triplet> trip_list,std::vector<st
   std::vector<std::vector<std::string> > unWrapped_elements;
   std::vector<std::vector<int> > clusterFunctions;
   std::vector<double> dists;
+  int numberOfElements=subelements.size();
+  bool reverseSort=true;
   dists.resize(3);
   double energy;
   int i=0;
@@ -616,7 +621,7 @@ void ParameterList::unwrapTriplets(std::vector<Triplet> trip_list,std::vector<st
       dists[2]=trip_list[i].getDistance3();
       
       unWrapped_elements = symmetric_cluster_function(dists,subelements);
-      clusterFunctions = symmetric_cluster_function(dists,subelements.size(),true);
+      clusterFunctions = symmetric_cluster_function(dists,numberOfElements,reverseSort);
       if( (i+clusterFunctions.size()) >trip_list.size())
 	{
 	  break;
@@ -649,9 +654,9 @@ void ParameterList::unwrapTriplets(std::vector<Triplet> trip_list,std::vector<st
 	  for(int k=0; k<clusterFunctions.size(); k++)
 	    {
 	      tempindex_i = i+k;
-	      energy += clusterFunction(subelements.size(),atom1,clusterFunctions[k][0])*
-		clusterFunction(subelements.size(),atom2,clusterFunctions[k][1])*
-		clusterFunction(subelements.size(),atom3,clusterFunctions[k][2])*trip_list[tempindex_i].getEnergy();
+	      energy += clusterFunction(numberOfElements,atom1,clusterFunctions[k][0])*
+		clusterFunction(numberOfElements,atom2,clusterFunctions[k][1])*
+		clusterFunction(numberOfElements,atom3,clusterFunctions[k][2])*trip_list[tempindex_i].getEnergy();
 	    }
 	  temp_trip.setSite1(unWrapped_elements[j][0]);
 	  temp_trip.setSite2(unWrapped_elements[j][1]);
@@ -673,9 +678,13 @@ void ParameterList::unwrapQuatuplets(std::vector<Quatuplet> quat_list, std::vect
   //   }
   // std::cout<<"=================="<<std::endl;
   
+  int numberOfElements=subelements.size();
+  bool reverseSort=true;
+
+  
   std::vector<Quatuplet> new_list;
   Quatuplet temp_quat = Quatuplet();
-    std::vector<std::vector<std::string> > unWrapped_elements;
+  std::vector<std::vector<std::string> > unWrapped_elements;
   std::vector<std::vector<int> > clusterFunctions;
   std::vector<double> dists;
   dists.resize(6);
@@ -698,7 +707,7 @@ void ParameterList::unwrapQuatuplets(std::vector<Quatuplet> quat_list, std::vect
       dists[5]=quat_list[i].getDistance6();
 
       unWrapped_elements = symmetric_cluster_function(dists,subelements);
-      clusterFunctions = symmetric_cluster_function(dists,subelements.size(),true);
+      clusterFunctions = symmetric_cluster_function(dists,numberOfElements,reverseSort);
       if( (i+clusterFunctions.size() )> quat_list.size() )
 	{
 	  break;
@@ -739,10 +748,10 @@ void ParameterList::unwrapQuatuplets(std::vector<Quatuplet> quat_list, std::vect
 	    {
 	      tempindex_i = i+k;
 
-	      energy += clusterFunction(subelements.size(),atom1,clusterFunctions[k][0])*
-		clusterFunction(subelements.size(),atom2,clusterFunctions[k][1])*
-		clusterFunction(subelements.size(),atom3,clusterFunctions[k][2])*
-		clusterFunction(subelements.size(),atom4,clusterFunctions[k][3])*quat_list[tempindex_i].getEnergy();
+	      energy += clusterFunction(numberOfElements,atom1,clusterFunctions[k][0])*
+		clusterFunction(numberOfElements,atom2,clusterFunctions[k][1])*
+		clusterFunction(numberOfElements,atom3,clusterFunctions[k][2])*
+		clusterFunction(numberOfElements,atom4,clusterFunctions[k][3])*quat_list[tempindex_i].getEnergy();
 	    }
 	  temp_quat.setSite1(unWrapped_elements[j][0]);
 	  temp_quat.setSite2(unWrapped_elements[j][1]);

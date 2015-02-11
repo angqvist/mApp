@@ -11,7 +11,7 @@ TripletList::TripletList()
   nbrOfTriplets=0;
 }
 
-TripletList::TripletList(LatticeList ll, std::vector<std::string> subelements, double cutOff)
+TripletList::TripletList(LatticeList &ll, std::vector<std::string> &subelements, double &cutOff)
 {
   std::cout<<"initialize_trips"<<std::endl;
 
@@ -28,7 +28,7 @@ int TripletList::getNbrOfTriplets()
   return nbrOfTriplets;
 }
 
-int TripletList::updateTriplet(Triplet newTriplet,bool add,int multiplicity)
+int TripletList::updateTriplet(Triplet &newTriplet,bool &add,int &multiplicity)
 {
   //newTriplet.sortTriplet();
   for (size_t i=0; i< tripletList.size(); i++)
@@ -55,7 +55,7 @@ void TripletList::reset()
   nbrOfTriplets=0;
 }
 
-int TripletList::isAtomInSubElements(std::string atom, std::vector<std::string> subelements)
+int TripletList::isAtomInSubElements(std::string atom, std::vector<std::string> &subelements)
 {
   for( size_t i=0; i< subelements.size(); i++)
     {
@@ -72,12 +72,15 @@ int TripletList::isAtomInSubElements(std::string atom, std::vector<std::string> 
 
 
 
-void TripletList::initializeTriplets(LatticeList ll, std::vector<std::string> subelements, double cutOff)
+void TripletList::initializeTriplets(LatticeList &ll, std::vector<std::string> &subelements, double &cutOff)
 {
   std::cout<<"initialize lookuptable in triplets"<<std::endl;
   ll.calculate_lookup_table();
   std::cout<<"done"<<std::endl;
   reset();
+  bool addTripletWhenUpdating=true;
+  int countForTripletWhenUpdating=1;
+  bool lexicalSort=false;
   double dr1;
   double dr2;
   double dr3;
@@ -90,21 +93,21 @@ void TripletList::initializeTriplets(LatticeList ll, std::vector<std::string> su
   elements.resize(3);
   std::vector<std::vector< std::string> > all_element_combinations;
 
-  for(size_t i=0; i< ll.get_original_atoms_count(); i++)//first loop
+  for(int i=0; i< ll.get_original_atoms_count(); i++)//first loop
     {
       if(!(isAtomInSubElements(ll.getSite(i),subelements)))
 	{
 	  std::cout<<"Atom not in subelements in TripletList"<<std::endl;
 	  continue;
 	}
-      for(size_t j=i+1; j<ll.getNbrOfSites(); j++) // second loop
+      for(int j=i+1; j<ll.getNbrOfSites(); j++) // second loop
 	{
 	  if(!(isAtomInSubElements(ll.getSite(j),subelements)))
 	    {
 	      std::cout<<"Atom not in subelements in TripletList"<<std::endl;
 	      continue;
 	    }
-	  for(size_t j2=j+1; j2<ll.getNbrOfSites(); j2++) // third loop
+	  for(int j2=j+1; j2<ll.getNbrOfSites(); j2++) // third loop
 	    {
 
 	      if(!(isAtomInSubElements(ll.getSite(j2),subelements)))
@@ -157,7 +160,7 @@ void TripletList::initializeTriplets(LatticeList ll, std::vector<std::string> su
 	      ghost_atoms.push_back("A");
 	      ghost_atoms.push_back("A");
 	      //   std::cout<<orderDr[0]<< " "<<orderDr[1]<< " "<<orderDr[2]<<std::endl;
-	      tuple_remodulator(orderDr,ghost_atoms,false);
+	      tuple_remodulator(orderDr,ghost_atoms,lexicalSort);
 	      //    std::cout<<orderDr[0]<< " "<<orderDr[1]<< " "<<orderDr[2]<<std::endl;
 	      
 	      // for(int kk=0; kk<3; kk++)
@@ -179,7 +182,7 @@ void TripletList::initializeTriplets(LatticeList ll, std::vector<std::string> su
 		  tempTriplet.setSite1(all_element_combinations[k][0]);
 		  tempTriplet.setSite2(all_element_combinations[k][1]);
 		  tempTriplet.setSite3(all_element_combinations[k][2]);
-		  updateTriplet(tempTriplet,true,1);		  
+		  updateTriplet(tempTriplet,addTripletWhenUpdating,countForTripletWhenUpdating);		  
 
 		}
 		  
@@ -192,7 +195,7 @@ void TripletList::initializeTriplets(LatticeList ll, std::vector<std::string> su
 
 void TripletList::printList()
 {
-  for(size_t i=0; i<tripletList.size(); i++)
+  for(int i=0; i<tripletList.size(); i++)
     {
       tripletList[i].printTriplet();
     }
@@ -200,13 +203,14 @@ void TripletList::printList()
 
 void TripletList::resetCounts()
 {
-  for(size_t i=0; i< tripletList.size(); i++)
+  int zero=0;
+  for(int i=0; i< tripletList.size(); i++)
     {
-      tripletList[i].setCount(0);
+      tripletList[i].setCount(zero);
     }
 }
 
-Triplet& TripletList::getTriplet(int index)
+Triplet& TripletList::getTriplet(int &index)
 {
   return tripletList[index];
 }
@@ -249,11 +253,11 @@ void TripletList::sortOrder(std::vector<double>  &orderDr, std::vector<int>  &or
 }
 
 
-std::vector<std::vector<double> > TripletList::getUniqueDistances(double cutoff)
+std::vector<std::vector<double> > TripletList::getUniqueDistances(double &cutoff)
 {
   
   std::vector<std::vector<double> > distances;
-  
+  bool add=true;
   for(int i=0; i<tripletList.size(); i++)
     {
       if(tripletList[i].getDistance2()>cutoff)
@@ -261,7 +265,7 @@ std::vector<std::vector<double> > TripletList::getUniqueDistances(double cutoff)
 	  continue;
 	}
       // tripletList[i].printTriplet();
-      isTripletUnique(tripletList[i],distances,true);
+      isTripletUnique(tripletList[i],distances,add);
     }
   clust_sort_dists(distances);
   return distances;
@@ -269,7 +273,7 @@ std::vector<std::vector<double> > TripletList::getUniqueDistances(double cutoff)
 
 
 
-bool TripletList::isTripletUnique(Triplet t1, std::vector<std::vector<double> > &distances, bool add)
+bool TripletList::isTripletUnique(Triplet &t1, std::vector<std::vector<double> > &distances, bool &add)
 {
   
   if(distances.size()==0)
@@ -372,11 +376,11 @@ void TripletList::sortTripletList()
 }
 
 
-std::vector<double> TripletList::getClusterVector(std::vector<std::string > subElements,double cutoff,bool average)
+std::vector<double> TripletList::getClusterVector(std::vector<std::string > &subElements,double &cutoff,bool &average)
 {
 
   const double PI = 3.1415926535897932384626;
-
+  bool lexicalSort=true;
   sortTripletList(); //importante
   std::vector<std::vector<double> > uniq_dists = getUniqueDistances(cutoff);
   clust_sort_dists(uniq_dists);
@@ -415,7 +419,7 @@ std::vector<double> TripletList::getClusterVector(std::vector<std::string > subE
   //new stuff, shiny and exciting
   for(int i=0; i<uniq_dists.size(); i++)
     {
-      clusterFunctions = symmetric_cluster_function(uniq_dists[i],Mi,true);
+      clusterFunctions = symmetric_cluster_function(uniq_dists[i],Mi,lexicalSort);
       
 
       for(int ii2=0; ii2<clusterFunctions.size(); ii2++)

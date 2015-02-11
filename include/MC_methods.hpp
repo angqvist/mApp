@@ -3,7 +3,7 @@
 
 
 
-double MC_totalEnergy(class LatticeList, std::vector<class NeighbourList>);
+double MC_totalEnergy(class LatticeList &,  std::vector<class NeighbourList> &);
 
 double MC_orderValue(class LatticeList, double);
 

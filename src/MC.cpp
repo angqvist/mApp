@@ -11,9 +11,23 @@
 #include <sstream>
 
 #include "MC_methods.hpp"
+#include <random>
+
+
+//mersenne twister int generatoror. SLOW BUT POWERFUL. (That's what she said)
+// http://en.cppreference.com/w/cpp/numeric/random/uniform_int_distribution
+// http://www.stroustrup.com/C++11FAQ.html#std-random
+std::random_device rd;
+std::mt19937 gen(rd());
+
+
 
 MC::MC()
 {
+  //std::random_device rd;
+  //std::mt19937 gen(rd());
+  
+ 
   T=0;  
   ensemble="SGC";
   nbrOfSuccesfulSwaps=0;
@@ -21,19 +35,21 @@ MC::MC()
   kbeta=8.6173324e-5;
 }
 
-double MC::step(LatticeList &ll,std::vector<NeighbourList> nl)
+double MC::step(LatticeList &ll, std::vector<NeighbourList> &nl)
 {
-  double energyDiff;
+  //double energyDiff;
 
-  energyDiff=stepSGC(ll,nl);
+  //  energyDiff=stepSGC(ll,nl);
   //if(ensemble=="SGC")
   // {
   // }
-  return energyDiff;
+  // return energyDiff;
+
+  return stepSGC(ll,nl);
 }
 
 
-double MC::step(int N,LatticeList &ll,std::vector<NeighbourList> nl)
+double MC::step(int N,LatticeList &ll, std::vector<NeighbourList> &nl)
 {
   double energyDiff=0; 
   for(int i=0; i<N; i++)
@@ -44,7 +60,7 @@ double MC::step(int N,LatticeList &ll,std::vector<NeighbourList> nl)
 }
 
 //double MC::averageStep(int mcsteps,int averageStep,LatticeList &ll,std::vector<std::vector<NeighbourList> > nlVectors,double &stdE,double &orderP,double &c6,double &k24, double &i16,double &stdc6,double &stdk24, double &stdi16 )
-double MC::averageStep(int mcsteps,int averageStep,LatticeList &ll,std::vector<std::vector<NeighbourList> > nlVectors,std::vector<double> &data,std::vector<std::string> Wtype)
+double MC::averageStep(int mcsteps,int averageStep,LatticeList &ll, std::vector<std::vector<NeighbourList> > &nlVectors,std::vector<double> &data, std::vector<std::string> &Wtype)
 {
   std::string fileName = "dataFiles/mcConfs/binary/conf_new_bagage";
   for(int i=0; i<data.size(); i++)
@@ -55,12 +71,8 @@ double MC::averageStep(int mcsteps,int averageStep,LatticeList &ll,std::vector<s
   //data:  E-0, std E-1,BG-2, stdBG-3,VOL-4,stdVOL-5,Lat-6,stdLat-7, c6-8, k24-9, i16-10, stdC6-11, stdk24-12, stdi16-13
 
 
-  // std::vector<double> avg_prop;
-  // std::vector<double> std_prop;
   int properties=nlVectors.size();
 
-  // avg_prop.resize(properties);
-  // std_prop.resize(properties);
   
   double averageNrg=0;
   double averageBG=0;
@@ -68,15 +80,15 @@ double MC::averageStep(int mcsteps,int averageStep,LatticeList &ll,std::vector<s
   double averageLAT=0;
 
   double nrgSquared=0;
-  double squareBG;
-  double squareVOL;
-  double squareLAT;
+  // double squareBG;
+  // double squareVOL;
+  // double squareLAT;
 
   double tempEnergy;
 
-  double tempBG;
-  double tempVOL;
-  double tempLAT;
+  // double tempBG;
+  // double tempVOL;
+  // double tempLAT;
   double tempC6;
   double tempK24;
   double tempI16;
@@ -88,13 +100,6 @@ double MC::averageStep(int mcsteps,int averageStep,LatticeList &ll,std::vector<s
   wykSites.push_back("24k");
   wykSites.push_back("16i");
   double tempVal;
-  // i16 = 0;
-  //  k24 = 0;
-  //  c6  = 0;
-  //  stdc6=0;
-  //  stdk24 =0;
-  //  stdi16 =0;
-  //orderP=0;
   for(int k=0; k<averageStep; k++)
     {
       double energyDiff=0;  
@@ -129,8 +134,6 @@ double MC::averageStep(int mcsteps,int averageStep,LatticeList &ll,std::vector<s
 	  data[2*properties+4+i*5+i] +=tempI16;
 	  data[2*properties+5+i*5+i] +=pow(tempI16,2.0);
 	}
- 
-      
 
       
       for( int i=0; i< properties-1; i++)
@@ -182,8 +185,11 @@ double MC::averageStep(int mcsteps,int averageStep,LatticeList &ll,std::vector<s
 
 
 
-double MC::stepSGC(LatticeList &ll,std::vector<NeighbourList> nl)
+double MC::stepSGC(LatticeList &ll, std::vector<NeighbourList> &nl)
 {
+
+ std::uniform_int_distribution<> dis(0, ll.get_original_atoms_count()-1);
+
   totalSwaps++;
   double energyDiff;
   double nrgyBefore;
@@ -194,16 +200,21 @@ double MC::stepSGC(LatticeList &ll,std::vector<NeighbourList> nl)
   double energyAfter2;
 
 
-  int k=rand()%(ll.get_original_atoms_count());
-  int l=rand()%(ll.get_original_atoms_count());
+  // int k=rand()%(ll.get_original_atoms_count());
+  // int l=rand()%(ll.get_original_atoms_count());  
+  
+  int k= dis(gen);
+  int l= dis(gen);
   while(ll.getSite(l) == ll.getSite(k))
     {
-      l=rand()%(ll.get_original_atoms_count());
+      //l=rand()%(ll.get_original_atoms_count());
+      l=dis(gen);
     }
   // energyBefore1=nl[k].getCurrentLocalEnergy();
   // energyBefore2=nl[l].getCurrentLocalEnergy();
 
-  nrgyBefore=nl[k].getLocalEnergyForMC(ll)+nl[l].getLocalEnergyForMC(ll);
+  nrgyBefore=nl[k].getLocalEnergyForMC(ll)+nl[l].getLocalEnergyForMC(ll);   
+
   //nrgyBefore= nl[k].getCurrentLocalEnergy() + nl[l].getCurrentLocalEnergy();
   std::string tempSite1= ll.getSite(k);
   std::string tempSite2= ll.getSite(l);
@@ -214,12 +225,14 @@ double MC::stepSGC(LatticeList &ll,std::vector<NeighbourList> nl)
   // nrgyAfter=energyAfter1 + energyAfter2;
 
   nrgyAfter=nl[k].getLocalEnergyForMC(ll)+nl[l].getLocalEnergyForMC(ll);
+
   energyDiff=nrgyAfter-nrgyBefore;
   //std::cout<<energyDiff<<std::endl;
-
+   std::uniform_real_distribution<> disReal(0,1);
   if(energyDiff>0)
     {
-      if(exp(-energyDiff/(kbeta*T))<(rand()/(double)RAND_MAX)) //revert
+      //if(exp(-energyDiff/(kbeta*T))<(rand()/(double)RAND_MAX)) //revert
+	if(exp(-energyDiff/(kbeta*T))<disReal(gen)) //revert
 	{
 	  ll.setSite(k,tempSite1);
 	  ll.setSite(l,tempSite2);

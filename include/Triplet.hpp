@@ -7,7 +7,7 @@ class Triplet
 {
 public:
   Triplet();
-  Triplet(double ,double,double, std::string , std::string,std::string);
+  Triplet(double &,double &,double &, std::string &, std::string &,std::string &);
   //  Triplet(double distance, std::string site1, std::string site2, int count);
 
   double getDistance1();
@@ -21,25 +21,25 @@ public:
   double getEnergy();
   int getCount();
   void printTriplet();
-  void setDistance1(double distance);
-  void setDistance2(double distance);
-  void setDistance3(double distance);
+  void setDistance1(double );
+  void setDistance2(double );
+  void setDistance3(double );
 
-  void setSite1(std::string newSite);
-  void setSite2(std::string newSite);
-  void setSite3(std::string newSite);
-  void setEnergy(double newEnergy);
-  void setCount(int newCount);
+  void setSite1(std::string );
+  void setSite2(std::string );
+  void setSite3(std::string );
+  void setEnergy(double );
+  void setCount(int );
 
   void incrementCount();
   void decrementCount();
-  void increaseCountBy(int);
+  void increaseCountBy(int &);
 
-  friend int operator==(Triplet,Triplet);
-  friend int operator!=(Triplet,Triplet);
+  friend int operator==(Triplet &,Triplet &);
+  friend int operator!=(Triplet &,Triplet &);
   double LIMIT;
   void sortTriplet();
-  void setAll(std::vector<double>,std::vector<std::string>);
+  void setAll(std::vector<double> &,std::vector<std::string> &);
 
 private:
   double getLimit();

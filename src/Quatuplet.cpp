@@ -31,8 +31,8 @@ Quatuplet::Quatuplet()
   count =0;
 }
 
-Quatuplet::Quatuplet(double d1,double d2, double d3, double d4, double d5,double d6,std::string s1,
-		     std::string s2,std::string s3,std::string s4)
+Quatuplet::Quatuplet(double &d1,double &d2, double &d3, double &d4, double &d5,double &d6,std::string &s1,
+		     std::string &s2,std::string &s3,std::string &s4)
 {
 
   dists[0]=d1;
@@ -66,7 +66,7 @@ Quatuplet::Quatuplet(double d1,double d2, double d3, double d4, double d5,double
 }
 
 
-Quatuplet::Quatuplet(std::vector<double> new_dist,std::vector<std::string> new_sites)
+Quatuplet::Quatuplet(std::vector<double> &new_dist,std::vector<std::string> &new_sites)
 {
 
   dists=new_dist;
@@ -126,7 +126,7 @@ double Quatuplet::getDistance6()
   //return distance6;
 }
 
-double Quatuplet::getDistance(int index)
+double Quatuplet::getDistance(int &index)
 {
 
   return dists[index];
@@ -182,7 +182,7 @@ std::string Quatuplet::getSite4()
   //return site4;
 }
 
-std::string Quatuplet::getSite(int index)
+std::string Quatuplet::getSite(int &index)
 {
 
   return elements[index];
@@ -264,7 +264,7 @@ void Quatuplet::setDistance6(double new_dist)
 }
 
 
-void Quatuplet::setDistance(int index,double val)
+void Quatuplet::setDistance(int &index,double &val)
 {
 
   dists[index]=val;
@@ -301,29 +301,29 @@ void Quatuplet::setDistance(int index,double val)
 
 
 
-void Quatuplet::setSite1(std::string new_site)
+void Quatuplet::setSite1(std::string &new_site)
 {
   elements[0]=new_site;
   // site1=new_site;
 }
-void Quatuplet::setSite2(std::string new_site)
+void Quatuplet::setSite2(std::string &new_site)
 {
   elements[1]=new_site;
   // site2=new_site;
 }
-void Quatuplet::setSite3(std::string new_site)
+void Quatuplet::setSite3(std::string &new_site)
 {
   elements[2]=new_site;
   //site3=new_site;
 }
-void Quatuplet::setSite4(std::string new_site)
+void Quatuplet::setSite4(std::string &new_site)
 {
   elements[3]=new_site;
   // site4=new_site;
 }
 
 
-void Quatuplet::setSite(int index,std::string siteTYPE)
+void Quatuplet::setSite(int &index,std::string &siteTYPE)
 {
 
   elements[index]=siteTYPE;
@@ -347,12 +347,12 @@ void Quatuplet::setSite(int index,std::string siteTYPE)
   //   }
 }
 
-  void Quatuplet::setEnergy(double new_energy)
+  void Quatuplet::setEnergy(double &new_energy)
   {
     energy=new_energy;
 }
 
-void Quatuplet::setCount(int newCount)
+void Quatuplet::setCount(int &newCount)
 {
   count=newCount;
 }
@@ -361,7 +361,7 @@ void Quatuplet::incrementCount()
 {
   count++;
 }
-void Quatuplet::increaseCountBy(int addThisToCount)
+void Quatuplet::increaseCountBy(int &addThisToCount)
 {
   count += addThisToCount;
 }
@@ -370,7 +370,7 @@ void Quatuplet::decrementCount()
   count--;
 }
 
-void Quatuplet::setAll(std::vector<double> new_dists, std::vector<std::string> new_elements)
+void Quatuplet::setAll(std::vector<double> &new_dists, std::vector<std::string> &new_elements)
 {
   if(dists.size() != 6 || elements.size() != 4)
     {
@@ -393,7 +393,7 @@ void Quatuplet::setAll(std::vector<double> new_dists, std::vector<std::string> n
 
 
 
-int operator==(Quatuplet q1 ,Quatuplet q2)
+int operator==(Quatuplet &q1 ,Quatuplet &q2)
 {
   for(int i=0; i<6; i++)
     {
@@ -412,7 +412,7 @@ int operator==(Quatuplet q1 ,Quatuplet q2)
   return true;
 }
 
-int operator !=(Quatuplet q1, Quatuplet q2)
+int operator !=(Quatuplet &q1, Quatuplet &q2)
 {
   return !(q1==q2);
 }

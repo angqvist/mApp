@@ -8,7 +8,7 @@
 #include <string>
 
 
-double MC_totalEnergy(LatticeList ll, std::vector<NeighbourList> nl)
+double MC_totalEnergy(LatticeList &ll,  std::vector<NeighbourList> &nl) 
 {
   //  double ret=0;
   double ret=nl[0].getOffset()*(double)ll.get_original_atoms_count();
