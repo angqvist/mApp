@@ -126,13 +126,13 @@ double MC::averageStep(int mcsteps,int averageStep,LatticeList &ll, std::vector<
 	  
 	  //MC_occupations(ll,tempC6,tempK24,tempI16,Wtype[i]);
 	  data[2*properties+i*5+i] +=tempC6;
-	  data[2*properties+1+i*5+i] +=pow(tempC6,2.0);
+	  data[2*properties+1+i*5+i] +=tempC6*tempC6;
 
 	  data[2*properties+2+i*5+i] +=tempK24;
-	  data[2*properties+3+i*5+i] +=pow(tempK24,2.0);
+	  data[2*properties+3+i*5+i] +=tempK24*tempK24;
 
 	  data[2*properties+4+i*5+i] +=tempI16;
-	  data[2*properties+5+i*5+i] +=pow(tempI16,2.0);
+	  data[2*properties+5+i*5+i] +=tempI16*tempI16;;
 	}
 
       
@@ -205,6 +205,7 @@ double MC::stepSGC(LatticeList &ll, std::vector<NeighbourList> &nl)
   
   int k= dis(gen);
   int l= dis(gen);
+
   while(ll.getSite(l) == ll.getSite(k))
     {
       //l=rand()%(ll.get_original_atoms_count());
@@ -212,8 +213,9 @@ double MC::stepSGC(LatticeList &ll, std::vector<NeighbourList> &nl)
     }
   // energyBefore1=nl[k].getCurrentLocalEnergy();
   // energyBefore2=nl[l].getCurrentLocalEnergy();
-
-  nrgyBefore=nl[k].getLocalEnergyForMC(ll)+nl[l].getLocalEnergyForMC(ll);   
+  //double totalBefore=MC_totalEnergy(ll,nl);
+  nrgyBefore=nl[k].getLocalEnergyForMC(ll)+nl[l].getLocalEnergyForMC(ll);    //---<commented this right one 
+  // nrgyBefore=nl[k].getLocalEnergyForTotal(ll)+nl[l].getLocalEnergyForTotal(ll);  //<--total! beware  
 
   //nrgyBefore= nl[k].getCurrentLocalEnergy() + nl[l].getCurrentLocalEnergy();
   std::string tempSite1= ll.getSite(k);
@@ -224,15 +226,18 @@ double MC::stepSGC(LatticeList &ll, std::vector<NeighbourList> &nl)
   // energyAfter2=nl[l].getLocalEnergy(ll);
   // nrgyAfter=energyAfter1 + energyAfter2;
 
-  nrgyAfter=nl[k].getLocalEnergyForMC(ll)+nl[l].getLocalEnergyForMC(ll);
+  nrgyAfter=nl[k].getLocalEnergyForMC(ll)+nl[l].getLocalEnergyForMC(ll); // ---<commented this right one
+
+  // nrgyAfter=nl[k].getLocalEnergyForTotal(ll)+nl[l].getLocalEnergyForTotal(ll);   //<--total! beware
+  // double totalAfter=MC_totalEnergy(ll,nl);
 
   energyDiff=nrgyAfter-nrgyBefore;
-  //std::cout<<energyDiff<<std::endl;
-   std::uniform_real_distribution<> disReal(0,1);
+  // std::cout<<energyDiff<<" "<<totalAfter-totalBefore<< " "<<energyDiff-totalAfter+totalBefore<<std::endl;
+  std::uniform_real_distribution<> disReal(0,1);
   if(energyDiff>0)
     {
       //if(exp(-energyDiff/(kbeta*T))<(rand()/(double)RAND_MAX)) //revert
-	if(exp(-energyDiff/(kbeta*T))<disReal(gen)) //revert
+      if(exp(-energyDiff/(kbeta*T))<disReal(gen)) //revert
 	{
 	  ll.setSite(k,tempSite1);
 	  ll.setSite(l,tempSite2);

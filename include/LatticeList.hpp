@@ -30,7 +30,7 @@ public:
   void setBandGap(double);
   void setVolume(double);
   void setAverageLatticeConstant(double);
-  
+  void setWykPos(std::vector<std::string>);
   std::vector<double> getWyckoffOccupancy(const std::vector<std::string> &, const std::string &);
   double getEnergy();
   double getBandGap();
@@ -56,7 +56,7 @@ public:
   void clear_lookup_table();
   int get_original_atoms_count();
   int get_ghost_atoms_count();
-    
+  std::vector<double> getCellMatrix();
 private:
   std::vector<double> cellMatrix;
   int number_of_original_atoms;

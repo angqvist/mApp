@@ -1263,7 +1263,7 @@ std::vector<double> getSingleClusterVector(LatticeList &ll, std::vector<double> 
       if(tl.getNbrOfTriplets()>0)
 	{
 	  //ATAT below
-	  if(ATAT)
+	  if(!ATAT)
 	    {
 	      //	  tl.getTriplet(3).printTriplet();
 	      tl.printList();
@@ -1295,7 +1295,7 @@ std::vector<double> getSingleClusterVector(LatticeList &ll, std::vector<double> 
       ql.count_quatuplets(ll,cutoffs[2]);
 
 
-      if(ATAT)
+      if(!ATAT)
 	{
 	  std::vector<double> quatVector = ql.getClusterVector(subElements,cutoffs[2],average);
 	  ql.printList();
@@ -1333,7 +1333,7 @@ std::vector<double> getSingleClusterVector(LatticeList &ll, std::vector<double> 
     {
       for(int i=0; i<singletVector.size(); i++)
   	{
-  	  singletVector[i]= singletVector[i]/((double)ll.get_original_atoms_count());
+  	  singletVector[i] = singletVector[i]/((double)ll.get_original_atoms_count());
   	}
       
     }
@@ -1402,6 +1402,7 @@ void getClusterVectors(std::vector<LatticeList> &lattice_list, std::vector<doubl
 	{
 	  properties[j].push_back(lattice_list[i].getProperty(j));
 	}
+      lattice_list[i].clear_lookup_table();
     }
   //  std::vector<double> cvCorr = getCVCorrection(X,numberOfConfigs,distances.size());
 

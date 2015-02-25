@@ -327,6 +327,11 @@ void LatticeList::readIdealPos2()
 }
 
 
+std::vector<double> LatticeList::getCellMatrix()
+{
+  return cellMatrix;
+}
+
 
 
 void LatticeList::readIdealPos3(std::vector<std::string> subElements)
@@ -864,6 +869,11 @@ void LatticeList::setRandomSites(int &nbrA,int &nbrB, std::string &type1, std::s
     }
 }
 
+
+void LatticeList::setWykPos(std::vector<std::string> newWykPos)
+{
+  wyckoffSite=newWykPos;
+}
 
 void LatticeList::setRandomSites(int &nbrA,int &nbrB, int &nbrC, std::string &type1, std::string &type2,std::string &type3,std::string &type4)
 {
