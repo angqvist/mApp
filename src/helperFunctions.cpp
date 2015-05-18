@@ -22,6 +22,7 @@
 #include "clust.hpp"
 #include "QuatupletList.hpp"
 #include <iomanip>      // std::setprecision
+#include "ClusterList.hpp"
   struct minPar
   {
     gsl_matrix * parA;
@@ -175,7 +176,7 @@ void countPairs(LatticeList &ll, PairList &pl, double &cutoff)
   std::string tempSite;
   std::vector<double> dists;
   dists.resize(1);
-  for(int i=0; i<ll.get_original_atoms_count(); i++)
+  for(int i=0; i<ll.getNbrOfSites(); i++)
     {
       for(int j=0; j<ll.getNbrOfSites(); j++)
 	{
@@ -193,7 +194,7 @@ void countPairs(LatticeList &ll, PairList &pl, double &cutoff)
 	  dists[0]=dr;
 	  site1=ll.getSite(i);
 	  site2=ll.getSite(j);
-	  if(site1.compare(site2)>0) //use tuple_remodulator instead you archaic buffoon
+	  if(site1.compare(site2)>0) //use tuple_remodulator instead 
 	    {
 	      tempSite=site1;
 	      site1=site2;
@@ -1008,14 +1009,14 @@ void shuffleXMatrix(std::vector<double> &X, std::vector<double> &cvCorr, std::ve
 	  X[temp2*columns+j]=X[temp*columns+j];
 	  X[temp*columns+j]=tempRow;
 	}      
-    }
+    }       
 }
 
 
 std::vector<double> standardParameters(std::vector<double> &X,std::vector<double> &property,int &columns,bool &newVerbal)
 {
   const double alpha=0.1;
-  const double mu=0.0065;
+  const double mu=0.0040;
   //const double mu=0.65;
   const double lambda=100;
   const bool doSB=true;
@@ -1025,6 +1026,23 @@ std::vector<double> standardParameters(std::vector<double> &X,std::vector<double
   const double bfgsTol=1e-5;
   const bool verbal=newVerbal;
   return doMinimize(X,columns,property,alpha,lambda,mu,doSB,sbIters,sbTol,bfgsIters,verbal,bfgsTol);
+}
+
+//overload with option to modify mu and lambda
+std::vector<double> standardParameters(std::vector<double> &X,std::vector<double> &property,int &columns,bool &newVerbal,  double muIn,  double lambdaIn)
+{
+  const double alpha=0.1;
+  const double mu=muIn;
+  //const double mu=0.65;
+  const double lambda=lambdaIn;
+  const bool doSB=true;
+  const int sbIters=1000;
+  const double sbTol=1e-6;
+  const int bfgsIters=5000;
+  const double bfgsTol=1e-5;
+  const bool verbal=newVerbal;
+  return doMinimize(X,columns,property,alpha,lambda,mu,doSB,sbIters,sbTol,bfgsIters,verbal,bfgsTol);
+
 
 }
 
@@ -1111,11 +1129,37 @@ std::vector<double> getSingleClusterVector(LatticeList &ll, std::vector<double> 
   std::cout<<"initializing pairs"<<std::endl;
   PairList pl = PairList();
   std::cout<<"initializing pairs2"<<std::endl;
+  
+  std::cout<<"original count "<< ll.get_original_atoms_count()<< " nbr of sites "<< ll.getNbrOfSites()<< " ghost atoms "<<ll.get_ghost_atoms_count()<<std::endl;
+  std::vector<double> cellMatrix= ll.getCellMatrix();
+  std::vector<double> cellMatrixCopy =cellMatrix;
+
+  for(int i=0; i<9; i++)
+    {
+       cellMatrixCopy[i]=cellMatrix[i]*0.5;
+      
+    }
+  LatticeList clathrate_temp = ll;
+  clathrate_temp.clear_lookup_table();
+  clathrate_temp.setCellMatrix(cellMatrixCopy);
+  
+  
+  cellMatrix=ll.getCellMatrix();
+
+  for(int i=0; i<3; i++)
+    {
+      for(int j=0; j<3; j++)
+	{
+	  std::cout<<cellMatrix[i*3+j]<< " ";
+	}
+      std::cout<<std::endl;
+    }
 
   int nbrOfElements=subElements.size();
-
-  pl.initializePairs(ll,subElements,cutoffs[0]);
-  //pl.printList();
+  //LatticeList clathrate_size1= LatticeList(1,1,1);
+  pl.initializePairs(clathrate_temp,subElements,cutoffs[0]);
+  //pl.initializePairs(ll,subElements,cutoffs[0]);
+  // pl.printList();
   // std::cout<<"number of pairs "<<pl.getNbrOfPairs<<std::endl;
   // for(int i=0; i<pl.getNbrOfPairs(); i++)
   //   {
@@ -1263,7 +1307,7 @@ std::vector<double> getSingleClusterVector(LatticeList &ll, std::vector<double> 
       if(tl.getNbrOfTriplets()>0)
 	{
 	  //ATAT below
-	  if(!ATAT)
+	  if(ATAT)
 	    {
 	      //	  tl.getTriplet(3).printTriplet();
 	      tl.printList();
@@ -1327,7 +1371,7 @@ std::vector<double> getSingleClusterVector(LatticeList &ll, std::vector<double> 
   // 	}
   //     std::cout<<std::endl;
   //   }
-  std::cout<<"normalizing"<<std::endl;
+
   
   if(!average)
     {
@@ -1341,6 +1385,310 @@ std::vector<double> getSingleClusterVector(LatticeList &ll, std::vector<double> 
   return singletVector;
 }
 
+///singletVector with ClusterList
+std::vector<double> getSingleClusterVector(LatticeList &ll, ClusterList &clusterList, std::vector<double> &cutoffs,std::vector<std::string> &subElements,bool &average, int verbosity)
+{
+
+  bool ATAT=true;
+
+  if(verbosity>3)
+    {
+      std::cout<<"calculating lookup table"<<std::endl;
+    }
+  ll.calculate_lookup_table();
+  
+  const double PI = 3.1415926535897932384626;
+  int nbrOfElements=subElements.size();
+
+
+  // first singlets
+  std::vector<double> singletVector;
+  if(average)
+    {
+      singletVector.push_back(1);
+    }
+  else
+    {
+      singletVector.push_back(ll.get_original_atoms_count()); //zerolets
+    }
+  double tempAverage;
+  int tempT;
+  int s1;
+  double tempVal;
+    if(verbosity>3)
+      {
+	std::cout<<"do singlets"<<std::endl;
+      }
+  if(ATAT)
+    {
+      std::vector<double> tomt;
+      bool reverseSort=true;
+      std::vector<std::vector<int> > clust_singlet = symmetric_cluster_function(tomt,nbrOfElements,reverseSort);
+      //====
+      // std::cout<<"singlets"<<std::endl;
+      for(int i=0; i<clust_singlet.size(); i++)
+      	{
+	  // std::cout<<clust_singlet[i][0]<<std::endl;
+      	  tempAverage=0;
+      	  for(int j=0; j<ll.get_original_atoms_count(); j++)
+      	    {
+      	      int s1;
+      	      for(int jj=0; jj<subElements.size(); jj++)
+      		{
+      		  if(ll.getSite(j)==subElements[jj])
+      		    {
+      		      s1=jj;
+      		    }
+		}
+	      //   std::cout<<clust_singlet.size()<<" "<<clust_singlet[i][0]<<" "<< clusterFunction(subElements.size(),s1,clust_singlet[i][0])<<  " clust singlet "<<std::endl;
+	      tempAverage += clusterFunction(nbrOfElements,s1,clust_singlet[i][0]);
+	    }
+      	    
+
+      	  if(average)
+      	    {
+      	      singletVector.push_back(tempAverage/((double)ll.get_original_atoms_count()));
+      	    }
+      	  else
+      	    { 
+	      singletVector.push_back(tempAverage);
+      	    }
+      	}
+    }
+  
+  else
+    {
+      for(int m=0; m<subElements.size(); m++)
+	{
+	  tempAverage=0;
+	  for(int i=0; i<ll.get_original_atoms_count(); i++)
+	    {
+	      if(ll.getSite(i)==subElements[m])
+		{
+		  tempAverage++;
+		}
+	  
+	    }
+	  if(average)
+	    {
+	      singletVector.push_back(tempAverage/(double)ll.get_original_atoms_count());
+	    }
+	  else
+	    {
+	      singletVector.push_back(tempAverage);
+	    }
+	  
+	}
+    }
+  //std::cout<<"singlets"<<std::endl;
+  if(verbosity>2)
+    {
+      std::cout<<"starting with pairs" <<std::endl;
+    }
+  if(cutoffs.size() >=1)
+    {
+      
+      if(verbosity>3)
+	{
+	  std::cout<<"counting pairs"<<std::endl;
+      	}
+
+      countPairs(ll,clusterList.getPairList(),cutoffs[0]);
+      
+
+      // ///debugging ----------------------------------------------------------------------------------------------------------
+      // for(int rts=0; rts<clusterList.getPairList().getNbrOfPairs(); rts++)
+      // 	{
+      // 	  if( clusterList.getPairList().getPair(rts).getCount() == 0)
+      // 	    {
+      // 	      std::cout<<"number of sites: "<<ll.getNbrOfSites()<<std::endl;
+      // 	      clusterList.getPairList().getPair(rts).printPair();
+      // 	    }
+      // 	}
+      // ///debugging ----------------------------------------------------------------------------------------------------------
+
+      if(verbosity>3)
+	{
+	  std::cout<<"done counting pairs"<<std::endl;
+      	}
+
+      if(clusterList.getPairList().getNbrOfPairs()>0)
+	{
+
+	  if(ATAT)
+	    {
+	      if(verbosity>3)
+		{
+		  std::cout<<"PairList:"<<std::endl;
+		  clusterList.getPairList().printList();
+
+		}
+
+	      
+	      //pl.getPair(2).printPair();
+
+	      
+	      std::vector<double> pairVector = clusterList.getPairList().getClusterVector(subElements,cutoffs[0],average);
+	      if(verbosity>3)
+		{
+		  std::cout<<"pairvector size "<<pairVector.size()<<std::endl;
+		}
+	      
+	      //std::cout<<"Number of pairs "<<pl.getNbrOfPairs()<< " pairvector.size: "<<pairVector.size()<<std::endl;
+	      if(pairVector.size()>0)
+		{
+		  singletVector.insert(singletVector.end(),pairVector.begin(), pairVector.end());
+		}      
+	    }
+	  else
+	    {
+
+	      for(int i=0; i<clusterList.getPairList().getNbrOfPairs(); i++)
+		{
+		  if(clusterList.getPairList().getPair(i).getDistance()<cutoffs[0])
+		    {
+		      singletVector.push_back(clusterList.getPairList().getPair(i).getCount());
+		    }
+
+		}
+
+	    }
+	}
+    }
+
+  //  std::cout<<"starting with triplets"<<std::endl;
+  if(cutoffs.size() >=2)
+    {
+      // TripletList tl = TripletList(ll,subElements,cutoffs[1]);
+      
+
+      // std::vector<double> cellMatrix=ll.getCellMatrix();
+      // std::cout<<"nbr of sites " <<ll.getNbrOfSites()<<std::endl;
+
+      // std::cout<<ll.getNbrOfSites()<<"/np.linalg.det((";
+      // for(int i=0; i<3; i++)
+      // 	{
+      // 	  std::cout<<"[";
+      // 	  for(int j=0; j<3; j++)
+      // 	    {
+      // 	      if(j==2)
+      // 		{
+      // 	      std::cout<<cellMatrix[i*3+j];
+      // 		}
+      // 	      else
+      // 		{
+      // 		  std::cout<<cellMatrix[i*3+j]<< ",";
+      // 		}
+      // 	    }
+      // 	  if(i==2)
+      // 	    {
+      // 	      std::cout<<"]))  ";
+      // 	    }
+      // 	  else
+      // 	    {
+      // 	      std::cout<<"],";
+      // 	    }
+      // 	}
+      // 	  std::cout<<std::endl;
+
+
+      countTriplets(ll,clusterList.getTripletList(),cutoffs[1]);
+      
+
+      //tl.printList();
+
+      if(clusterList.getTripletList().getNbrOfTriplets()>0)
+	{
+	  //ATAT below
+	  if(ATAT)
+	    {
+	      //	  tl.getTriplet(3).printTriplet();
+	      if(verbosity>3)
+		{
+		  std::cout<<"TripletList: "<<std::endl;
+		  clusterList.getTripletList().printList();
+		}
+	      // std::cout<<"-------------------------"<<std::endl;
+      
+
+	      std::vector<double> tripletVector = clusterList.getTripletList().getClusterVector(subElements,cutoffs[1],average);
+	      if(verbosity>2)
+		{
+		  std::cout<<"Number of triplets: "<<clusterList.getTripletList().getNbrOfTriplets()<< " tripvector "<<tripletVector.size()<<std::endl;
+		}
+	      if(tripletVector.size()>0)
+		{
+		  singletVector.insert(singletVector.end(),tripletVector.begin(), tripletVector.end());
+		}
+	    }
+	  else
+	    {            
+	      for(int i=0; i<clusterList.getTripletList().getNbrOfTriplets(); i++)
+		{
+		  if(clusterList.getTripletList().getTriplet(i).getDistance2()<cutoffs[1])
+		    {
+		      singletVector.push_back(clusterList.getTripletList().getTriplet(i).getCount());
+		    }
+		}
+	    }
+	}
+    }
+
+  if(cutoffs.size() >=3)
+    {
+      clusterList.getQuatupletList().count_quatuplets(ll,cutoffs[2]);
+
+
+      if(ATAT)
+	{
+	  std::vector<double> quatVector =clusterList.getQuatupletList().getClusterVector(subElements,cutoffs[2],average);
+	  if(verbosity>3)
+	    {
+	      clusterList.getQuatupletList().printList();
+	    }
+	  if(verbosity>2)
+	    {
+	  std::cout<<"NUmber of quatuplets "<<clusterList.getQuatupletList().getNbrOfQuatuplets()<< " quatvector.size() "<<quatVector.size()<<std::endl;
+	    }
+	  
+	  if(quatVector.size()>0)
+	    {
+	      singletVector.insert(singletVector.end(),quatVector.begin(),quatVector.end());
+	    }
+	}
+      else
+	{
+	  for(int i=0; i<clusterList.getQuatupletList().getNbrOfQuatuplets(); i++)
+	    {
+	      //ql.getQuatuplets.getDis no distance should be over cutoff	      
+	      singletVector.push_back(clusterList.getQuatupletList().getQuatuplet(i).getCount());
+	    }
+	}
+    }
+
+  
+
+  // if(false)
+  //   {
+  //     std::cout<<std::setprecision(6)<<ll.getConcentration(subElements[0])<<" "<<singletVector.size()<<" ";
+  //     for(int i=0; i<singletVector.size(); i++)
+  // 	{
+  // 	  std::cout<<singletVector[i]<< " ";
+  // 	}
+  //     std::cout<<std::endl;
+  //   }
+  
+  if(!average)
+    {
+      for(int i=0; i<singletVector.size(); i++)
+  	{
+  	  singletVector[i] = singletVector[i]/((double)ll.get_original_atoms_count());
+  	}
+      
+    }
+  
+  return singletVector;
+}
 
 
 
@@ -1441,7 +1789,7 @@ void shuffleFittingObject(std::vector<double> &X,std::vector<double> &X_avg,std:
 	  tempRow=X_avg[temp2*columns+j];
 	  X_avg[temp2*columns+j]=X_avg[temp*columns+j];
 	  X_avg[temp*columns+j]=tempRow;	  
-	}      
+	}
 
     }
 }
@@ -1481,7 +1829,34 @@ void printInterfaceParameters(std::vector<double> &parameters,std::vector<double
   PairList pl = PairList();
   bool sortAlphabetically=true;
   int numberOfElements= subelements.size();
-  pl.initializePairs(ll,subelements,cutoffs[0]);
+
+
+
+
+  
+  std::vector<double> cellMatrix= ll.getCellMatrix();
+  std::vector<double> cellMatrixCopy =cellMatrix;
+
+  for(int i=0; i<9; i++)
+    {
+      cellMatrixCopy[i]=cellMatrix[i]*0.5;
+    }
+  LatticeList clathrate_temp = ll;
+  clathrate_temp.clear_lookup_table();
+  clathrate_temp.setCellMatrix(cellMatrixCopy);
+  
+
+  //LatticeList clathrate_size1= LatticeList(1,1,1);
+  pl.initializePairs(clathrate_temp,subelements,cutoffs[0]);
+
+
+
+  //pl.initializePairs(ll,subelements,cutoffs[0]);
+
+
+
+
+
   TripletList tl;
   if(cutoffs.size() >=2)
     {

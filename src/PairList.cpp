@@ -97,6 +97,7 @@ void PairList::initializePairs(LatticeList &ll, std::vector<std::string> &subele
 	  // std::cout<<"d= "<<d<< " distance= "<<dists[d]<<std::endl;
 	  // dist[0]=dists[d];
 	  tempPair.setDistance(dist[0]);
+	  tempPair.setCount(1);
 	  for(int k=0; k<all_element_combinations.size(); k++)
 	    {
 	      tempPair.setSite1(all_element_combinations[k][0]);
@@ -275,6 +276,14 @@ std::vector<double> PairList::getClusterVector(std::vector<std::string> &subElem
 	    }
 	  else
 	    {
+	      if(totalPairs==0)
+		{
+		  std::cout<<" tempAverage " <<tempAverage<< "  division: "<< tempAverage/(double)totalPairs<<std::endl;
+		  pairList[i*3].printPair();
+		  pairList[i*3+1].printPair();
+		  pairList[i*3+2].printPair();
+		  
+		}
 	      clusterVector.push_back(tempAverage/(double)totalPairs);
 	    }
 	}

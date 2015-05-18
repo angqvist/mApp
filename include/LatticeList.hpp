@@ -22,7 +22,7 @@ public:
   std::vector<double> getPeriodicDistance(int &, int &,  double &);
   double getDistance(const int &,const int &);
   
-  int getNbrOfSites() ;
+  int getNbrOfSites();
 
   void printList(); //Mostly for bug checking
   void printList(std::string); //Mostly for bug checking
@@ -39,9 +39,11 @@ public:
   std::string getSite(int &);
   void set_property(std::vector<double> &);
   void setSite(int &,std::string &);
+  void setCellMatrix(std::vector<double>);
   void setRandomSites(int &, std::string &, std::string &);
   void setRandomSites(int &,int &, std::string &, std::string &,std::string &);
   void setRandomSites(int &,int &,int &, std::string &, std::string &,std::string &,std::string &);
+  void setRandomSites(std::vector<int>, std::vector<std::string>,std::mt19937 &);
   double getLx();
   double getLy();
   double getLz();
@@ -53,10 +55,23 @@ public:
   double fast_distance( int &,  int &) const;
   std::vector<std::vector<double> > getLookupTable();
   void append_atom(std::string,std::vector<double>, int);
+  void append_atom(std::string,std::vector<double>);
+
   void clear_lookup_table();
   int get_original_atoms_count();
   int get_ghost_atoms_count();
   std::vector<double> getCellMatrix();
+  std::vector<double> getPositions();
+
+  std::vector<std::vector<double> >  getVecVecPositions();
+  std::vector<std::vector<double> >  getVecVecCellMatrix();
+  std::vector<std::string> getChemicalSymbols();
+  
+  void repeat(int, int, int);
+  void repeat(int);
+  void extendForCutoff(double);
+
+
 private:
   std::vector<double> cellMatrix;
   int number_of_original_atoms;
@@ -92,4 +107,6 @@ private:
   double averageLatticeConstant;
   std::vector<int> tags;
   std::vector<std::vector<int>> tag_list;
+  
+  void repeatAtomsUsingVector(std::vector<double> &, int);
 };

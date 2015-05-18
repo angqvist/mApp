@@ -8,6 +8,12 @@
 #include <iomanip>      // std::setprecision
 #include "helperFunctions.hpp"
 
+
+std::random_device rdll;
+std::mt19937 genll(rdll());
+//genll.seed();
+
+
 using namespace std;
 
 // (A bit inelegant, nbrOfAtoms isnt really nbr of atoms but the number of atoms in the unit cell times 3)-- I think not
@@ -104,7 +110,7 @@ LatticeList::LatticeList(int sizeX, int sizeY, int sizeZ)
   Lx=cellSizeX*latticeConstant;
   Ly=cellSizeY*latticeConstant;
   Lz=cellSizeZ*latticeConstant;
-  fileName="configs/confs4/config_0";
+  fileName="/home/mattias/masterarbete/C-kod/src/configs/confs4/config_0";
   readIdealPos2();
 }
 
@@ -743,19 +749,29 @@ double LatticeList::getDistance(const int &i, const int &j)
 	double dist1;
 	double dist2;
 	double x,y,z,x2,y2,z2;
+
 	x=posList2[i*3];
 	y=posList2[i*3+1];
 	z=posList2[i*3+2];
+
 	x2=posList2[j*3];
 	y2=posList2[j*3+1];
 	z2=posList2[j*3+2];
 	
-	for(double ii=-1; ii<2; ii++)
+	// std::cout<<"===================="<<std::endl;
+	// std::cout<< cellMatrix[0]<< " "<<cellMatrix[1]<<" "<<cellMatrix[2]<<std::endl;
+	// std::cout<< cellMatrix[3]<< " "<<cellMatrix[4]<<" "<<cellMatrix[5]<<std::endl;
+	// std::cout<< cellMatrix[6]<< " "<<cellMatrix[7]<<" "<<cellMatrix[8]<<std::endl;
+
+
+
+	for(double ii=-2; ii<3; ii++)
 	  {
-	    for(double jj=-1; jj<2; jj++)
+	    for(double jj=-2; jj<3; jj++)
 	      {
-		for(double kk=-1; kk<2; kk++)
+		for(double kk=-2; kk<3; kk++)
 		  {
+		    
 		    dx=ii*cellMatrix[0]+jj*cellMatrix[3]+kk*cellMatrix[6];
 		    dy=ii*cellMatrix[1]+jj*cellMatrix[4]+kk*cellMatrix[7];
 		    dz=ii*cellMatrix[2]+jj*cellMatrix[5]+kk*cellMatrix[8];
@@ -768,24 +784,28 @@ double LatticeList::getDistance(const int &i, const int &j)
 		    
 		    dist1= ((x+dx)-x2)*((x+dx)-x2)+((y+dy)-y2)*((y+dy)-y2)+((z+dz)-z2)*((z+dz)-z2);
 		    dist2= ((x2+dx)-x)*((x2+dx)-x)+((y2+dy)-y)*((y2+dy)-y)+((z2+dz)-z)*((z2+dz)-z);
-
+		    
 		    
 		    dist=std::min(dist,dist1);
 		    dist=std::min(dist,dist2);
+
 		    if(dist<1e-4)
 		      {
-			std::cout<<"===================="<<std::endl;
-			std::cout<< cellMatrix[0]<< " "<<cellMatrix[1]<<" "<<cellMatrix[2]<<std::endl;
-			std::cout<< cellMatrix[3]<< " "<<cellMatrix[4]<<" "<<cellMatrix[5]<<std::endl;
-			std::cout<< cellMatrix[6]<< " "<<cellMatrix[7]<<" "<<cellMatrix[8]<<std::endl;
+		    	// std::cout<<"===================="<<std::endl;
+		    	// std::cout<< cellMatrix[0]<< " "<<cellMatrix[1]<<" "<<cellMatrix[2]<<std::endl;
+		    	// std::cout<< cellMatrix[3]<< " "<<cellMatrix[4]<<" "<<cellMatrix[5]<<std::endl;
+		    	// std::cout<< cellMatrix[6]<< " "<<cellMatrix[7]<<" "<<cellMatrix[8]<<std::endl;
 			
-		    	std::cout<<x<< " "<<y<< " "<<z<< " "<<i<<std::endl;
-		    	std::cout<<x2<< " "<<y2<< " "<<z2<<" "<<j<<std::endl;
-			std::cout<<ii<< " "<<jj<< " "<<kk<<std::endl;
-			std::cout<<dx<< " "<<dy<< " "<<dz<<std::endl;
-			std::cout<<"======================"<<std::endl;
+		    	// std::cout<<x<< " "<<y<< " "<<z<< " "<<i<<std::endl;
+		    	// std::cout<<x2<< " "<<y2<< " "<<z2<<" "<<j<<std::endl;
+		    	// std::cout<<ii<< " "<<jj<< " "<<kk<<std::endl;
+		    	// std::cout<<dx<< " "<<dy<< " "<<dz<<std::endl;
+		    	// std::cout<<"======================"<<std::endl;
+			dist=1e6;
 		      }
+
 		  }
+
 	      }
 	  }
 	return sqrt(dist);	    
@@ -794,6 +814,7 @@ double LatticeList::getDistance(const int &i, const int &j)
 
     else
       {
+
 	dx=fabs(posList2[i*3]-posList2[j*3]);
 	dy=fabs(posList2[i*3+1]-posList2[j*3+1]);
 	dz=fabs(posList2[i*3+2]-posList2[j*3+2]); 
@@ -919,10 +940,59 @@ void LatticeList::setRandomSites(int &nbrA,int &nbrB, int &nbrC, std::string &ty
     }
 }
 
+void LatticeList::setRandomSites(std::vector<int> stoich, std::vector<std::string> types, std::mt19937 &engine)
+{
+  int k;
+  int countA=0;
+  int countB=0;
+  int countC=0;
+  
+
+  if(stoich.size() != types.size())
+    {
+      std::cout<<"Error, stoich size and type size not matching"<<std::endl;
+      return;
+    }
+ std::uniform_int_distribution<> dis(0, nbrOfSites-1);
+
+ for(int i=0; i<number_of_original_atoms; i++)
+   {
+     setSite(i,types[types.size()-1] );
+   }
+
+
+
+ for(int i=0; i<stoich.size()-1; i++)
+   {
+     countA=0;
+     while(countA<stoich[i])
+       {
+	 k=dis(engine);
+	 if(atomTypeList[k]==types[types.size()-1])
+	   {
+	     setSite(k,types[i]);
+	     countA++;
+
+	   }
+       }
+	
+   }
+
+
+
+}
 
 
 
 
+
+
+
+
+void LatticeList::setCellMatrix(std::vector<double> cellM)
+{
+  cellMatrix = cellM;
+}
 
 
 std::string LatticeList::getSite(int &i)
@@ -1108,6 +1178,15 @@ void LatticeList::append_atom(std::string type, std::vector<double> pos, int tag
   posList2.push_back(pos[2]);
 }
 
+void LatticeList::append_atom(std::string type, std::vector<double> pos)
+{
+  atomTypeList.push_back(type);
+  posList2.push_back(pos[0]);
+  posList2.push_back(pos[1]);
+  posList2.push_back(pos[2]);
+}
+
+
 void LatticeList::create_tag_list()
 {
   tag_list.clear();
@@ -1197,4 +1276,154 @@ std::vector<double> LatticeList::getWyckoffOccupancy(const std::vector<std::stri
       
 
 
+void LatticeList::repeat(int rx, int ry, int rz)
+{
+  int N = atomTypeList.size();
+  distance_table_init=false;
+  
+  std::vector<double> cellVector;
+  cellVector.resize(3);
+  for(int i=1; i<rx; i++)
+    {
+      cellVector[0]=i*cellMatrix[0];
+      cellVector[1]=i*cellMatrix[1];
+      cellVector[2]=i*cellMatrix[2];
+      
+      repeatAtomsUsingVector(cellVector,N);  
+    }
+  
+  N = atomTypeList.size();
+  
+  for(int i=1; i<ry; i++)
+    {
+      cellVector[0]=i*cellMatrix[3];
+      cellVector[1]=i*cellMatrix[4];
+      cellVector[2]=i*cellMatrix[5];
+      
+      repeatAtomsUsingVector(cellVector,N);  
+    }
+  
+  N = atomTypeList.size();
+
+  for(int i=1; i<rz; i++)
+    {
+      cellVector[0]=i*cellMatrix[6];
+      cellVector[1]=i*cellMatrix[7];
+      cellVector[2]=i*cellMatrix[8];
+      
+      repeatAtomsUsingVector(cellVector,N);  
+    }
+
+  nbrOfSites=atomTypeList.size();
+
+  for(int i=0; i<3; i++)
+    {
+      cellMatrix[i] =cellMatrix[i]*(double)rx;
+      cellMatrix[i+3] =cellMatrix[i+3]*(double)ry;
+      cellMatrix[i+6] =cellMatrix[i+6]*(double)rz;      
+    }
+
+
+}
+
+void LatticeList::repeat(int r)
+{
+
+  repeat(r,r,r);
+
+}
+
  
+void LatticeList::repeatAtomsUsingVector(std::vector<double> &cellVector, int N)
+{
+
+  std::vector<double> tempPos;
+  tempPos.resize(3);
+  std::string siteType;
+  for(int i=0; i<N; i++)
+    {
+      siteType = getAtomInfo(i, tempPos[0],tempPos[1],tempPos[2]);
+      
+      //new distance
+      for(int j=0; j<3; j++)
+	{
+	  tempPos[j] += cellVector[j];
+	}
+      append_atom(siteType,tempPos);
+    }
+}
+
+void LatticeList::extendForCutoff(double cutoff)
+{
+  double r1 = sqrt( cellMatrix[0]*cellMatrix[0] + cellMatrix[1]*cellMatrix[1] + cellMatrix[2]*cellMatrix[2] );
+  double r2 = sqrt( cellMatrix[3]*cellMatrix[3] + cellMatrix[4]*cellMatrix[4] + cellMatrix[5]*cellMatrix[5] );
+  double r3 = sqrt( cellMatrix[6]*cellMatrix[6] + cellMatrix[7]*cellMatrix[7] + cellMatrix[8]*cellMatrix[8] );
+  double r12 = sqrt( (cellMatrix[0]-cellMatrix[3])*(cellMatrix[0]-cellMatrix[3]) + (cellMatrix[1]-cellMatrix[4])*(cellMatrix[1]-cellMatrix[4]) + (cellMatrix[2]-cellMatrix[5])*(cellMatrix[2]-cellMatrix[5]) );
+  double r13 = sqrt( (cellMatrix[0]-cellMatrix[6])*(cellMatrix[0]-cellMatrix[6]) + (cellMatrix[1]-cellMatrix[7])*(cellMatrix[1]-cellMatrix[7]) + (cellMatrix[2]-cellMatrix[8])*(cellMatrix[2]-cellMatrix[8]) );
+  double r23 = sqrt( (cellMatrix[6]-cellMatrix[3])*(cellMatrix[6]-cellMatrix[3]) + (cellMatrix[7]-cellMatrix[4])*(cellMatrix[7]-cellMatrix[4]) + (cellMatrix[8]-cellMatrix[5])*(cellMatrix[8]-cellMatrix[5]) );
+
+  //get minimum of r_x
+  //repeat(x) such that minimum is atleast 2x cutoff
+  double minr = std::min(r1,r2);
+  minr = std::min(minr,r3);
+  double minr2 = std::min(r12,r13);
+  minr2 = std::min(minr2,r23);
+  minr= std::min(minr,minr2);
+  
+  if(minr >2.2*cutoff)
+    {
+      return;
+    }
+  else
+    {
+      int minRepeat = std::ceil(2.2*cutoff/((double)minr));
+      repeat(minRepeat);
+    }
+
+}
+
+
+std::vector<double> LatticeList::getPositions()
+{
+  return posList2;
+}
+
+std::vector<std::string> LatticeList::getChemicalSymbols()
+{
+  return atomTypeList;
+} 
+                                               
+std::vector<std::vector<double> > LatticeList::getVecVecPositions()
+{
+  std::vector<std::vector<double>> ret;
+  std::vector<double> xyz;
+  xyz.resize(3);
+  
+  for(int i=0; i<posList2.size(); i+=3)
+    {
+      xyz[0] = posList2[i];
+      xyz[1] = posList2[i+1];
+      xyz[2] = posList2[i+2];
+      ret.push_back(xyz);
+    }
+
+  return ret;
+
+}
+
+std::vector<std::vector<double> > LatticeList::getVecVecCellMatrix()
+{
+  std::vector<std::vector<double>> ret;
+  std::vector<double> xyz;
+  xyz.resize(3);
+  
+  for(int i=0; i<cellMatrix.size(); i+=3)
+    {
+      xyz[0] = cellMatrix[i];
+      xyz[1] = cellMatrix[i+1];
+      xyz[2] = cellMatrix[i+2];
+      ret.push_back(xyz);
+    }
+
+  return ret;
+}

@@ -385,16 +385,16 @@ std::vector<double> TripletList::getClusterVector(std::vector<std::string > &sub
   std::vector<std::vector<double> > uniq_dists = getUniqueDistances(cutoff);
   clust_sort_dists(uniq_dists);
 
-  std::cout<<"--------------------------"<<std::endl;
-  for(int i=0; i<uniq_dists.size(); i++)
-    {
-      for(int j=0;j<3; j++)
-	{
-	  std::cout<< uniq_dists[i][j]<<" ";
-	}
-      std::cout<<std::endl;
-    }
-  std::cout<<"--------------------------"<<std::endl;
+  // std::cout<<"--------------------------"<<std::endl;
+  // for(int i=0; i<uniq_dists.size(); i++)
+  //   {
+  //     for(int j=0;j<3; j++)
+  // 	{
+  // 	  std::cout<< uniq_dists[i][j]<<" ";
+  // 	}
+  //     std::cout<<std::endl;
+  //   }
+  // std::cout<<"--------------------------"<<std::endl;
 
   std::vector<double> clusterVector;
 

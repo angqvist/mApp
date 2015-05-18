@@ -1,3 +1,4 @@
+#pragma once
 #include<vector>
 #include<string>
 #include <gsl/gsl_matrix.h>
@@ -63,10 +64,12 @@ void shuffleXMatrix(std::vector<double> &,std::vector<double> &,std::vector<doub
 
 std::vector<double> standardParameters(std::vector<double> &,std::vector<double> &,int &,bool &);
 
+std::vector<double> standardParameters(std::vector<double> &,std::vector<double> &,int &,bool &, double,  double);
 
 
 std::vector<double> getSingleClusterVector(std::string,std::vector<double>,std::vector<std::string>,int,int,bool);
 std::vector<double> getSingleClusterVector(class LatticeList & , std::vector<double> &, std::vector<std::string> &,bool &,bool &);
+std::vector<double> getSingleClusterVector(class LatticeList & , class ClusterList &, std::vector<double> &, std::vector<std::string> &,bool &, int);
 
 
 void getClusterVectors(std::vector<class LatticeList> &, std::vector<double> &,std::vector<double> &,std::vector<std::vector<double> > &,std::vector<double> &, std::vector<std::string> &, int &,  int &,bool &,bool &);

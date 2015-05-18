@@ -19,7 +19,7 @@ public:
   void setSite1(std::string );
   void setSite2(std::string );
   void setEnergy(double );
-  void setCount(int & );
+  void setCount(int  );
 
   void incrementCount();
   void decrementCount();

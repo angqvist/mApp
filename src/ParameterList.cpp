@@ -30,9 +30,11 @@ ParameterList::ParameterList(PairList pl)
 {
   fileName="";
   nbrOfParams=0;
-  eCutOff=-0.01;
+  eCutOff=0.2;
   readParamsWithPL(pl);
 }
+
+
 ParameterList::ParameterList(std::string newFileName,double newCutOff,std::vector<std::string > subElements)
 {
   fileName=newFileName;
@@ -60,8 +62,11 @@ void ParameterList::readParamsWithPL(PairList pl)
 {
   for(int i=0; i<pl.getNbrOfPairs(); i++)
     {
-      paramList.push_back(pl.getPair(i));
-      nbrOfParams++;
+      if(fabs(pl.getPair(i).getEnergy())>eCutOff)
+	{
+	  paramList.push_back(pl.getPair(i));
+	  nbrOfParams++;
+	}
     }
 }
 
@@ -311,8 +316,9 @@ void ParameterList::readParams_new(std::vector<std::string > subElements)
 	  in>> tempDist;
 	  in>> tempEnergy;
 	  tempPair.setDistance(tempDist);
-	  tempPair.setEnergy(tempEnergy);   
+	  tempPair.setEnergy(tempEnergy);
 	  paramList.push_back(tempPair);
+	    
 	}
       
       //triplets

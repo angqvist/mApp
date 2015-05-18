@@ -70,7 +70,7 @@ void Pair::setSite2(std::string newSite)
 {
    site2=newSite;
 }
-void Pair::setCount(int &newCount)
+void Pair::setCount(int newCount)
 {
    count=newCount;
 }
